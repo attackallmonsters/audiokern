@@ -1,4 +1,4 @@
-![](supersaw.jpg)
+![](audiokern.jpg)
 # audiokern
 
 **audiokern** is a minimalistic DSP framework designed with simplicity and modularity in mind.
