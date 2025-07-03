@@ -1,0 +1,9 @@
+#N canvas 404 202 461 167 12;
+#X obj 22 22 bng 15 250 50 0 empty empty RESET 18 8 0 14 #fcfcfc #2c004c #ff0400;
+#X obj 22 97 s bangPatch;
+#X obj 22 46 t b b;
+#X obj 54 71 s isReset;
+#X connect 0 0 2 0;
+#X connect 2 0 1 0;
+#X connect 2 1 3 0;
+#X coords 0 -1 1 1 64 20 2 20 20;

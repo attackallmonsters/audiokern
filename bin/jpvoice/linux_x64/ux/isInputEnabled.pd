@@ -1,0 +1,8 @@
+#N canvas 223 219 411 179 12;
+#X obj 35 44 spigot 1;
+#X obj 102 24 r enableInputs;
+#X obj 35 18 inlet;
+#X obj 35 69 outlet;
+#X connect 0 0 3 0;
+#X connect 1 0 0 1;
+#X connect 2 0 0 0;

@@ -1,0 +1,6 @@
+#N canvas 0 0 686 302 12;
+#X declare -path organelle;
+#X obj 16 18 declare -path organelle;
+#X obj 184 18 reset;
+#X obj 16 42 organelle;
+#X obj 252 18 main;
