@@ -39,3 +39,34 @@ The focus is not on performance or feature-completeness, but rather on:
 - Optional: Pure Data (`pd`) for testing Pd externals
 
 ### Building (x86 or ARM)
+Each src directory contains a Makefile and
+- `./md.sh`
+- `./mr.sh`
+
+These are only shortcuts for 
+- `make debug`
+- `make release`
+
+The library is copied directly into the bin folder for the respective platform:
+
+https://github.com/attackallmonsters/audiokern/tree/main/bin
+
+I'll try to keep the build functional in the main branch. But I can't promise it.
+
+### Organelle Compatibility
+The framework is designed to work out of the box with the **Critter & Guitari Organelle M / S**, which runs a Raspberry Pi 3–based Linux system.
+
+No changes to the Patch Manager or system configuration are needed – simply copy the compiled `.pd_linux` files into your patch directory.
+
+> **Important:** The Organelle uses **GCC 4.9.2**, which lacks full C++17 support.  
+> The code is kept compatible by avoiding newer language features. When targeting the Organelle, always build with the correct toolchain.
+
+### Organelle Compatibility
+The framework is designed to work out of the box with the **Critter & Guitari Organelle M / S**, which runs a Raspberry Pi 3–based Linux system.
+
+No changes to the Patch Manager or system configuration are needed – simply copy the compiled `.pd_linux` files into your patch directory.
+
+> ⚠️ **Important:** The Organelle uses **GCC 4.9.2**, which lacks full C++17 support.  
+> The code is kept compatible by avoiding newer language features. When targeting the Organelle, always build with the correct toolchain.
+
+---
