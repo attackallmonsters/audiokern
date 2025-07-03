@@ -25,9 +25,9 @@ The focus is not on performance or feature-completeness, but rather on:
 ## Structure
 
 - `src/dsp`     – core signal processing modules
-- `src/adsr`    – ADSR PD external
-- `src/LFO`     – LFO PD external
-- `src/jpvoice` – JPVoice (inspiered by the Roland JP-8000)
+- `src/adsr`    – ADSR PD external => https://github.com/attackallmonsters/audiokern/tree/main/bin/adsr
+- `src/LFO`     – LFO PD external => https://github.com/attackallmonsters/audiokern/tree/main/bin/lfo
+- `src/jpvoice` – JPVoice (inspiered by the Roland JP-8000) => https://github.com/attackallmonsters/audiokern/tree/main/bin/jpvoice
 - `obj/`, `lib/` – build artifacts (ignored via `.gitignore`)
 
 ## Build Instructions
