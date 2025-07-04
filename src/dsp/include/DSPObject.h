@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 #include "DSP.h"
-#include "DSPBuffer.h"
+#include "XDSPBuffer.h"
 
 class DSPObject : public DSP
 {

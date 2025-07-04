@@ -2,7 +2,7 @@
 
 #include "clamp.h"
 #include "DSPObject.h"
-#include "DSPBuffer.h"
+#include "DSPSampleBuffer.h"
 #include <cmath>
 
 // Enumeration for the envelope phase
@@ -34,10 +34,14 @@ public:
     void setOneShot(bool b);
     void setStartAtCurrent(bool start);
 
-    dsp_float* getBuffer();
-
     void triggerStart();
     void triggerStop();
+
+    // Does a calulation on the samples (ADSRbuf * samplebuf)
+    void process(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR);
+
+    // Buffer that contains the envelope
+    DSPSampleBuffer envelope;
 
 private:
     // Next sample block generation
@@ -73,8 +77,7 @@ private:
 
     dsp_float sampleRateMS;
     ADSRPhase phase;
-    int currentSample;
-    DSPBuffer curveBuffer;
+    int currentSample;    
 
     static constexpr dsp_float MAX_TIME = std::numeric_limits<dsp_float>::max();
 };

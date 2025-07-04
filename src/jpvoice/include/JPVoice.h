@@ -19,9 +19,22 @@
 #include "DSPObject.h"
 #include "dsp_types.h"
 #include "dsp_math.h"
+#include "ADSR.h"
 #include "clamp.h"
 #include <cmath>
+#include "DSPSampleBuffer.h"
 
+struct ADSRParams
+{
+    dsp_float attackTime;
+    dsp_float decayTime;
+    dsp_float releaseTime;
+    dsp_float sustainLevel;
+    dsp_float gain;
+    dsp_float attackShape;
+    dsp_float releaseShape;
+    bool oneShot;
+};
 
 // The Voice class manages two oscillators and handles interactions like
 // Frequency Modulation (FM) and Oscillator Sync between them.
@@ -36,6 +49,12 @@ public:
 
     // Initializes the DSP object
     void initialize() override;
+
+    // Start ADSRs
+    void playNote();
+
+    // Stop  ADSRs
+    void stopNote();
 
     // Sets the modulation index for frequency modulation.
     // This controls the intensity of the frequency modulation effect.
@@ -84,29 +103,35 @@ public:
     void setFilterMode(FilterMode mode);
 
     // Sets the cutoff frequency
-    void setFilterCutoff(DSPBuffer *buffer);
+    void setFilterCutoff(dsp_float f);
 
     // Sets the filter resonance
-    void setFilterResonance(DSPBuffer *buffer);
+    void setFilterResonance(dsp_float r);
 
     // Sets the filter drive
     void setFilterDrive(dsp_float value);
 
+    // Sets the output buffers
+    void setOutputBuffer(float *bufL, float *bufR);
+
+    // Filter envelope params
+    void setFilterADSR(ADSRParams &params);
+
+    // Amplification envelope params
+    void setAmpADSR(ADSRParams &params);
+
     // Next sample block generation
     void computeSamples();
-
-    DSPBuffer mixBufferL; // Mixing buffer left channel
-    DSPBuffer mixBufferR; // Mixing buffer right channel
 
 private:
     WavetableOscillator *carrier;      // Carrier oscillator (may be modulated)
     WavetableOscillator *modulator;    // Modulator oscillator (for FM or sync)
-    WavetableOscillator *carrierTmp;   // Carrier oscillator (may be modulated)
-    WavetableOscillator *modulatorTmp; // Modulator oscillator (for FM or sync)
+    WavetableOscillator *carrierTmp;   // Carrier oscillator for oscillator change
+    WavetableOscillator *modulatorTmp; // Modulator oscillator for oscillator change
 
     dsp_float frequency = 0.0; // Current frequency
 
-    dsp_float modulationIndex = 0;       // FM depth: how much modulator modulates carrier
+    dsp_float modulationIndex = 0; // FM depth: how much modulator modulates carrier
 
     dsp_float oscmix = 0.0;   // Mix carrier <=> modulator
     dsp_float noisemix = 0.0; // Mix oscillators <=> noise
@@ -118,27 +143,33 @@ private:
     dsp_float fineTune = 0;     // Fine tune modulator
 
     // Oscillators
-    NoiseGenerator *noise = new NoiseGenerator(); // Noise generator
-    SineWavetable *sineCarrier = new SineWavetable();
-    SineWavetable *sineModulator = new SineWavetable();
-    SawWavetable *sawCarrier = new SawWavetable();
-    SawWavetable *sawModulator = new SawWavetable();
-    SquareWavetable *squareCarrier = new SquareWavetable();
-    SquareWavetable *squareModulator = new SquareWavetable();
-    TriangleWavetable *trianlgeCarrier = new TriangleWavetable();
-    TriangleWavetable *triangleModulator = new TriangleWavetable();
-    HarmonicClusterWavetable *clusterCarrier = new HarmonicClusterWavetable();
-    HarmonicClusterWavetable *clusterModulator = new HarmonicClusterWavetable();
-    FibonacciWavetable *fibonacciCarrier = new FibonacciWavetable();
-    FibonacciWavetable *fibonacciModulator = new FibonacciWavetable();
-    MirrorWavetable *mirrorCarrier = new MirrorWavetable();
-    MirrorWavetable *mirrorModulator = new MirrorWavetable();
-    ModuloWavetable *moduloCarrier = new ModuloWavetable();
-    ModuloWavetable *moduloModulator = new ModuloWavetable();
-    BitWavetable *bitModulator = new BitWavetable();
+    NoiseGenerator noise;
+    SineWavetable sineCarrier;
+    SineWavetable sineModulator;
+    SawWavetable sawCarrier;
+    SawWavetable sawModulator;
+    SquareWavetable squareCarrier;
+    SquareWavetable squareModulator;
+    TriangleWavetable trianlgeCarrier;
+    TriangleWavetable triangleModulator;
+    HarmonicClusterWavetable clusterCarrier;
+    HarmonicClusterWavetable clusterModulator;
+    FibonacciWavetable fibonacciCarrier;
+    FibonacciWavetable fibonacciModulator;
+    MirrorWavetable mirrorCarrier;
+    MirrorWavetable mirrorModulator;
+    ModuloWavetable moduloCarrier;
+    ModuloWavetable moduloModulator;
+    BitWavetable bitModulator;
 
     // Multi mode filter
-    KorgonFilter *filter = new KorgonFilter();
+    KorgonFilter filter;
+    // Buffer for filter resonance, cutoff is controlled by filterAdsr
+    DSPSampleBuffer resoBuffer;
+
+    // Modulation objects
+    ADSR filterAdsr;
+    ADSR ampAdsr;
 
     // DSP working vars
     dsp_float carrierLeft, carrierRight;
@@ -149,6 +180,10 @@ private:
     dsp_float amp_oscmix;
     dsp_float amp_osc_noise;
     dsp_float amp_noise;
+
+    // Output buffers of host
+    DSPSampleBuffer mixBufferL; // Mixing buffer left channel
+    DSPSampleBuffer mixBufferR; // Mixing buffer right channel
 
     // Feedback
     dsp_float lastSampleCarrierLeft;

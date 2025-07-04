@@ -13,7 +13,7 @@ static dsp_float trianlgeAmplitude(int harmonic)
         return 0.0;
 }
 
-void TriangleWavetable::createWavetable(DSPBuffer &buffer, dsp_float frequency)
+void TriangleWavetable::createWavetable(XDSPBuffer &buffer, dsp_float frequency)
 {
     // Fill one full waveform cycle (0 to 2π) across the buffer
     WaveformGenerator::generateWavetable(buffer, frequency, trianlgeAmplitude, 0.5);

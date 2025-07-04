@@ -2,7 +2,7 @@
 #pragma once
 
 #include "DSPObject.h"
-#include "DSPBuffer.h"
+#include "DSPSampleBuffer.h"
 #include "dsp_types.h"
 #include "clamp.h"
 #include "dsp_math.h"
@@ -21,13 +21,13 @@ public:
     void setDrive(dsp_float value);
 
     // Set cutoff frequency in Hz
-    void setCutoff(DSPBuffer *buffer);
+    void setCutoffBuffer(DSPSampleBuffer &buffer);
 
     // Set resonance amount (typically 0.0 to ~1.0)
-    void setResonance(DSPBuffer *buffer);
+    void setResonanceBuffer(DSPSampleBuffer &buffer);
 
     // Assigns the samples to process
-    void setSampleBuffers(DSPBuffer *samplesL, DSPBuffer *samplesR);
+    void setSampleBuffers(DSPSampleBuffer &samplesL, DSPSampleBuffer &samplesR);
 
     // Reset internal filter state
     void reset();
@@ -47,14 +47,14 @@ private:
     static void processBlock(DSPObject *dsp);
 
     // The samples to be filtered
-    DSPBuffer *bufferL;
-    DSPBuffer *bufferR;
+    DSPSampleBuffer bufferL;
+    DSPSampleBuffer bufferR;
 
     // Control buffer for cutoff
-    DSPBuffer *cutoffBuffer;
-    DSPBuffer cutoffInitBuffer;
+    DSPSampleBuffer cutoffBuffer;
+    DSPSampleBuffer cutoffInitBuffer;
 
     // Control buffer for resonance
-    DSPBuffer *resoBuffer;
-    DSPBuffer resoInitBuffer;
+    DSPSampleBuffer resoBuffer;
+    DSPSampleBuffer resoInitBuffer;
 };

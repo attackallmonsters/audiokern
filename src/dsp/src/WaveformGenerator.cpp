@@ -1,6 +1,6 @@
 #include "WaveformGenerator.h"
 
-void WaveformGenerator::generateWavetable(DSPBuffer &buffer,
+void WaveformGenerator::generateWavetable(XDSPBuffer &buffer,
                                           dsp_float baseFrequency,
                                           AmplitudeFunction amplitudeFunc,
                                           dsp_float harmonicBoost)

@@ -5,7 +5,7 @@
 #include "clamp.h"
 #include "DSP.h"
 #include "DSPObject.h"
-#include "DSPBuffer.h"
+#include "XDSPBuffer.h"
 #include "VoiceOptions.h"
 #include "dsp_types.h"
 #include "dsp_math.h"
@@ -78,12 +78,12 @@ public:
     void unWrap();
 
     // Buffer for modulation
-    DSPBuffer modBufferL;
-    DSPBuffer modBufferR;
+    XDSPBuffer modBufferL;
+    XDSPBuffer modBufferR;
 
     // Sample buffer for output
-    DSPBuffer outBufferL;
-    DSPBuffer outBufferR;
+    XDSPBuffer outBufferL;
+    XDSPBuffer outBufferR;
 
 protected:
     bool syncEnabled;                    // Enables or disable block wise phase synchronization

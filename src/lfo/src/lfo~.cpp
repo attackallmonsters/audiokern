@@ -97,7 +97,7 @@ void lfo_tilde_settype(t_lfo_tilde *x, t_floatarg f)
 t_int *lfo_tilde_perform(t_int *w)
 {
     t_lfo_tilde *x = (t_lfo_tilde *)(w[1]);
-    t_sample *in_fm = (t_sample *)(w[2]);
+    //t_sample *in_fm = (t_sample *)(w[2]);
     t_sample *out = (t_sample *)(w[3]);
     int n = (int)(w[4]);
 

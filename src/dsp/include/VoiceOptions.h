@@ -1,6 +1,6 @@
 #pragma once
 
-// Contains options for oscillation configuration
+// Contains options for sample generation and modulation
 
 // OScillator types for oscillator 1
 enum class CarrierOscillatiorType

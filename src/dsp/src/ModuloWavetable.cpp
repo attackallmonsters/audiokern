@@ -9,7 +9,7 @@ static dsp_float moduloAmplitude(int harmonic)
     return (harmonic % mod == 1) ? 0.7 / harmonic : 0.0;
 }
 
-void ModuloWavetable::createWavetable(DSPBuffer &buffer, dsp_float frequency)
+void ModuloWavetable::createWavetable(XDSPBuffer &buffer, dsp_float frequency)
 {
     // Fill one full waveform cycle (0 to 2π) across the buffer
     WaveformGenerator::generateWavetable(buffer, frequency, moduloAmplitude, 0.5);

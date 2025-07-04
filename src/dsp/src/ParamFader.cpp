@@ -8,7 +8,7 @@ void ParamFader::change(ParamChange fn)
     applyParamChange = true;
 }
 
-void ParamFader::processChanges(DSPBuffer &left, DSPBuffer &right)
+void ParamFader::processChanges(XDSPBuffer &left, XDSPBuffer &right)
 {
     if (applyParamChange)
     {

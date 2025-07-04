@@ -3,6 +3,7 @@
 ADSR::ADSR()
 {
     registerBlockProcessor(&ADSR::processBlock);
+    initialize();
 }
 
 void ADSR::initialize()
@@ -11,7 +12,7 @@ void ADSR::initialize()
     gain = 1.0;
     currentEnv = 0.0;
     oneShot = false;
-    curveBuffer.resize(DSP::blockSize);
+    envelope.create(DSP::blockSize);
 
     setAttack(10);
     setDecay(100);
@@ -186,9 +187,12 @@ void ADSR::phaseRelease()
 {
     dsp_float p = static_cast<dsp_float>(currentSample) / releaseSamples;
     currentEnv = powerLerp(phaseStartEnv, 0.0, p, releaseShape);
+
     if (++currentSample >= releaseSamples)
         enterPhase(ADSRPhase::Idle);
 }
+
+long n = 0;
 
 // Next sample block generation
 void ADSR::processBlock(DSPObject *dsp)
@@ -199,11 +203,17 @@ void ADSR::processBlock(DSPObject *dsp)
     for (size_t i = 0; i < blocksize; ++i)
     {
         (adsr->*adsr->phaseFunc)();
-        adsr->curveBuffer[i] = adsr->currentEnv * adsr->gain;
+        adsr->envelope[i] = adsr->currentEnv * adsr->gain;
+
+        DSP::log("Env: %f", adsr->envelope[i]);
     }
 }
 
-dsp_float* ADSR::getBuffer()
+void ADSR::process(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR)
 {
-    return curveBuffer.data();
+    for (size_t i = 0; i < DSP::blockSize; ++i)
+    {
+        bufL[i] *= envelope[i];
+        bufR[i] *= envelope[i];
+    }
 }

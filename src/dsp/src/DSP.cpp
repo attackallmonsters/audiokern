@@ -13,6 +13,9 @@ size_t DSP::blockSize = 64;
 dsp_float DSP::sampleRate = -1.0;
 bool DSP::initialized = false;
 bool DSP::logFileInitialized = false;
+bool DSP::logIsEnabled = true;
+int DSP::logSampels = 22050;
+long DSP::elapsedSamples = 0;
 
 // Dummy logger, does nothing
 static void defaultLogger(const std::string &)
@@ -49,6 +52,8 @@ void DSP::initializeAudio(dsp_float rate, size_t size)
     DSP::log("DSP audio settings: samplerate is %f", sampleRate);
     DSP::log("DSP audio settings: block size is %i", blockSize);
 
+    logTime(500);
+
     initialized = true;
 }
 
@@ -61,6 +66,14 @@ void DSP::registerLogger(LogFunc func)
 
 void DSP::log(const char *fmt, ...)
 {
+    if (!logIsEnabled)
+        return;
+
+    if (++elapsedSamples % logSampels != 0)
+    {
+        return;
+    }
+
     char buffer[2048];
     va_list args;
     va_start(args, fmt);
@@ -73,7 +86,13 @@ void DSP::log(const char *fmt, ...)
 // Logging to file "dsp.log"
 void DSP::log2File(const char *fmt, ...)
 {
-    // TODO: fix for gcc 6 std::lock_guard<std::mutex> lock(logFileMutex);
+    if (!logIsEnabled)
+        return;
+
+    if (++elapsedSamples % logSampels != 0)
+    {
+        return;
+    }
 
     const char *logFileName = "dsp.log";
 
@@ -112,6 +131,17 @@ void DSP::log2File(const char *fmt, ...)
     // Write and close file
     std::fprintf(file, "%s%s\n", timestamp, msgbuf);
     std::fclose(file);
+}
+
+void DSP::logTime(int timeMs)
+{
+    logSampels = sampleRate / 1000 * timeMs;
+}
+
+// Enables or disables log globally
+void DSP::enableLog(bool isEnabled)
+{
+    logIsEnabled = isEnabled;
 }
 
 // Zeros a value if it is in the range of +/- epsilon

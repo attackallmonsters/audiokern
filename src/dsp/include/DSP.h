@@ -32,6 +32,12 @@ public:
     // Log to file function
     static void log2File(const char *fmt, ...);
 
+    // Log output periode
+    static void logTime(int timeMs);
+
+    // Enables or disables log globally
+    static void enableLog(bool isEnabled);
+
     // Zeros a value if it is in the range +/- epsilon
     static dsp_float zeroSubnormals(dsp_float value);
 
@@ -59,5 +65,7 @@ private:
     // Logging callback for audio host system
     static LogFunc logger;
     static bool logFileInitialized;
-    // TODO: fix for gcc 6 static inline std::mutex logFileMutex;
+    static bool logIsEnabled;
+    static int logSampels;
+    static long elapsedSamples;
 };

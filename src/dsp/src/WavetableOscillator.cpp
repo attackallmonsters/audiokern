@@ -57,8 +57,8 @@ void WavetableOscillator::initialize()
             size_t size = tableSizes[i];
             dsp_float freq = baseFrequencies[i];
 
-            // Create a new DSPBuffer instance and resize it to the desired table size
-            auto buffer = std::make_unique<DSPBuffer>();
+            // Create a new XDSPBuffer instance and resize it to the desired table size
+            auto buffer = std::make_unique<XDSPBuffer>();
             buffer->resize(size);
 
             // Let the subclass generate the actual waveform data
@@ -229,11 +229,11 @@ void WavetableOscillator::processBlock(DSPObject *dsp)
     bool wrappedFlag = false;
     dsp_float phaseIncrement = osc->phaseIncrement;
 
-    DSPBuffer& modBufferL = osc->modBufferL;
-    DSPBuffer& modBufferR = osc->modBufferR;
+    XDSPBuffer& modBufferL = osc->modBufferL;
+    XDSPBuffer& modBufferR = osc->modBufferR;
 
-    DSPBuffer& outBufferL = osc->outBufferL;
-    DSPBuffer& outBufferR = osc->outBufferR;
+    XDSPBuffer& outBufferL = osc->outBufferL;
+    XDSPBuffer& outBufferR = osc->outBufferR;
 
     // Select wavetable once per sample block
     if (frequency != osc->lastFrequency)
@@ -242,7 +242,7 @@ void WavetableOscillator::processBlock(DSPObject *dsp)
         osc->lastFrequency = frequency;
     }
 
-    const DSPBuffer &waveTable = *(osc->selectedWaveTable);
+    const XDSPBuffer &waveTable = *(osc->selectedWaveTable);
     size_t waveTableSize = osc->selectedWaveTableSize;
 
     for (size_t i = 0; i < blocksize; ++i)
@@ -388,7 +388,7 @@ bool WavetableOscillator::load()
                 continue;
             size_t size = static_cast<size_t>(std::stoul(item));
 
-            DSPBuffer buffer;
+            XDSPBuffer buffer;
             buffer.resize(size);
 
             // Read data
@@ -406,7 +406,7 @@ bool WavetableOscillator::load()
 
             baseFrequencies.push_back(freq);
             tableSizes.push_back(size);
-            wavetableBuffers.push_back(std::make_unique<DSPBuffer>(buffer));
+            wavetableBuffers.push_back(std::make_unique<XDSPBuffer>(buffer));
         }
         catch (const std::exception &ex)
         {
@@ -442,7 +442,7 @@ void WavetableOscillator::save() const
     {
         for (size_t i = 0; i < wavetableBuffers.size(); ++i)
         {
-            const DSPBuffer &buffer = *wavetableBuffers[i];
+            const XDSPBuffer &buffer = *wavetableBuffers[i];
             outFile << baseFrequencies[i] << "," << buffer.size();
 
             for (size_t j = 0; j < buffer.size(); ++j)

@@ -42,8 +42,8 @@ public:
     void reset();
 
     // The samples to be filtered
-    DSPBuffer *bufferL;
-    DSPBuffer *bufferR;
+    XDSPBuffer *bufferL;
+    XDSPBuffer *bufferR;
 private:
     // Next sample block generation
     static void processBlock(DSPObject *dsp);

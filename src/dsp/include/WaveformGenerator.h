@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DSPBuffer.h"
+#include "XDSPBuffer.h"
 #include "DSP.h"
 #include "dsp_types.h"
 #include "dsp_math.h"
@@ -26,7 +26,7 @@ public:
     // - sampleRate: the system's sample rate
     // - amplitudeFunc: user-supplied function that returns harmonic amplitudes
     // - harmonicBoost: 0 - 1 (optional aliasing)
-    static void generateWavetable(DSPBuffer &buffer,
+    static void generateWavetable(XDSPBuffer &buffer,
                                   dsp_float baseFrequency,
                                   AmplitudeFunction amplitudeFunc,
                                   dsp_float harmonicBoost = 0);

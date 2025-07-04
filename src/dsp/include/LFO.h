@@ -1,7 +1,7 @@
 #pragma once
 
 #include "DSPObject.h"
-#include "DSPBuffer.h"
+#include "XDSPBuffer.h"
 #include "dsp_types.h"
 #include "dsp_math.h"
 #include "clamp.h"
@@ -54,9 +54,9 @@ private:
     dsp_float smoothCoeff;
     dsp_float idleSignal;
 
-    DSPBuffer lfoBuffer;
-    DSPBuffer modBuffer;
-    DSPBuffer modBufferDefault;
+    XDSPBuffer lfoBuffer;
+    XDSPBuffer modBuffer;
+    XDSPBuffer modBufferDefault;
 
     LFOType lfoType;
 

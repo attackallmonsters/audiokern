@@ -2,7 +2,7 @@
 
 #include <functional>
 #include <queue>
-#include "DSPBuffer.h"
+#include "XDSPBuffer.h"
 #include "dsp_types.h"
 
 class ParamFader
@@ -14,7 +14,7 @@ public:
     void change(ParamChange fn);
 
     // Apply all queued changes
-    void processChanges(DSPBuffer &left, DSPBuffer &right);
+    void processChanges(XDSPBuffer &left, XDSPBuffer &right);
 
 private:
     std::queue<ParamChange> changes;

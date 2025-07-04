@@ -4,32 +4,14 @@
 // These oscillators are externally allocated and represent the carrier (carrier) and modulator (modulator).
 JPVoice::JPVoice()
 {
-    carrier = sawCarrier;
-    modulator = sineModulator;
+    carrier = &sawCarrier;
+    modulator = &sineModulator;
 }
 
 // Destructor: cleans up oscillator instances.
 // It is assumed that carrier and modulator were allocated using 'new' and are not shared elsewhere.
 JPVoice::~JPVoice()
 {
-    delete noise;
-    delete sineCarrier;
-    delete sineModulator;
-    delete sawCarrier;
-    delete sawModulator;
-    delete squareCarrier;
-    delete squareModulator;
-    delete trianlgeCarrier;
-    delete triangleModulator;
-    delete clusterCarrier;
-    delete clusterModulator;
-    delete fibonacciCarrier;
-    delete fibonacciModulator;
-    delete mirrorCarrier;
-    delete mirrorModulator;
-    delete moduloCarrier;
-    delete moduloModulator;
-    delete bitModulator;
 }
 
 void JPVoice::initialize()
@@ -50,31 +32,41 @@ void JPVoice::initialize()
     feedbackAmountCarrier = 0.0;
     feedbackAmountModulator = 0.0;
 
-    noise->initialize();
+    noise.initialize();
 
     // Waveform generation
-    sawCarrier->initialize();
-    sawModulator->initialize();
-    sineCarrier->initialize();
-    sineModulator->initialize();
-    squareCarrier->initialize();
-    squareModulator->initialize();
-    trianlgeCarrier->initialize();
-    triangleModulator->initialize();
-    clusterCarrier->initialize();
-    clusterModulator->initialize();
-    fibonacciCarrier->initialize();
-    fibonacciModulator->initialize();
-    mirrorCarrier->initialize();
-    mirrorModulator->initialize();
-    moduloCarrier->initialize();
-    moduloModulator->initialize();
-    bitModulator->initialize();
+    sawCarrier.initialize();
+    sawModulator.initialize();
+    sineCarrier.initialize();
+    sineModulator.initialize();
+    squareCarrier.initialize();
+    squareModulator.initialize();
+    trianlgeCarrier.initialize();
+    triangleModulator.initialize();
+    clusterCarrier.initialize();
+    clusterModulator.initialize();
+    fibonacciCarrier.initialize();
+    fibonacciModulator.initialize();
+    mirrorCarrier.initialize();
+    mirrorModulator.initialize();
+    moduloCarrier.initialize();
+    moduloModulator.initialize();
+    bitModulator.initialize();
 
-    filter->initialize();
+    filter.initialize();
 
-    mixBufferL.resize(DSP::blockSize);
-    mixBufferR.resize(DSP::blockSize);
+    filterAdsr.initialize();
+    ampAdsr.initialize();
+
+    filterAdsr.setGain(20000.0);
+    ampAdsr.setGain(1.0);
+
+    resoBuffer.create(DSP::blockSize);
+    resoBuffer.fill(0.0);
+
+    // Real buffers will be set to hosts output buffers
+    mixBufferL.initialize(DSP::blockSize);
+    mixBufferR.initialize(DSP::blockSize);
 
     setCarrierOscillatorType(CarrierOscillatiorType::Saw);
     setModulatorOscillatorType(ModulatorOscillatorType::Sine);
@@ -88,6 +80,20 @@ void JPVoice::initialize()
     setModIndex(0.0);
 
     DSP::log("=====> jpvoice initialized");
+}
+
+// Start ADSRs
+void JPVoice::playNote()
+{
+    filterAdsr.triggerStart();
+    ampAdsr.triggerStart();
+}
+
+// Stop  ADSRs
+void JPVoice::stopNote()
+{
+    filterAdsr.triggerStop();
+    ampAdsr.triggerStop();
 }
 
 // Sets the modulation index for frequency modulation.
@@ -165,31 +171,31 @@ void JPVoice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
     switch (oscillatorType)
     {
     case CarrierOscillatiorType::Saw:
-        carrierTmp = sawCarrier;
+        carrierTmp = &sawCarrier;
         break;
     case CarrierOscillatiorType::Square:
-        carrierTmp = squareCarrier;
+        carrierTmp = &squareCarrier;
         break;
     case CarrierOscillatiorType::Triangle:
-        carrierTmp = trianlgeCarrier;
+        carrierTmp = &trianlgeCarrier;
         break;
     case CarrierOscillatiorType::Sine:
-        carrierTmp = sineCarrier;
+        carrierTmp = &sineCarrier;
         break;
     case CarrierOscillatiorType::Cluster:
-        carrierTmp = clusterCarrier;
+        carrierTmp = &clusterCarrier;
         break;
     case CarrierOscillatiorType::Fibonacci:
-        carrierTmp = fibonacciCarrier;
+        carrierTmp = &fibonacciCarrier;
         break;
     case CarrierOscillatiorType::Mirror:
-        carrierTmp = mirrorCarrier;
+        carrierTmp = &mirrorCarrier;
         break;
     case CarrierOscillatiorType::Modulo:
-        carrierTmp = moduloCarrier;
+        carrierTmp = &moduloCarrier;
         break;
     default:
-        carrierTmp = sawCarrier;
+        carrierTmp = &sawCarrier;
         break;
     }
 
@@ -211,7 +217,7 @@ void JPVoice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
          if (modulator != modulatorTmp)
             modulator = modulatorTmp;
 
-         filter->reset(); });
+         filter.reset(); });
 }
 
 // Assigns the modulation oscillator
@@ -220,34 +226,34 @@ void JPVoice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
     switch (oscillatorType)
     {
     case ModulatorOscillatorType::Saw:
-        modulatorTmp = sawModulator;
+        modulatorTmp = &sawModulator;
         break;
     case ModulatorOscillatorType::Square:
-        modulatorTmp = squareModulator;
+        modulatorTmp = &squareModulator;
         break;
     case ModulatorOscillatorType::Triangle:
-        modulatorTmp = triangleModulator;
+        modulatorTmp = &triangleModulator;
         break;
     case ModulatorOscillatorType::Sine:
-        modulatorTmp = sineModulator;
+        modulatorTmp = &sineModulator;
         break;
     case ModulatorOscillatorType::Cluster:
-        modulatorTmp = clusterModulator;
+        modulatorTmp = &clusterModulator;
         break;
     case ModulatorOscillatorType::Fibonacci:
-        modulatorTmp = fibonacciModulator;
+        modulatorTmp = &fibonacciModulator;
         break;
     case ModulatorOscillatorType::Mirror:
-        modulatorTmp = mirrorModulator;
+        modulatorTmp = &mirrorModulator;
         break;
     case ModulatorOscillatorType::Modulo:
-        modulatorTmp = moduloModulator;
+        modulatorTmp = &moduloModulator;
         break;
     case ModulatorOscillatorType::Bit:
-        modulatorTmp = bitModulator;
+        modulatorTmp = &bitModulator;
         break;
     default:
-        modulatorTmp = sineModulator;
+        modulatorTmp = &sineModulator;
         break;
     }
 
@@ -268,13 +274,13 @@ void JPVoice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
          if (modulator != modulatorTmp)
             modulator = modulatorTmp;
 
-         filter->reset(); });
+         filter.reset(); });
 }
 
 // Changes the current noise type (white or pink)
 void JPVoice::setNoiseType(NoiseType type)
 {
-    noise->setType(type);
+    noise.setType(type);
 }
 
 // Sets the feedback amount for the carrier
@@ -292,25 +298,61 @@ void JPVoice::setFeedbackModulator(dsp_float feedback)
 // Sets the filter type
 void JPVoice::setFilterMode(FilterMode /*mode*/)
 {
-    // TODO
 }
 
 // Sets the cutoff frequency
-void JPVoice::setFilterCutoff(DSPBuffer *buffer)
+void JPVoice::setFilterCutoff(dsp_float f)
 {
-    filter->setCutoff(buffer);
+    filterAdsr.setGain(clamp(f, 0.0, 20000.0));
 }
 
 // Sets the filter resonance
-void JPVoice::setFilterResonance(DSPBuffer *buffer)
+void JPVoice::setFilterResonance(dsp_float r)
 {
-    filter->setResonance(buffer);
+    resoBuffer.fill(clampmin(r, 0.0));
 }
 
 // Sets the filter drive
 void JPVoice::setFilterDrive(dsp_float value)
 {
-    filter->setDrive(value);
+    filter.setDrive(value);
+}
+
+// Filter envelope params
+void JPVoice::setFilterADSR(ADSRParams &params)
+{
+    filterAdsr.setAttack(params.attackTime);
+    filterAdsr.setDecay(params.decayTime);
+    filterAdsr.setSustain(params.sustainLevel);
+    filterAdsr.setRelease(params.releaseTime);
+    filterAdsr.setAttackShape(params.attackShape);
+    filterAdsr.setReleaseShape(params.releaseShape);
+    filterAdsr.setGain(params.gain);
+    filterAdsr.setOneShot(params.oneShot);
+}
+
+// Amplification envelope params
+void JPVoice::setAmpADSR(ADSRParams &params)
+{
+    ampAdsr.setAttack(params.attackTime);
+    ampAdsr.setDecay(params.decayTime);
+    ampAdsr.setSustain(params.sustainLevel);
+    ampAdsr.setRelease(params.releaseTime);
+    ampAdsr.setAttackShape(params.attackShape);
+    ampAdsr.setReleaseShape(params.releaseShape);
+    ampAdsr.setGain(params.gain);
+    ampAdsr.setOneShot(params.oneShot);
+}
+
+// Sets the output buffers
+void JPVoice::setOutputBuffer(float *bufL, float *bufR)
+{
+    mixBufferL = bufL;
+    mixBufferR = bufR;
+
+    filter.setSampleBuffers(mixBufferL, mixBufferR);
+    filter.setCutoffBuffer(filterAdsr.envelope);
+    filter.setResonanceBuffer(resoBuffer);
 }
 
 // Next sample block generation
@@ -331,7 +373,7 @@ void JPVoice::computeSamples()
 
     if (noisemix > 0)
     {
-        noise->generateBlock();
+        noise.generateBlock();
     }
 
     amp_carrier = std::cos(oscmix * 0.5 * M_PI);
@@ -363,17 +405,21 @@ void JPVoice::computeSamples()
 
         if (noisemix > 0)
         {
-            mixL = amp_osc_noise * mixL + amp_noise * noise->outBufferL[i];
-            mixR = amp_osc_noise * mixR + amp_noise * noise->outBufferR[i];
+            mixL = amp_osc_noise * mixL + amp_noise * noise.outBufferL[i];
+            mixR = amp_osc_noise * mixR + amp_noise * noise.outBufferR[i];
         }
 
         mixBufferL[i] = mixL;
         mixBufferR[i] = mixR;
     }
 
-    filter->setSampleBuffers(&mixBufferL, &mixBufferR);
+    // ADSR shares buffer with filter
+    filterAdsr.generateBlock();
+    filter.generateBlock();
 
-    filter->generateBlock();
+    // amp envelope
+    //ampAdsr.generateBlock();
+    //ampAdsr.process(mixBufferL, mixBufferR);
 
-    paramFader.processChanges(mixBufferL, mixBufferR);
+    // paramFader.processChanges(mixBufferL, mixBufferR);
 }

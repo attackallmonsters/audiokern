@@ -3,6 +3,7 @@
 LFO::LFO()
 {
     registerBlockProcessor(&LFO::processBlock);
+    initialize();
 }
 
 void LFO::initialize()

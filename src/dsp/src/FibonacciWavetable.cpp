@@ -24,7 +24,7 @@ static dsp_float fibonacciAmplitude(int harmonic)
         return 0.0;
 }
 
-void FibonacciWavetable::createWavetable(DSPBuffer &buffer, dsp_float frequency)
+void FibonacciWavetable::createWavetable(XDSPBuffer &buffer, dsp_float frequency)
 {
     // Fill one full waveform cycle (0 to 2π) across the buffer
     WaveformGenerator::generateWavetable(buffer, frequency, fibonacciAmplitude, 0.5);
