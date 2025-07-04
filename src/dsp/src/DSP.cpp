@@ -12,10 +12,16 @@
 size_t DSP::blockSize = 64;
 dsp_float DSP::sampleRate = -1.0;
 bool DSP::initialized = false;
+long DSP::elapsedSamples = 0;
+long DSP::processedBlocks = 0;
+
+#if DEBUG
 bool DSP::logFileInitialized = false;
 bool DSP::logIsEnabled = true;
 int DSP::logSampels = 22050;
-long DSP::elapsedSamples = 0;
+int DSP::logSampleCounter = 0;
+bool DSP::resetLogSampleCounter = false;
+#endif
 
 // Dummy logger, does nothing
 static void defaultLogger(const std::string &)
@@ -40,6 +46,22 @@ void DSP::off()
     initialized = false;
 }
 
+void DSP::nextBlock()
+{
+    elapsedSamples += blockSize;
+    processedBlocks++;
+
+#ifdef DEBUG
+    if (resetLogSampleCounter)
+    {
+        logSampleCounter = 0;
+        resetLogSampleCounter = false;
+    }
+
+    logSampleCounter += blockSize;
+#endif
+}
+
 // Initializes the DSP with samplerate and blocksize
 void DSP::initializeAudio(dsp_float rate, size_t size)
 {
@@ -52,7 +74,7 @@ void DSP::initializeAudio(dsp_float rate, size_t size)
     DSP::log("DSP audio settings: samplerate is %f", sampleRate);
     DSP::log("DSP audio settings: block size is %i", blockSize);
 
-    logTime(500);
+    logTime(100);
 
     initialized = true;
 }
@@ -61,18 +83,23 @@ void DSP::initializeAudio(dsp_float rate, size_t size)
 void DSP::registerLogger(LogFunc func)
 {
     logger = func;
+    
+#if DEBUG
     logFileInitialized = false;
+#endif
 }
 
+// Zeros a value if it is in the range of +/- epsilon
+dsp_float DSP::zeroSubnormals(dsp_float value)
+{
+    return (std::fabs(value) < epsilon) ? 0.0 : value;
+}
+
+#ifdef DEBUG
 void DSP::log(const char *fmt, ...)
 {
-    if (!logIsEnabled)
+    if (!doLog())
         return;
-
-    if (++elapsedSamples % logSampels != 0)
-    {
-        return;
-    }
 
     char buffer[2048];
     va_list args;
@@ -83,16 +110,65 @@ void DSP::log(const char *fmt, ...)
     logger(std::string(buffer));
 }
 
+void DSP::logBuffer(const std::string &label, const DSPSampleBuffer &buffer)
+{
+    if (!doLog())
+        return;
+
+    constexpr size_t MAX_LOG = 32;
+    constexpr size_t BUFLEN = 2048;
+    char buf[BUFLEN];
+    size_t pos = 0;
+
+    pos += snprintf(buf + pos, BUFLEN - pos, "%s [", label.c_str());
+
+    for (size_t i = 0; i < std::min(buffer.size(), size_t(MAX_LOG)); ++i)
+    {
+        pos += snprintf(buf + pos, BUFLEN - pos, "%.4f%s", buffer[i], (i < MAX_LOG - 1 ? ", " : ""));
+        if (pos >= BUFLEN - 16)
+            break;
+    }
+
+    if (buffer.size() > MAX_LOG)
+        pos += snprintf(buf + pos, BUFLEN - pos, ", ...");
+
+    snprintf(buf + pos, BUFLEN - pos, "]");
+
+    logger(std::string(buf));
+}
+
+void DSP::logBuffer(const std::string &label, const DSPBuffer &buffer)
+{
+    if (!doLog())
+        return;
+
+    constexpr size_t MAX_LOG = 32;
+    constexpr size_t BUFLEN = 2048;
+    char buf[BUFLEN];
+    size_t pos = 0;
+
+    pos += snprintf(buf + pos, BUFLEN - pos, "%s [", label.c_str());
+
+    for (size_t i = 0; i < std::min(buffer.size(), size_t(MAX_LOG)); ++i)
+    {
+        pos += snprintf(buf + pos, BUFLEN - pos, "%.4f%s", buffer[i], (i < MAX_LOG - 1 ? ", " : ""));
+        if (pos >= BUFLEN - 16)
+            break;
+    }
+
+    if (buffer.size() > MAX_LOG)
+        pos += snprintf(buf + pos, BUFLEN - pos, ", ...");
+
+    snprintf(buf + pos, BUFLEN - pos, "]");
+
+    logger(std::string(buf));
+}
+
 // Logging to file "dsp.log"
 void DSP::log2File(const char *fmt, ...)
 {
-    if (!logIsEnabled)
+    if (!doLog())
         return;
-
-    if (++elapsedSamples % logSampels != 0)
-    {
-        return;
-    }
 
     const char *logFileName = "dsp.log";
 
@@ -138,14 +214,20 @@ void DSP::logTime(int timeMs)
     logSampels = sampleRate / 1000 * timeMs;
 }
 
+bool DSP::doLog()
+{
+    if (logSampleCounter > logSampels)
+    {
+        resetLogSampleCounter = true;
+        return true;
+    }
+
+    return false;
+}
+
 // Enables or disables log globally
 void DSP::enableLog(bool isEnabled)
 {
     logIsEnabled = isEnabled;
 }
-
-// Zeros a value if it is in the range of +/- epsilon
-dsp_float DSP::zeroSubnormals(dsp_float value)
-{
-    return (std::fabs(value) < epsilon) ? 0.0 : value;
-}
+#endif

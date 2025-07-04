@@ -1,5 +1,7 @@
 #pragma once
 
+#include "DSPSampleBuffer.h"
+#include "DSPBuffer.h"
 #include <stddef.h>
 #include <string>
 #include <mutex>
@@ -29,10 +31,16 @@ public:
     // Log function
     static void log(const char *fmt, ...);
 
+    // Logs the content of a DSPSampleBuffer
+    void logBuffer(const std::string &label, const DSPSampleBuffer &buffer);
+
+    // Logs the content of a DSPBuffer
+    void logBuffer(const std::string &label, const DSPBuffer &buffer);
+
     // Log to file function
     static void log2File(const char *fmt, ...);
 
-    // Log output periode
+    // Log output interval
     static void logTime(int timeMs);
 
     // Enables or disables log globally
@@ -41,7 +49,11 @@ public:
     // Zeros a value if it is in the range +/- epsilon
     static dsp_float zeroSubnormals(dsp_float value);
 
+    // Indicator if the DSP system has been initialized.
     static bool isInitialized() { return initialized; };
+
+    // For various purposes
+    static void nextBlock();
 
     // The max block size
     static constexpr size_t maxBlockSize = 2048;
@@ -62,10 +74,19 @@ private:
     // Indicator if DSP has been initialized
     static bool initialized;
 
+    // Statistics
+    static long elapsedSamples;
+    static long processedBlocks;
+
+#if DEBUG
     // Logging callback for audio host system
-    static LogFunc logger;
     static bool logFileInitialized;
     static bool logIsEnabled;
     static int logSampels;
-    static long elapsedSamples;
+    static int logSampleCounter;
+    static bool resetLogSampleCounter;
+
+    static bool doLog();
+#endif
+    static LogFunc logger;
 };

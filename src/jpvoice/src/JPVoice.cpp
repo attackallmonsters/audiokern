@@ -358,6 +358,9 @@ void JPVoice::setOutputBuffer(float *bufL, float *bufR)
 // Next sample block generation
 void JPVoice::computeSamples()
 {
+    // Signal next block processing for DSP
+    DSP::nextBlock();
+
     modulator->generateBlock();
 
     carrier->modBufferL.switchTo(modulator->outBufferL);
@@ -416,6 +419,8 @@ void JPVoice::computeSamples()
     // ADSR shares buffer with filter
     filterAdsr.generateBlock();
     filter.generateBlock();
+
+    DSP::logBuffer("Filtered mix buffer", mixBufferL);
 
     // amp envelope
     //ampAdsr.generateBlock();

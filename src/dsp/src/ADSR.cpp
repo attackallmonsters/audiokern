@@ -204,8 +204,6 @@ void ADSR::processBlock(DSPObject *dsp)
     {
         (adsr->*adsr->phaseFunc)();
         adsr->envelope[i] = adsr->currentEnv * adsr->gain;
-
-        DSP::log("Env: %f", adsr->envelope[i]);
     }
 }
 

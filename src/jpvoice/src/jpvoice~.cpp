@@ -555,7 +555,7 @@ void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
     x->voice->setFilterADSR(x->filterADSR);
     x->voice->setAmpADSR(x->ampADSR);
 
-    DSP::logTime(100);
+    DSP::logTime(0);
 
     dsp_add(jpvoice_tilde_perform, 4,
             x,

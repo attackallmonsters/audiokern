@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include "clamp.h"
 #include "DSP.h"
 #include "XDSPBuffer.h"
 
@@ -32,4 +33,7 @@ private:
 
     // Sample generation from derived class
     BlockProcessor processBlockFunc;
+
+    // Sample counter
+    static long elapsedSamples;
 };

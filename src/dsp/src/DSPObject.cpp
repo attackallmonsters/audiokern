@@ -1,6 +1,4 @@
-#include "clamp.h"
 #include "DSPObject.h"
-#include <cstring>
 
 // Contructor
 DSPObject::DSPObject()

@@ -46,7 +46,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 # === Debug / Release Targets ===
 debug:
 	$(MAKE) clean
-	$(MAKE) CXXFLAGS="$(CXXFLAGS_BASE) -O0 -g" all
+	$(MAKE) CXXFLAGS="$(CXXFLAGS_BASE) -O0 -g -DDEBUG" all
 
 release:
 	$(MAKE) clean
