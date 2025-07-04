@@ -34,8 +34,6 @@ public:
     void setSmooth(dsp_float f);
     void setIdleSignal(dsp_float f);
     void reset();
-
-    void setModBuffer(float* buffer);
     dsp_float* getBuffer();
 
     std::function<void()> onPhaseWrap;
@@ -58,6 +56,7 @@ private:
 
     DSPBuffer lfoBuffer;
     DSPBuffer modBuffer;
+    DSPBuffer modBufferDefault;
 
     LFOType lfoType;
 
@@ -69,6 +68,7 @@ private:
     dsp_float lfoSquare();
     dsp_float lfoRandom();
     dsp_float shapedRamp(dsp_float x);
+    bool fmEnabled;
 
     dsp_float (LFO::*lfoFunc)() = nullptr;
 };

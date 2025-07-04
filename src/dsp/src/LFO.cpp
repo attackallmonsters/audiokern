@@ -142,11 +142,6 @@ void LFO::reset()
         onPhaseWrap();
 }
 
-void LFO::setModBuffer(float* buffer)
-{
-    
-}
-
 void LFO::processBlock(DSPObject *dsp)
 {
     LFO *lfo = static_cast<LFO *>(dsp);
