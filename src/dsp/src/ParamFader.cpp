@@ -1,5 +1,4 @@
 #include "ParamFader.h"
-#include "DSP.h"
 
 // Queue a parameter change
 void ParamFader::change(ParamChange fn)
@@ -8,7 +7,13 @@ void ParamFader::change(ParamChange fn)
     applyParamChange = true;
 }
 
-void ParamFader::processChanges(XDSPBuffer &left, XDSPBuffer &right)
+void ParamFader::setOutputBuffer(DSPSampleBuffer &left, DSPSampleBuffer &right)
+{
+    bufL = left;
+    bufR = right;
+}
+
+void ParamFader::processChanges()
 {
     if (applyParamChange)
     {
@@ -41,26 +46,8 @@ void ParamFader::processChanges(XDSPBuffer &left, XDSPBuffer &right)
         // Apply fade to entire output buffer
         for (size_t i = 0; i < DSP::blockSize; ++i)
         {
-            left[i] *= fadeValue;
-            right[i] *= fadeValue;
+            bufL[i] *= fadeValue;
+            bufR[i] *= fadeValue;
         }
     }
 }
-
-/*
-if (applyOscillators)
-{
-    if (carrier != carrierTmp)
-        carrier = carrierTmp;
-
-    if (modulator != modulatorTmp)
-        modulator = modulatorTmp;
-
-    filter->reset();
-}
-
-if (applyDetune)
-{
-    carrier->setDetune(detune);
-}
-    */

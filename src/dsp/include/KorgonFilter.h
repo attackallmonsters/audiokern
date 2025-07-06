@@ -27,7 +27,7 @@ public:
     void setResonanceBuffer(DSPSampleBuffer &buffer);
 
     // Assigns the samples to process
-    void setSampleBuffers(DSPSampleBuffer &samplesL, DSPSampleBuffer &samplesR);
+    void setOutputBuffer(DSPSampleBuffer &samplesL, DSPSampleBuffer &samplesR);
 
     // Reset internal filter state
     void reset();

@@ -5,10 +5,15 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#ifndef M_2PI
+#define M_2PI 6.28318530717958647692
+#endif
+
 inline dsp_float fast_tanh(dsp_float val)
 {
     if (val < -3.0)
         return -1.0;
+
     if (val > 3.0)
         return 1.0;
 

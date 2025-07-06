@@ -58,15 +58,7 @@ public:
     void unWrap();
 
     // Resets the internal oscillator phase to 0.0.
-    void resetPhase();
-
-    // Buffer for modulation
-    XDSPBuffer modBufferL;
-    XDSPBuffer modBufferR;
-
-    // Sample buffer for output
-    XDSPBuffer outBufferL;
-    XDSPBuffer outBufferR;
+    void resetPhase();   
 
 protected:
     // Ctor: expects an unique name for the waveform
@@ -107,6 +99,14 @@ private:
 
     // The waveform name
     std::string waveformName;
+
+    // Buffer for modulation
+    DSPSampleBuffer modBufferL;
+    DSPSampleBuffer modBufferR;
+
+    // Sample buffer for output
+    DSPSampleBuffer outBufferL;
+    DSPSampleBuffer outBufferR;
 
     // stores the last wavetable to prevent lookup when frequency did not change
     const XDSPBuffer *selectedWaveTable = nullptr;

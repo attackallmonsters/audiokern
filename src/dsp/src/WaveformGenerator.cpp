@@ -38,7 +38,7 @@ void WaveformGenerator::generateWavetable(XDSPBuffer &buffer,
             dsp_float amp = amplitudeFunc(n);
 
             // Add sine component for harmonic n at current phase
-            sample += amp * std::sin(twoPi * n * phase);
+            sample += amp * std::sin(M_2PI * n * phase);
         }
 
         // Store computed sample in buffer (converted to DSP format)

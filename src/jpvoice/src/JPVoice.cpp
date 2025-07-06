@@ -58,7 +58,7 @@ void JPVoice::initialize()
     filterAdsr.initialize();
     ampAdsr.initialize();
 
-    filterAdsr.setGain(20000.0);
+    filterAdsr.setGain(15000.0);
     ampAdsr.setGain(1.0);
 
     resoBuffer.create(DSP::blockSize);
@@ -70,6 +70,8 @@ void JPVoice::initialize()
 
     setCarrierOscillatorType(CarrierOscillatiorType::Saw);
     setModulatorOscillatorType(ModulatorOscillatorType::Sine);
+
+    linkADSR(true);
 
     setFrequency(0.0);
     setDetune(0.0);
@@ -321,18 +323,31 @@ void JPVoice::setFilterDrive(dsp_float value)
 // Filter envelope params
 void JPVoice::setFilterADSR(ADSRParams &params)
 {
+    setFilterADSRLink(params, adsrLinked);
+}
+
+// Amplification envelope params
+void JPVoice::setAmpADSR(ADSRParams &params)
+{
+    setAmpADSRLink(params, adsrLinked);
+}
+
+void JPVoice::setFilterADSRLink(ADSRParams &params, bool setOther)
+{
     filterAdsr.setAttack(params.attackTime);
     filterAdsr.setDecay(params.decayTime);
     filterAdsr.setSustain(params.sustainLevel);
     filterAdsr.setRelease(params.releaseTime);
     filterAdsr.setAttackShape(params.attackShape);
     filterAdsr.setReleaseShape(params.releaseShape);
-    filterAdsr.setGain(params.gain);
-    filterAdsr.setOneShot(params.oneShot);
+
+    if (setOther)
+    {
+        setAmpADSRLink(params, false);
+    }
 }
 
-// Amplification envelope params
-void JPVoice::setAmpADSR(ADSRParams &params)
+void JPVoice::setAmpADSRLink(ADSRParams &params, bool setOther)
 {
     ampAdsr.setAttack(params.attackTime);
     ampAdsr.setDecay(params.decayTime);
@@ -340,8 +355,28 @@ void JPVoice::setAmpADSR(ADSRParams &params)
     ampAdsr.setRelease(params.releaseTime);
     ampAdsr.setAttackShape(params.attackShape);
     ampAdsr.setReleaseShape(params.releaseShape);
-    ampAdsr.setGain(params.gain);
-    ampAdsr.setOneShot(params.oneShot);
+
+    if (setOther)
+    {
+        setFilterADSRLink(params, false);
+    }
+}
+
+// Link the ADSRs
+void JPVoice::linkADSR(bool isEnabled)
+{
+    adsrLinked = isEnabled;
+}
+// Set adrss to one shot mode
+void JPVoice::setAdsrOneshot(bool isEnabled)
+{
+    filterAdsr.setOneShot(isEnabled);
+    ampAdsr.setOneShot(isEnabled);
+}
+
+void JPVoice::setAmpGain(dsp_float g)
+{
+    ampAdsr.setGain(clampmin(g, 0.0));
 }
 
 // Sets the output buffers
@@ -350,7 +385,8 @@ void JPVoice::setOutputBuffer(float *bufL, float *bufR)
     mixBufferL = bufL;
     mixBufferR = bufR;
 
-    filter.setSampleBuffers(mixBufferL, mixBufferR);
+    paramFader.setOutputBuffer(mixBufferL, mixBufferR);
+    filter.setOutputBuffer(mixBufferL, mixBufferR);
     filter.setCutoffBuffer(filterAdsr.envelope);
     filter.setResonanceBuffer(resoBuffer);
 }
@@ -420,11 +456,11 @@ void JPVoice::computeSamples()
     filterAdsr.generateBlock();
     filter.generateBlock();
 
-    DSP::logBuffer("Filtered mix buffer", mixBufferL);
+    // DSP::logBuffer("Filtered mix buffer", mixBufferL);
 
     // amp envelope
-    //ampAdsr.generateBlock();
-    //ampAdsr.process(mixBufferL, mixBufferR);
+    ampAdsr.generateBlock();
+    ampAdsr.process(mixBufferL, mixBufferR);
 
-    // paramFader.processChanges(mixBufferL, mixBufferR);
+    paramFader.processChanges();
 }

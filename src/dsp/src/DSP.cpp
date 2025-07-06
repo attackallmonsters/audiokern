@@ -74,7 +74,9 @@ void DSP::initializeAudio(dsp_float rate, size_t size)
     DSP::log("DSP audio settings: samplerate is %f", sampleRate);
     DSP::log("DSP audio settings: block size is %i", blockSize);
 
+#ifdef DEBUG
     logTime(100);
+#endif
 
     initialized = true;
 }
@@ -83,7 +85,7 @@ void DSP::initializeAudio(dsp_float rate, size_t size)
 void DSP::registerLogger(LogFunc func)
 {
     logger = func;
-    
+
 #if DEBUG
     logFileInitialized = false;
 #endif
@@ -157,6 +159,33 @@ void DSP::logBuffer(const std::string &label, const DSPBuffer &buffer)
     }
 
     if (buffer.size() > MAX_LOG)
+        pos += snprintf(buf + pos, BUFLEN - pos, ", ...");
+
+    snprintf(buf + pos, BUFLEN - pos, "]");
+
+    logger(std::string(buf));
+}
+
+void DSP::logBuffer(const std::string &label, host_float *buffer)
+{
+    if (!doLog())
+        return;
+
+    constexpr size_t MAX_LOG = 32;
+    constexpr size_t BUFLEN = 2048;
+    char buf[BUFLEN];
+    size_t pos = 0;
+
+    pos += snprintf(buf + pos, BUFLEN - pos, "%s [", label.c_str());
+
+    for (size_t i = 0; i < std::min(blockSize, size_t(MAX_LOG)); ++i)
+    {
+        pos += snprintf(buf + pos, BUFLEN - pos, "%.4f%s", buffer[i], (i < MAX_LOG - 1 ? ", " : ""));
+        if (pos >= BUFLEN - 16)
+            break;
+    }
+
+    if (blockSize > MAX_LOG)
         pos += snprintf(buf + pos, BUFLEN - pos, ", ...");
 
     snprintf(buf + pos, BUFLEN - pos, "]");

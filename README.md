@@ -47,9 +47,13 @@ These are only shortcuts for
 - `make debug`
 - `make release`
 
-The library is copied directly into the bin folder for the respective platform:
+The library is copied directly into the bin folder for the respective platform
 
-https://github.com/attackallmonsters/audiokern/tree/main/bin
+- Linux x64
+- Linux ARM
+- Windows (currently not working)
+
+There you will find some Pure Data patches for testing as well.
 
 I'll try to keep the build functional in the main branch. But I can't promise it.
 

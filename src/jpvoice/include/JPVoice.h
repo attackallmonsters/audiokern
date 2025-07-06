@@ -28,12 +28,10 @@ struct ADSRParams
 {
     dsp_float attackTime;
     dsp_float decayTime;
-    dsp_float releaseTime;
     dsp_float sustainLevel;
-    dsp_float gain;
+    dsp_float releaseTime;
     dsp_float attackShape;
     dsp_float releaseShape;
-    bool oneShot;
 };
 
 // The Voice class manages two oscillators and handles interactions like
@@ -120,6 +118,15 @@ public:
     // Amplification envelope params
     void setAmpADSR(ADSRParams &params);
 
+    // Link the ADSRs
+    void linkADSR(bool isEnabled);
+
+    // Set adrss to one shot mode
+    void setAdsrOneshot(bool isEnabled);
+
+    // Sets the amp envelope gain
+    void setAmpGain(dsp_float g);
+
     // Next sample block generation
     void computeSamples();
 
@@ -170,6 +177,10 @@ private:
     // Modulation objects
     ADSR filterAdsr;
     ADSR ampAdsr;
+    bool adsrLinked;
+    void setFilterADSRLink(ADSRParams &params, bool setOther);
+    void setAmpADSRLink(ADSRParams &params, bool setOther);
+
 
     // DSP working vars
     dsp_float carrierLeft, carrierRight;

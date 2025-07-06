@@ -20,6 +20,7 @@ void KorgonFilter::initialize()
 
     setCutoffBuffer(cutoffInitBuffer);
     setResonanceBuffer(resoInitBuffer);
+
     setDrive(0.0);
     reset();
 
@@ -40,7 +41,7 @@ void KorgonFilter::setResonanceBuffer(DSPSampleBuffer &buffer)
 }
 
 // Assigns the samples to process
-void KorgonFilter::setSampleBuffers(DSPSampleBuffer &samplesL, DSPSampleBuffer &samplesR)
+void KorgonFilter::setOutputBuffer(DSPSampleBuffer &samplesL, DSPSampleBuffer &samplesR)
 {
     bufferL = samplesL;
     bufferR = samplesR;

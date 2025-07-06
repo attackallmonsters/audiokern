@@ -28,29 +28,14 @@ public:
     // Log function callback registration
     static void registerLogger(LogFunc func);
 
-    // Log function
-    static void log(const char *fmt, ...);
-
-    // Logs the content of a DSPSampleBuffer
-    void logBuffer(const std::string &label, const DSPSampleBuffer &buffer);
-
-    // Logs the content of a DSPBuffer
-    void logBuffer(const std::string &label, const DSPBuffer &buffer);
-
-    // Log to file function
-    static void log2File(const char *fmt, ...);
-
-    // Log output interval
-    static void logTime(int timeMs);
-
-    // Enables or disables log globally
-    static void enableLog(bool isEnabled);
-
     // Zeros a value if it is in the range +/- epsilon
     static dsp_float zeroSubnormals(dsp_float value);
 
     // Indicator if the DSP system has been initialized.
     static bool isInitialized() { return initialized; };
+
+    // Log function
+    static void log(const char *fmt, ...);
 
     // For various purposes
     static void nextBlock();
@@ -69,6 +54,26 @@ public:
 
     // The audio systems current sample block size
     static size_t blockSize;
+
+#ifdef DEBUG
+    // Logs the content of a DSPSampleBuffer
+    static void logBuffer(const std::string &label, const DSPSampleBuffer &buffer);
+
+    // Logs the content of a DSPBuffer
+    static void logBuffer(const std::string &label, const DSPBuffer &buffer);
+
+    // Logs the content of a host_float buffer with block size
+    static void logBuffer(const std::string &label, host_float *buffer);
+
+    // Log to file function
+    static void log2File(const char *fmt, ...);
+
+    // Log output interval
+    static void logTime(int timeMs);
+
+    // Enables or disables log globally
+    static void enableLog(bool isEnabled);
+#endif
 
 private:
     // Indicator if DSP has been initialized
