@@ -31,10 +31,10 @@ void WavetableOscillator::initialize()
 {
     DSPObject::initialize();
 
-    outBufferL.resize(DSP::blockSize);
-    outBufferR.resize(DSP::blockSize);
-    modBufferL.resize(DSP::blockSize);
-    modBufferR.resize(DSP::blockSize);
+    outputBufferL.create(DSP::blockSize);
+    outputBufferR.create(DSP::blockSize);
+    modulationBufferL.create(DSP::blockSize);
+    modulationBufferR.create(DSP::blockSize);
 
     setFrequency(0.0);
     setFineTune(0);
@@ -223,17 +223,9 @@ void WavetableOscillator::processBlock(DSPObject *dsp)
     WavetableOscillator *osc = static_cast<WavetableOscillator *>(dsp);
 
     size_t blocksize = DSP::blockSize;
-    dsp_float mod_index = osc->modulationIndex;
     dsp_float phase = osc->currentPhase;
     dsp_float frequency = osc->getCalculatedFrequency();
     bool wrappedFlag = false;
-    dsp_float phaseIncrement = osc->phaseIncrement;
-
-    XDSPBuffer& modBufferL = osc->modBufferL;
-    XDSPBuffer& modBufferR = osc->modBufferR;
-
-    XDSPBuffer& outBufferL = osc->outBufferL;
-    XDSPBuffer& outBufferR = osc->outBufferR;
 
     // Select wavetable once per sample block
     if (frequency != osc->lastFrequency)
@@ -247,8 +239,8 @@ void WavetableOscillator::processBlock(DSPObject *dsp)
 
     for (size_t i = 0; i < blocksize; ++i)
     {
-        dsp_float modLeft = modBufferL[i];
-        dsp_float modRight = modBufferR[i];
+        dsp_float modLeft = osc->modulationBufferL[i];
+        dsp_float modRight = osc->modulationBufferR[i];
 
         if (osc->numVoices > 1)
         {
@@ -263,7 +255,7 @@ void WavetableOscillator::processBlock(DSPObject *dsp)
                 dsp_float modSignal = (v.gainL > v.gainR) ? modLeft : modRight;
 
                 // Phase modulation
-                dsp_float modulatedPhase = v.phase + mod_index * modSignal;
+                dsp_float modulatedPhase = v.phase + osc->modulationIndex * modSignal;
                 modulatedPhase -= std::floor(modulatedPhase); // Wrap to [0, 1)
 
                 dsp_float index = modulatedPhase * waveTableSize;
@@ -289,12 +281,12 @@ void WavetableOscillator::processBlock(DSPObject *dsp)
                 }
             }
 
-            outBufferL[i] = sumL;
-            outBufferR[i] = sumR;
+            osc->outputBufferL[i] = sumL;
+            osc->outputBufferR[i] = sumR;
         }
         else
         {
-            phase += phaseIncrement;
+            phase += osc->phaseIncrement;
 
             if (phase >= 1.0)
             {
@@ -302,8 +294,8 @@ void WavetableOscillator::processBlock(DSPObject *dsp)
                 wrappedFlag = true;
             }
 
-            dsp_float modPhaseL = phase + mod_index * modLeft;
-            dsp_float modPhaseR = phase + mod_index * modRight;
+            dsp_float modPhaseL = phase + osc->modulationIndex * modLeft;
+            dsp_float modPhaseR = phase + osc->modulationIndex * modRight;
 
             modPhaseL -= std::floor(modPhaseL);
             modPhaseR -= std::floor(modPhaseR);
@@ -319,11 +311,8 @@ void WavetableOscillator::processBlock(DSPObject *dsp)
             size_t i1R = (i0R + 1) % osc->selectedWaveTableSize;
             dsp_float fracR = indexR - i0R;
 
-            dsp_float sampleL = (1.0 - fracL) * (*osc->selectedWaveTable)[i0L] + fracL * (*osc->selectedWaveTable)[i1L];
-            dsp_float sampleR = (1.0 - fracR) * (*osc->selectedWaveTable)[i0R] + fracR * (*osc->selectedWaveTable)[i1R];
-
-            outBufferL[i] = sampleL;
-            outBufferR[i] = sampleR;
+            osc->outputBufferL[i] = (1.0 - fracL) * (*osc->selectedWaveTable)[i0L] + fracL * (*osc->selectedWaveTable)[i1L];
+            osc->outputBufferR[i] = (1.0 - fracR) * (*osc->selectedWaveTable)[i0R] + fracR * (*osc->selectedWaveTable)[i1R];
         }
     }
 

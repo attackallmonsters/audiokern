@@ -71,6 +71,9 @@ void JPVoice::initialize()
     setCarrierOscillatorType(CarrierOscillatiorType::Saw);
     setModulatorOscillatorType(ModulatorOscillatorType::Sine);
 
+    carrier->modulationBufferL = modulator->outputBufferL;
+    carrier->modulationBufferR = modulator->outputBufferR;
+
     linkADSR(true);
 
     setFrequency(0.0);
@@ -216,8 +219,8 @@ void JPVoice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
          if (carrier != carrierTmp)
             carrier = carrierTmp;
 
-         if (modulator != modulatorTmp)
-            modulator = modulatorTmp;
+         carrier->modulationBufferL = modulator->outputBufferL;
+         carrier->modulationBufferR = modulator->outputBufferR;
 
          filter.reset(); });
 }
@@ -270,11 +273,11 @@ void JPVoice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
 
     paramFader.change([=]()
                       {
-         if (carrier != carrierTmp)
-            carrier = carrierTmp;
-
          if (modulator != modulatorTmp)
             modulator = modulatorTmp;
+
+         carrier->modulationBufferL = modulator->outputBufferL;
+         carrier->modulationBufferR = modulator->outputBufferR;
 
          filter.reset(); });
 }
@@ -399,9 +402,6 @@ void JPVoice::computeSamples()
 
     modulator->generateBlock();
 
-    carrier->modBufferL.switchTo(modulator->outBufferL);
-    carrier->modBufferR.switchTo(modulator->outBufferR);
-
     carrier->generateBlock();
 
     if (syncEnabled && carrier->hasWrapped())
@@ -422,10 +422,10 @@ void JPVoice::computeSamples()
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        carrierLeft = carrier->outBufferL[i] + lastSampleCarrierLeft * feedbackAmountCarrier;
-        carrierRight = carrier->outBufferR[i] + lastSampleCarrierRight * feedbackAmountCarrier;
-        modLeft = modulator->outBufferL[i] + lastSampleModulatorLeft * feedbackAmountModulator;
-        modRight = modulator->outBufferR[i] + lastSampleModulatorRight * feedbackAmountModulator;
+        carrierLeft = carrier->outputBufferL[i] + lastSampleCarrierLeft * feedbackAmountCarrier;
+        carrierRight = carrier->outputBufferR[i] + lastSampleCarrierRight * feedbackAmountCarrier;
+        modLeft = modulator->outputBufferL[i] + lastSampleModulatorLeft * feedbackAmountModulator;
+        modRight = modulator->outputBufferR[i] + lastSampleModulatorRight * feedbackAmountModulator;
 
         mixL = amp_carrier * carrierLeft + amp_modulator * modLeft;
         mixR = amp_carrier * carrierRight + amp_modulator * modRight;
