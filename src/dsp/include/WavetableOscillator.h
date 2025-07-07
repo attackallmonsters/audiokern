@@ -9,6 +9,12 @@
 #include <cmath>
 #include <memory>
 #include <fstream>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <sstream>
+#include <limits.h>
+#include <cstdlib>
+
 
 // Internal voice struct used for detuned oscillators
 struct WavetableVoice
