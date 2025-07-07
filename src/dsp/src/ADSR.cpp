@@ -207,7 +207,7 @@ void ADSR::processBlock(DSPObject *dsp)
     }
 }
 
-void ADSR::process(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR)
+void ADSR::multiply(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR)
 {
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {

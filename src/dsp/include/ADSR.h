@@ -37,8 +37,8 @@ public:
     void triggerStart();
     void triggerStop();
 
-    // Does a calulation on the samples (ADSRbuf * samplebuf)
-    void process(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR);
+    // Does a *= calulation on the samples
+    void multiply(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR);
 
     // Buffer that contains the envelope
     DSPSampleBuffer outputBuffer;

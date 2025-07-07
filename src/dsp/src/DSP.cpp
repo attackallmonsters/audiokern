@@ -97,12 +97,8 @@ dsp_float DSP::zeroSubnormals(dsp_float value)
     return (std::fabs(value) < epsilon) ? 0.0 : value;
 }
 
-#ifdef DEBUG
 void DSP::log(const char *fmt, ...)
 {
-    if (!doLog())
-        return;
-
     char buffer[2048];
     va_list args;
     va_start(args, fmt);
@@ -112,6 +108,7 @@ void DSP::log(const char *fmt, ...)
     logger(std::string(buffer));
 }
 
+#ifdef DEBUG
 void DSP::logBuffer(const std::string &label, const DSPSampleBuffer &buffer)
 {
     if (!doLog())

@@ -458,12 +458,9 @@ void JPVoice::computeSamples()
     filterAdsr.generateBlock();
     filter.generateBlock();
 
-    // DSP::logTime(500);
-    // DSP::logBuffer("Filtered mix buffer", mixBufferL);
-
     // amp envelope
     ampAdsr.generateBlock();
-    ampAdsr.process(mixBufferL, mixBufferR);
+    ampAdsr.multiply(mixBufferL, mixBufferR);
 
     paramFader.processChanges();
 }
