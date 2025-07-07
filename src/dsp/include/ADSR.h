@@ -41,7 +41,7 @@ public:
     void process(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR);
 
     // Buffer that contains the envelope
-    DSPSampleBuffer envelope;
+    DSPSampleBuffer outputBuffer;
 
 private:
     // Next sample block generation

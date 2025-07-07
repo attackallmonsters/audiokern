@@ -388,10 +388,12 @@ void JPVoice::setOutputBuffer(host_float *bufL, host_float *bufR)
     mixBufferL = bufL;
     mixBufferR = bufR;
 
-    paramFader.setOutputBuffer(mixBufferL, mixBufferR);
-    filter.setOutputBuffer(mixBufferL, mixBufferR);
-    filter.setCutoffBuffer(filterAdsr.envelope);
-    filter.setResonanceBuffer(resoBuffer);
+    paramFader.outputBufferL = mixBufferL;
+    paramFader.outputBufferR = mixBufferR;
+    filter.outputBufferL = mixBufferL;
+    filter.outputBufferR = mixBufferR;
+    filter.cutoffBuffer = filterAdsr.outputBuffer;
+    filter.resoBuffer = resoBuffer;
 }
 
 // Next sample block generation
@@ -456,6 +458,7 @@ void JPVoice::computeSamples()
     filterAdsr.generateBlock();
     filter.generateBlock();
 
+    // DSP::logTime(500);
     // DSP::logBuffer("Filtered mix buffer", mixBufferL);
 
     // amp envelope

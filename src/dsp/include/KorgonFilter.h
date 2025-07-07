@@ -20,14 +20,15 @@ public:
     // Sets the filter drive
     void setDrive(dsp_float value);
 
-    // Set cutoff frequency in Hz
-    void setCutoffBuffer(DSPSampleBuffer &buffer);
+    // The samples to be filtered
+    DSPSampleBuffer outputBufferL;
+    DSPSampleBuffer outputBufferR;
 
-    // Set resonance amount (typically 0.0 to ~1.0)
-    void setResonanceBuffer(DSPSampleBuffer &buffer);
+    // Buffer for cutoff calculation
+    DSPSampleBuffer cutoffBuffer;
 
-    // Assigns the samples to process
-    void setOutputBuffer(DSPSampleBuffer &samplesL, DSPSampleBuffer &samplesR);
+    // Buffer for resonance
+    DSPSampleBuffer resoBuffer;
 
     // Reset internal filter state
     void reset();
@@ -46,15 +47,9 @@ private:
     // Processes data in bufferL, buffer R
     static void processBlock(DSPObject *dsp);
 
-    // The samples to be filtered
-    DSPSampleBuffer bufferL;
-    DSPSampleBuffer bufferR;
-
     // Control buffer for cutoff
-    DSPSampleBuffer cutoffBuffer;
     DSPSampleBuffer cutoffInitBuffer;
 
-    // Control buffer for resonance
-    DSPSampleBuffer resoBuffer;
+    // Control buffer for resonance    
     DSPSampleBuffer resoInitBuffer;
 };

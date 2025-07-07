@@ -18,33 +18,14 @@ void KorgonFilter::initialize()
     cutoffInitBuffer.fill(20000.0);
     resoInitBuffer.fill(0.0);
 
-    setCutoffBuffer(cutoffInitBuffer);
-    setResonanceBuffer(resoInitBuffer);
+    cutoffBuffer = cutoffInitBuffer;
+    resoBuffer = resoInitBuffer;
 
     setDrive(0.0);
     reset();
 
     T = 1.0 / DSP::sampleRate;
     drive = 1.0;
-}
-
-// Set the cutoff frequency and update coefficients
-void KorgonFilter::setCutoffBuffer(DSPSampleBuffer &buffer)
-{
-    cutoffBuffer = buffer;
-}
-
-// Set the resonance amount
-void KorgonFilter::setResonanceBuffer(DSPSampleBuffer &buffer)
-{
-    resoBuffer = buffer;
-}
-
-// Assigns the samples to process
-void KorgonFilter::setOutputBuffer(DSPSampleBuffer &samplesL, DSPSampleBuffer &samplesR)
-{
-    bufferL = samplesL;
-    bufferR = samplesR;
 }
 
 // Sets the filter drive
@@ -74,15 +55,15 @@ void KorgonFilter::processBlock(DSPObject *dsp)
 
     for (size_t i = 0; i < blocksize; ++i)
     {
-        left = (flt->bufferL)[i];
-        right = (flt->bufferR)[i];
+        left = (flt->outputBufferL)[i];
+        right = (flt->outputBufferR)[i];
         cutoff = clamp((flt->cutoffBuffer)[i], 0.0, 20000.0);
         reso = (flt->resoBuffer)[i];
 
         if (cutoff > 15000.0)
         {
-            (flt->bufferL)[i] = left;
-            (flt->bufferR)[i] = right;
+            (flt->outputBufferL)[i] = left;
+            (flt->outputBufferR)[i] = right;
             continue;
         }
 
@@ -107,7 +88,7 @@ void KorgonFilter::processBlock(DSPObject *dsp)
         // Apply asymmetric soft clip
         left = y2L * drive;
         left = (left >= 0.0) ? fast_tanh(left) : 1.5 * fast_tanh(0.5 * left);
-        (flt->bufferL)[i] = left;
+        (flt->outputBufferL)[i] = left;
 
         // === right ===
         feedback = clamp(reso * reso_scale * (y2R - right), -15.0, 15.0);
@@ -122,7 +103,7 @@ void KorgonFilter::processBlock(DSPObject *dsp)
         // Apply asymmetric soft clip
         right = y2R * drive;
         right = (right >= 0.0) ? fast_tanh(right) : 1.5 * fast_tanh(0.5 * right);
-        (flt->bufferR)[i] = right;
+        (flt->outputBufferR)[i] = right;
     }
 
     flt->y1L = y1L;

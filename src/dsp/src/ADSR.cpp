@@ -12,7 +12,7 @@ void ADSR::initialize()
     gain = 1.0;
     currentEnv = 0.0;
     oneShot = false;
-    envelope.create(DSP::blockSize);
+    outputBuffer.create(DSP::blockSize);
 
     setAttack(10);
     setDecay(100);
@@ -203,7 +203,7 @@ void ADSR::processBlock(DSPObject *dsp)
     for (size_t i = 0; i < blocksize; ++i)
     {
         (adsr->*adsr->phaseFunc)();
-        adsr->envelope[i] = adsr->currentEnv * adsr->gain;
+        adsr->outputBuffer[i] = adsr->currentEnv * adsr->gain;
     }
 }
 
@@ -211,7 +211,7 @@ void ADSR::process(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR)
 {
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        bufL[i] *= envelope[i];
-        bufR[i] *= envelope[i];
+        bufL[i] *= outputBuffer[i];
+        bufR[i] *= outputBuffer[i];
     }
 }

@@ -7,12 +7,6 @@ void ParamFader::change(ParamChange fn)
     applyParamChange = true;
 }
 
-void ParamFader::setOutputBuffer(DSPSampleBuffer &left, DSPSampleBuffer &right)
-{
-    bufL = left;
-    bufR = right;
-}
-
 void ParamFader::processChanges()
 {
     if (applyParamChange)
@@ -46,8 +40,8 @@ void ParamFader::processChanges()
         // Apply fade to entire output buffer
         for (size_t i = 0; i < DSP::blockSize; ++i)
         {
-            bufL[i] *= fadeValue;
-            bufR[i] *= fadeValue;
+            outputBufferL[i] *= fadeValue;
+            outputBufferR[i] *= fadeValue;
         }
     }
 }
