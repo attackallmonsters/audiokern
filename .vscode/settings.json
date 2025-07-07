@@ -65,7 +65,9 @@
         "map": "cpp",
         "ranges": "cpp",
         "valarray": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "*.tpp": "cpp",
+        "climits": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

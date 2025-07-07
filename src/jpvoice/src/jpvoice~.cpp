@@ -3,8 +3,11 @@
 #include "m_pd.h"
 #include "DSP.h"
 #include "JPVoice.h"
+#include "JPSynth.h"
 #include "clamp.h"
 #include "dsp_types.h"
+
+#define synth JPSynth::instance()
 
 static t_class *jpvoice_class;
 
@@ -36,33 +39,24 @@ bool testDSP()
     return true;
 }
 
-// === Trigger methods ===
-void jpvoice_tilde_start(t_jpvoice *x)
-{
-    x->voice->playNote();
-}
-
-void jpvoice_tilde_stop(t_jpvoice *x)
-{
-    x->voice->stopNote();
-}
-
 // Frequency of carrier set via list [f1 freq(
-void jpvoice_tilde_f(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpvoice_tilde_note(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
         return;
     }
 
-    if (argc != 1 || argv[0].a_type != A_FLOAT)
+    if (argc != 2)
     {
-        pd_error(x, "[jpvoice~]: expected float argument 0 - n for carrier frequency f1: [f1 f(");
+        pd_error(x, "[jpvoice~]: expected float arguments 0 - n for note and velocity: [note f v(");
         return;
     }
-    dsp_float f = atom_getfloat(argv);
 
-    x->voice->setFrequency(f);
+    host_float n = atom_getfloat(argv);
+    host_float v = atom_getfloat(argv);
+
+    synth.noteIn(n, v);
 }
 
 // Frequency offset modulator in halftones
@@ -579,6 +573,7 @@ void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
     x->ampADSR.releaseShape = 0.0;
 
     x->voice->initialize();
+    synth.initialize();
 
     x->voice->setOutputBuffer(outL, outR);
     x->voice->setFilterADSR(x->filterADSR);
@@ -604,7 +599,8 @@ void *jpvoice_tilde_new()
     // register logger for DSP objects
     DSP::registerLogger(&log);
 
-    x->voice = new JPVoice();
+    //TODO x->voice = new JPVoice();
+    synth.setNumVoices(6);
 
     x->left_out = outlet_new(&x->x_obj, &s_signal);
     x->right_out = outlet_new(&x->x_obj, &s_signal);
@@ -633,9 +629,7 @@ extern "C" void jpvoice_tilde_setup(void)
 
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_dsp, gensym("dsp"), A_CANT, 0);
 
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_start, gensym("start"), A_NULL);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_stop, gensym("stop"), A_NULL);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_f, gensym("f"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_note, gensym("note"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_offset, gensym("offset"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_fine, gensym("fine"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_detune, gensym("detune"), A_GIMME, 0);
