@@ -17,30 +17,35 @@ public:
     void create(size_t size);
 
     // Use external buffer (shared, not owned)
-    DSPBuffer& operator=(float* externalBuffer);
+    DSPBuffer& operator=(dsp_float* externalBuffer);
 
     // Use buffer from another DSPBuffer (shared pointer)
     DSPBuffer& operator=(const DSPBuffer& other);
 
     // Element access
-    float& operator[](size_t index);
-    const float& operator[](size_t index) const;
+    dsp_float& operator[](size_t index);
+    const dsp_float& operator[](size_t index) const;
 
     // Fill buffer with a constant value
-    void fill(float value);
+    void fill(dsp_float value);
 
-    // Copy from raw float buffer (caller must ensure matching size)
-    void copy(const float* source);
+    // Copy from raw dsp_float buffer (caller must ensure matching size)
+    void copy(const dsp_float* source);
 
     // Copy from another DSPBuffer (caller must ensure matching size)
     void copy(const DSPBuffer& other);
 
-    float* data();
-    const float* data() const;
+    // Returns a pointer to the buffer
+    dsp_float* data();
+
+    // Returns a const pointer to the buffer
+    const dsp_float* data() const;
+
+    // Returns the buffer size
     size_t size() const;
 
 private:
-    float* buffer = nullptr;
+    dsp_float* buffer = nullptr;
     size_t bufferSize = 0;
     bool ownsBuffer = false;
 };

@@ -3,7 +3,6 @@
 #include <stddef.h>
 #include "clamp.h"
 #include "DSP.h"
-#include "XDSPBuffer.h"
 
 class DSPObject : public DSP
 {

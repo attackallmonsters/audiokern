@@ -1,7 +1,7 @@
 #pragma once
 
 #include "DSPObject.h"
-#include "XDSPBuffer.h"
+#include "DSPSampleBuffer.h"
 #include "dsp_types.h"
 #include "dsp_math.h"
 #include "clamp.h"
@@ -25,16 +25,16 @@ public:
 
     virtual void initialize() override;
 
-    void setFreq(dsp_float f);
+    void setFreq(host_float f);
     void setType(LFOType type);
-    void setOffset(dsp_float f);
-    void setDepth(dsp_float f);
-    void setShape(dsp_float f);
-    void setPulseWidth(dsp_float f);
-    void setSmooth(dsp_float f);
-    void setIdleSignal(dsp_float f);
+    void setOffset(host_float f);
+    void setDepth(host_float f);
+    void setShape(host_float f);
+    void setPulseWidth(host_float f);
+    void setSmooth(host_float f);
+    void setIdleSignal(host_float f);
     void reset();
-    dsp_float* getBuffer();
+    host_float* getBuffer();
 
     std::function<void()> onPhaseWrap;
 
@@ -42,33 +42,33 @@ private:
     static void processBlock(DSPObject* dsp);
 
     // Current sample rate derived values
-    dsp_float phase;
-    dsp_float freq;
-    dsp_float phaseInc;
-    dsp_float samplerate;
-    dsp_float offset;
-    dsp_float depth;
-    dsp_float shape;
-    dsp_float pw;
-    dsp_float smoothVal;
-    dsp_float smoothCoeff;
-    dsp_float idleSignal;
+    host_float phase;
+    host_float freq;
+    host_float phaseInc;
+    host_float samplerate;
+    host_float offset;
+    host_float depth;
+    host_float shape;
+    host_float pw;
+    host_float smoothVal;
+    host_float smoothCoeff;
+    host_float idleSignal;
 
-    XDSPBuffer lfoBuffer;
-    XDSPBuffer modBuffer;
-    XDSPBuffer modBufferDefault;
+    DSPSampleBuffer lfoBuffer;
+    DSPSampleBuffer modBuffer;
+    DSPSampleBuffer modBufferDefault;
 
     LFOType lfoType;
 
     // Internal waveform calculation functions
-    dsp_float lfoSine();
-    dsp_float lfoRampUp();
-    dsp_float lfoRampDown();
-    dsp_float lfoTriangle();
-    dsp_float lfoSquare();
-    dsp_float lfoRandom();
-    dsp_float shapedRamp(dsp_float x);
+    host_float lfoSine();
+    host_float lfoRampUp();
+    host_float lfoRampDown();
+    host_float lfoTriangle();
+    host_float lfoSquare();
+    host_float lfoRandom();
+    host_float shapedRamp(host_float x);
     bool fmEnabled;
 
-    dsp_float (LFO::*lfoFunc)() = nullptr;
+    host_float (LFO::*lfoFunc)() = nullptr;
 };

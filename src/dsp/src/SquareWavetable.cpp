@@ -10,7 +10,7 @@ static dsp_float squareAmplitude(int harmonic)
         return 0.0;
 }
 
-void SquareWavetable::createWavetable(XDSPBuffer &buffer, dsp_float frequency)
+void SquareWavetable::createWavetable(DSPBuffer &buffer, dsp_float frequency)
 {
     // Fill one full waveform cycle (0 to 2π) across the buffer
     WaveformGenerator::generateWavetable(buffer, frequency, squareAmplitude, 0.5);

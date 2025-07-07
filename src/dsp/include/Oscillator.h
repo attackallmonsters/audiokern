@@ -5,13 +5,13 @@
 #include "clamp.h"
 #include "DSP.h"
 #include "DSPObject.h"
-#include "XDSPBuffer.h"
+#include "DSPSampleBuffer.h"
 #include "VoiceOptions.h"
 #include "dsp_types.h"
 #include "dsp_math.h"
 
 // FM frequency calculation
-using FMCalcFunc = dsp_float (*)(const dsp_float &baseFreq, const dsp_float &modulator, const dsp_float &index);
+using FMCalcFunc = host_float (*)(const host_float &baseFreq, const host_float &modulator, const host_float &index);
 
 // Abstract base class for all oscillator types.
 // This class provides a common interface and shared internal phase state
@@ -30,10 +30,10 @@ public:
     void initialize() override;
 
     // Sets the detune factor
-    virtual void setDetune(dsp_float /*value*/){};
+    virtual void setDetune(host_float /*value*/){};
 
     // Sets the duty cycle for PWM
-    virtual void setDutyCycle(dsp_float /*value*/){};
+    virtual void setDutyCycle(host_float /*value*/){};
 
     // Resets the internal oscillator phase to 0.0.
     virtual void resetPhase();
@@ -42,13 +42,13 @@ public:
     virtual void setNumVoices(int /*count*/) {};
 
     // Sets the desired oscillator frequency in Hertz
-    void setFrequency(dsp_float value);
+    void setFrequency(host_float value);
 
     // Sets the pitch offset in semi tones
     void setPitchOffset(int value);
 
     // Sets the fine tuning in cent
-    void setFineTune(dsp_float value);
+    void setFineTune(host_float value);
 
     // Enables negative phase wrapping
     void setNegativeWrappingEnabled(bool enabled);
@@ -56,20 +56,20 @@ public:
     // Calculates the effective frequency based on base frequency,
     // pitch offset (in semitones), and fine-tuning (in cents).
     // Then updates the phase increment accordingly.
-    void setCalculatedFrequency(dsp_float f);
+    void setCalculatedFrequency(host_float f);
 
     // Gets the current frequency
-    dsp_float getFrequency();
+    host_float getFrequency();
 
     // Gets the calculated frequency (base + pitchOffset + finetune))
-    dsp_float getCalculatedFrequency();
+    host_float getCalculatedFrequency();
 
     // Sets the type of FM to use
     void setFMType(FMType fm);
 
     // Sets the modulation index for frequency modulation.
     // This controls the intensity of the frequency modulation effect.
-    void setModIndex(dsp_float index);
+    void setModIndex(host_float index);
 
     // Returns true if the oscillator's phase wrapped during the last getSample() call
     bool hasWrapped();
@@ -78,36 +78,36 @@ public:
     void unWrap();
 
     // Buffer for modulation
-    XDSPBuffer modBufferL;
-    XDSPBuffer modBufferR;
+    DSPSampleBuffer modulationBufferL;
+    DSPSampleBuffer modulationBufferR;
 
     // Sample buffer for output
-    XDSPBuffer outBufferL;
-    XDSPBuffer outBufferR;
+    DSPSampleBuffer outputBufferL;
+    DSPSampleBuffer outputBufferR;
 
 protected:
     bool syncEnabled;                    // Enables or disable block wise phase synchronization
     bool negativeWrappingEnabled = true; // Indicates if negative phase wrapping is enabled
-    dsp_float frequency;                 // The desired oscillator frequency in Hertz
-    dsp_float calculatedFrequency;       // The calculated FM frequency in Hertz
+    host_float frequency;                 // The desired oscillator frequency in Hertz
+    host_float calculatedFrequency;       // The calculated FM frequency in Hertz
     int pitchOffset;                     // offset in half tones
-    dsp_float fineTune;                  // fine tune in cent
-    dsp_float phaseIncrement;            // Increment based on frquency and sample rate
-    dsp_float currentPhase;              // Current phase of the oscillator in radians [0, 2π]
+    host_float fineTune;                  // fine tune in cent
+    host_float phaseIncrement;            // Increment based on frquency and sample rate
+    host_float currentPhase;              // Current phase of the oscillator in radians [0, 2π]
     bool wrapped = false;                // True when phase wrapped
 
     FMType fmType = FMType::ThroughZero; // The FM operation mode
-    dsp_float modulationIndex = 0;       // FM depth: how much modulator modulates carrier
+    host_float modulationIndex = 0;       // FM depth: how much modulator modulates carrier
 
     // Avoid vtable lookup for sample calculation
     using SampleGenerator = void (*)(
         Oscillator * /*osc*/, 
-        const dsp_float & /*frequency*/, 
-        const dsp_float & /*phase*/, 
-        dsp_float & /*left*/, 
-        dsp_float & /*right*/, 
-        const dsp_float & /*modLeft*/, 
-        const dsp_float & /*modRight*/);
+        const host_float & /*frequency*/, 
+        const host_float & /*phase*/, 
+        host_float & /*left*/, 
+        host_float & /*right*/, 
+        const host_float & /*modLeft*/, 
+        const host_float & /*modRight*/);
 
     // Derived classes registers sample generator
     void registerSampleGenerator(SampleGenerator sg);
@@ -121,10 +121,10 @@ private:
 
     // Dummy ComputeSampleFunc for setSamples
     static void generateSample(Oscillator * /*osc*/, 
-        const dsp_float & /*frequency*/, 
-        const dsp_float & /*phase*/, 
-        dsp_float & /*left*/, 
-        dsp_float & /*right*/, 
-        const dsp_float & /*modLeft*/, 
-        const dsp_float & /*modRight*/);
+        const host_float & /*frequency*/, 
+        const host_float & /*phase*/, 
+        host_float & /*left*/, 
+        host_float & /*right*/, 
+        const host_float & /*modLeft*/, 
+        const host_float & /*modRight*/);
 };

@@ -1,6 +1,6 @@
 #include "WaveformGenerator.h"
 
-void WaveformGenerator::generateWavetable(XDSPBuffer &buffer,
+void WaveformGenerator::generateWavetable(DSPBuffer &buffer,
                                           dsp_float baseFrequency,
                                           AmplitudeFunction amplitudeFunc,
                                           dsp_float harmonicBoost)
@@ -19,9 +19,6 @@ void WaveformGenerator::generateWavetable(XDSPBuffer &buffer,
 
     // Maximum number of harmonics allowed without aliasing
     int harmonics = static_cast<int>(nyquist / baseFrequency * (1 + clamp(harmonicBoost, 0, 1) * 9));
-
-    // Constant for sine wave computation
-    const dsp_float twoPi = 2.0 * M_PI;
 
     // Loop over each sample index in the buffer
     for (size_t i = 0; i < size; ++i)

@@ -383,7 +383,7 @@ void JPVoice::setAmpGain(dsp_float g)
 }
 
 // Sets the output buffers
-void JPVoice::setOutputBuffer(float *bufL, float *bufR)
+void JPVoice::setOutputBuffer(host_float *bufL, host_float *bufR)
 {
     mixBufferL = bufL;
     mixBufferR = bufR;
@@ -444,8 +444,8 @@ void JPVoice::computeSamples()
 
         if (noisemix > 0)
         {
-            mixL = amp_osc_noise * mixL + amp_noise * noise.outBufferL[i];
-            mixR = amp_osc_noise * mixR + amp_noise * noise.outBufferR[i];
+            mixL = amp_osc_noise * mixL + amp_noise * noise.outputBufferL[i];
+            mixR = amp_osc_noise * mixR + amp_noise * noise.outputBufferR[i];
         }
 
         mixBufferL[i] = mixL;

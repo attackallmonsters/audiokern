@@ -1,7 +1,7 @@
 #pragma once
 
 #include "DSPObject.h"
-#include "XDSPBuffer.h"
+#include "DSPBuffer.h"
 #include "DSPSampleBuffer.h"
 #include "dsp_math.h"
 #include "clamp.h"
@@ -24,6 +24,9 @@ struct WavetableVoice
 class WavetableOscillator : public DSPObject
 {
 public:
+    // Destructor releases memory for wavetables
+    ~WavetableOscillator();
+    
     // Initializes all wavetable buffers for multiple frequency ranges
     void initialize() override;
 
@@ -74,16 +77,19 @@ protected:
     WavetableOscillator(const std::string formName);
 
     // Each subclass must define how to fill a table
-    virtual void createWavetable(XDSPBuffer &buffer, dsp_float frequency) = 0;
+    virtual void createWavetable(DSPBuffer &buffer, dsp_float frequency) = 0;
 
     // Frequency boundaries per LUT (e.g. per octave)
-    std::vector<double> baseFrequencies;
+    std::vector<host_float> baseFrequencies;
 
     // Define the corresponding table size for each frequency range
     std::vector<size_t> tableSizes;
 
-    // One wavetable buffer per frequency band
-    std::vector<std::unique_ptr<XDSPBuffer>> wavetableBuffers;
+    // High-precision wavetable buffers
+    std::vector<DSPBuffer*> wavetableCalcBuffers;
+
+    // Wavetable sample buffers
+    std::vector<DSPSampleBuffer*> wavetableSampleBuffers;
 
 private:
     // Next sample block generation
@@ -110,7 +116,7 @@ private:
     std::string waveformName;
 
     // stores the last wavetable to prevent lookup when frequency did not change
-    const XDSPBuffer *selectedWaveTable = nullptr;
+    const DSPSampleBuffer *selectedWaveTable = nullptr;
     size_t selectedWaveTableSize = 0;
     dsp_float lastFrequency = -1.0;
 

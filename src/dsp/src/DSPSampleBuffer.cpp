@@ -1,6 +1,9 @@
 #include "DSPSampleBuffer.h"
 
-DSPSampleBuffer::DSPSampleBuffer() = default;
+DSPSampleBuffer::DSPSampleBuffer()
+{
+    
+}
 
 DSPSampleBuffer::~DSPSampleBuffer()
 {

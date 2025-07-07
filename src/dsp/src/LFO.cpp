@@ -9,7 +9,7 @@ LFO::LFO()
 void LFO::initialize()
 {
     samplerate = DSP::sampleRate;
-    lfoBuffer.resize(DSP::blockSize);
+    lfoBuffer.create(DSP::blockSize);
 
     phase = 0.0;
     phaseInc = 0.0;
@@ -24,7 +24,7 @@ void LFO::initialize()
     setFreq(1.0);
 }
 
-inline dsp_float LFO::shapedRamp(dsp_float x)
+inline host_float LFO::shapedRamp(host_float x)
 {
     if (shape == 0.0)
         return x;
@@ -34,47 +34,47 @@ inline dsp_float LFO::shapedRamp(dsp_float x)
         return 1.0 - std::pow(1.0 - x, 1.0 - shape * 4.0); // concave
 }
 
-void LFO::setSmooth(dsp_float f)
+void LFO::setSmooth(host_float f)
 {
     f = clamp(f, 0.0, 1.0);
     smoothCoeff = 1.0 - f;
 }
 
-inline dsp_float LFO::lfoSine()
+inline host_float LFO::lfoSine()
 {
     return std::sin(phase * 2.0 * M_PI);
 }
 
-inline dsp_float LFO::lfoRampUp()
+inline host_float LFO::lfoRampUp()
 {
     return 2.0 * shapedRamp(phase) - 1.0;
 }
 
-inline dsp_float LFO::lfoRampDown()
+inline host_float LFO::lfoRampDown()
 {
     return 1.0 - 2.0 * shapedRamp(phase);
 }
 
-inline dsp_float LFO::lfoTriangle()
+inline host_float LFO::lfoTriangle()
 {
-    dsp_float p = phase * 2.0;
+    host_float p = phase * 2.0;
     if (p < 1.0)
         return 2.0 * shapedRamp(p) - 1.0;
     else
         return 1.0 - 2.0 * shapedRamp(p - 1.0);
 }
 
-inline dsp_float LFO::lfoSquare()
+inline host_float LFO::lfoSquare()
 {
     return (phase < pw) ? 1.0 : -1.0;
 }
 
-inline dsp_float LFO::lfoRandom()
+inline host_float LFO::lfoRandom()
 {
-    return 2.0 * ((dsp_float)rand() / RAND_MAX) - 1.0;
+    return 2.0 * ((host_float)rand() / RAND_MAX) - 1.0;
 }
 
-void LFO::setFreq(dsp_float f)
+void LFO::setFreq(host_float f)
 {
     freq = clampmin(f, 0.0);
     phaseInc = freq / samplerate;
@@ -110,27 +110,27 @@ void LFO::setType(LFOType t)
     }
 }
 
-void LFO::setOffset(dsp_float f)
+void LFO::setOffset(host_float f)
 {
     offset = f;
 }
 
-void LFO::setDepth(dsp_float f)
+void LFO::setDepth(host_float f)
 {
     depth = f;
 }
 
-void LFO::setShape(dsp_float f)
+void LFO::setShape(host_float f)
 {
     shape = clamp(f, -1.0, 1.0);
 }
 
-void LFO::setPulseWidth(dsp_float f)
+void LFO::setPulseWidth(host_float f)
 {
     pw = clamp(f, 0.01, 0.99);
 }
 
-void LFO::setIdleSignal(dsp_float f)
+void LFO::setIdleSignal(host_float f)
 {
     idleSignal = f;
 }
@@ -156,15 +156,15 @@ void LFO::processBlock(DSPObject *dsp)
         return;
     }
 
-    dsp_float phase = lfo->phase;
-    dsp_float inc = lfo->phaseInc;
+    host_float phase = lfo->phase;
+    host_float inc = lfo->phaseInc;
 
     for (size_t i = 0; i < n; ++i)
     {
         lfo->phase = phase;
-        dsp_float val = (lfo->*lfo->lfoFunc)();
+        host_float val = (lfo->*lfo->lfoFunc)();
 
-        dsp_float target = val * lfo->depth + lfo->offset;
+        host_float target = val * lfo->depth + lfo->offset;
         lfo->smoothVal += lfo->smoothCoeff * (target - lfo->smoothVal);
         lfo->lfoBuffer[i] = lfo->smoothVal;
 
@@ -182,7 +182,7 @@ void LFO::processBlock(DSPObject *dsp)
     lfo->phase = phase;
 }
 
-dsp_float *LFO::getBuffer()
+host_float *LFO::getBuffer()
 {
     return lfoBuffer.data();
 }

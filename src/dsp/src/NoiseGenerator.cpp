@@ -23,17 +23,17 @@ void NoiseGenerator::setType(NoiseType type)
 
 void NoiseGenerator::generateSample(
     Oscillator *osc,
-    const dsp_float & /*frequency*/,
-    const dsp_float & /*phase*/,
-    dsp_float &left,
-    dsp_float &right,
-    const dsp_float & /*modLeft*/,
-    const dsp_float & /*modRight*/)
+    const host_float & /*frequency*/,
+    const host_float & /*phase*/,
+    host_float &left,
+    host_float &right,
+    const host_float & /*modLeft*/,
+    const host_float & /*modRight*/)
 {
     NoiseGenerator *noise = static_cast<NoiseGenerator *>(osc);
 
     // Generate white noise sample in range [-1.0, 1.0]
-    dsp_float white = noise->dist(noise->rng);
+    host_float white = noise->dist(noise->rng);
 
     // If white noise is selected, return it directly
     if (noise->noiseType == NoiseType::White)
@@ -51,7 +51,7 @@ void NoiseGenerator::generateSample(
     noise->b3 = 0.86650 * noise->b3 + white * 0.3104856;
     noise->b4 = 0.55000 * noise->b4 + white * 0.5329522;
     noise->b5 = -0.7616 * noise->b5 - white * 0.0168980;
-    dsp_float pink = noise->b0 + noise->b1 + noise->b2 + noise->b3 + noise->b4 + noise->b5 + noise->b6 + white * 0.5362;
+    host_float pink = noise->b0 + noise->b1 + noise->b2 + noise->b3 + noise->b4 + noise->b5 + noise->b6 + white * 0.5362;
     noise->b6 = white * 0.115926;
 
     // Scale output to normalize level (empirical factor)

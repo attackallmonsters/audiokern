@@ -19,10 +19,10 @@ private:
     // Sample calculation without looking up vtable
     static void generateSample(
         Oscillator *,
-        const dsp_float &,
-        const dsp_float &,
-        dsp_float &,
-        dsp_float &,
-        const dsp_float &,
-        const dsp_float &);
+        const host_float &,
+        const host_float &,
+        host_float &,
+        host_float &,
+        const host_float &,
+        const host_float &);
 };

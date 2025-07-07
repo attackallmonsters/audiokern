@@ -20,12 +20,12 @@ void DSPBuffer::create(size_t size)
     if (ownsBuffer && buffer)
         delete[] buffer;
 
-    buffer = new float[size];
+    buffer = new dsp_float[size];
     bufferSize = size;
     ownsBuffer = true;
 }
 
-DSPBuffer &DSPBuffer::operator=(float *externalBuffer)
+DSPBuffer &DSPBuffer::operator=(dsp_float *externalBuffer)
 {
     if (ownsBuffer && buffer)
         delete[] buffer;
@@ -46,37 +46,37 @@ DSPBuffer &DSPBuffer::operator=(const DSPBuffer &other)
     return *this;
 }
 
-float &DSPBuffer::operator[](size_t index)
+dsp_float &DSPBuffer::operator[](size_t index)
 {
     return buffer[index];
 }
 
-const float &DSPBuffer::operator[](size_t index) const
+const dsp_float &DSPBuffer::operator[](size_t index) const
 {
     return buffer[index];
 }
 
-void DSPBuffer::fill(float value)
+void DSPBuffer::fill(dsp_float value)
 {
     std::fill(buffer, buffer + bufferSize, value);
 }
 
-void DSPBuffer::copy(const float *source)
+void DSPBuffer::copy(const dsp_float *source)
 {
-    std::memcpy(buffer, source, bufferSize * sizeof(float));
+    std::memcpy(buffer, source, bufferSize * sizeof(dsp_float));
 }
 
 void DSPBuffer::copy(const DSPBuffer &other)
 {
-    std::memcpy(buffer, other.buffer, bufferSize * sizeof(float));
+    std::memcpy(buffer, other.buffer, bufferSize * sizeof(dsp_float));
 }
 
-float *DSPBuffer::data()
+dsp_float *DSPBuffer::data()
 {
     return buffer;
 }
 
-const float *DSPBuffer::data() const
+const dsp_float *DSPBuffer::data() const
 {
     return buffer;
 }

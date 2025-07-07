@@ -73,8 +73,8 @@ void LadderFilter::processBlock(DSPObject *dsp)
 
     for (size_t i = 0; i < blocksize; ++i)
     {
-        left = (*flt->bufferL)[i];
-        right = (*flt->bufferR)[i];
+        left = flt->processBufferL[i];
+        right = flt->processBufferR[i];
 
         // Feedback calculation
         dsp_float inputL, inputR;
@@ -104,13 +104,13 @@ void LadderFilter::processBlock(DSPObject *dsp)
 
         if (flt->filterStage == FilterStage::TwoPole)
         {
-            (*flt->bufferL)[i] = fast_tanh(s2L * compensation);
-            (*flt->bufferR)[i] = fast_tanh(s2R * compensation);
+            flt->processBufferL[i] = fast_tanh(s2L * compensation);
+            flt->processBufferR[i] = fast_tanh(s2R * compensation);
         }
         else
         {
-            (*flt->bufferL)[i] = fast_tanh(s4L * compensation);
-            (*flt->bufferR)[i] = fast_tanh(s4R * compensation);
+            flt->processBufferL[i] = fast_tanh(s4L * compensation);
+            flt->processBufferR[i] = fast_tanh(s4R * compensation);
         }
     }
 

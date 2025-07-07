@@ -1,6 +1,6 @@
 #include "SineWavetable.h"
 
-void SineWavetable::createWavetable(XDSPBuffer &buffer, dsp_float /*frequency*/)
+void SineWavetable::createWavetable(DSPBuffer &buffer, dsp_float /*frequency*/)
 {
     size_t size = buffer.size();
 

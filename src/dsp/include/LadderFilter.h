@@ -3,6 +3,7 @@
 #include "VoiceOptions.h"
 #include "DSP.h"
 #include "DSPObject.h"
+#include "DSPSampleBuffer.h"
 #include "dsp_types.h"
 #include "dsp_math.h"
 #include "clamp.h"
@@ -42,8 +43,9 @@ public:
     void reset();
 
     // The samples to be filtered
-    XDSPBuffer *bufferL;
-    XDSPBuffer *bufferR;
+    DSPSampleBuffer processBufferL;
+    DSPSampleBuffer processBufferR;
+
 private:
     // Next sample block generation
     static void processBlock(DSPObject *dsp);

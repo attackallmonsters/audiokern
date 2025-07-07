@@ -11,5 +11,5 @@ public:
 
 protected:
     // Fills the given buffer with one cycle of a fibonacci waveform
-    void createWavetable(XDSPBuffer &buffer, dsp_float frequency) override;
+    void createWavetable(DSPBuffer &buffer, dsp_float frequency) override;
 };

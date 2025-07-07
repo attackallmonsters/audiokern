@@ -110,7 +110,7 @@ public:
     void setFilterDrive(dsp_float value);
 
     // Sets the output buffers
-    void setOutputBuffer(float *bufL, float *bufR);
+    void setOutputBuffer(host_float *bufL, host_float *bufR);
 
     // Filter envelope params
     void setFilterADSR(ADSRParams &params);

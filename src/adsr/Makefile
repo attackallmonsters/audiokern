@@ -5,6 +5,8 @@
 CXX = g++
 UNAME := $(shell uname -m)
 
+CXXFLAGS_HOST = -DHOST_SINGLE_PRECISION
+
 ifeq ($(UNAME),x86_64)
 	CXXFLAGS_BASE = -Wall -Wextra -std=c++17 -fPIC -Iinclude -I../dsp/include
 	DEPLOY_DIR = ../../bin/adsr/linux_x64
@@ -45,11 +47,11 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 # === Debug / Release Targets ===
 debug:
 	$(MAKE) clean
-	$(MAKE) CXXFLAGS="$(CXXFLAGS_BASE) -O0 -g -DDEBUG" all
+	$(MAKE) CXXFLAGS="$(CXXFLAGS_BASE) -O0 -g -DDEBUG $(CXXFLAGS_HOST)" all
 
 release:
 	$(MAKE) clean
-	$(MAKE) CXXFLAGS="$(CXXFLAGS_BASE) -O3" all
+	$(MAKE) CXXFLAGS="$(CXXFLAGS_BASE) -O3 $(CXXFLAGS_HOST)" all
 
 deploy:
 	@mkdir -p $(DEPLOY_DIR)

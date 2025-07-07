@@ -6,8 +6,8 @@ using dsp_float = float;
 using dsp_float = double;
 #endif
 
-#ifdef HOST_USE_DOUBLE
-using host_float = double;
-#else
+#ifdef HOST_SINGLE_PRECISION
 using host_float = float;
+#else
+using host_float = double;
 #endif
