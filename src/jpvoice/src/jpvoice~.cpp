@@ -14,7 +14,6 @@ static t_class *jpvoice_class;
 typedef struct _jpvoice
 {
     t_object x_obj;
-    JPVoice *voice;
 
     t_inlet *in_cutoff;
     t_inlet *in_reso;
@@ -540,10 +539,7 @@ void jpvoice_tilde_adsroneshot(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 // DSP perform function
 t_int *jpvoice_tilde_perform(t_int *w)
 {
-    t_jpvoice *x = (t_jpvoice *)(w[1]);
-
-    x->voice->computeSamples();
-
+    synth.computeSamples();
     return (w + 5);
 }
 
@@ -558,26 +554,26 @@ void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
 
     DSP::initializeAudio(x->samplerate, x->blockSize);
 
-    x->filterADSR.attackTime = 10.0;
-    x->filterADSR.decayTime = 0.0;
-    x->filterADSR.sustainLevel = 1.0;
-    x->filterADSR.releaseTime = 750.0;
-    x->filterADSR.attackShape = 0.0;
-    x->filterADSR.releaseShape = 0.0;
+    // x->filterADSR.attackTime = 10.0;
+    // x->filterADSR.decayTime = 0.0;
+    // x->filterADSR.sustainLevel = 1.0;
+    // x->filterADSR.releaseTime = 750.0;
+    // x->filterADSR.attackShape = 0.0;
+    // x->filterADSR.releaseShape = 0.0;
 
-    x->ampADSR.attackTime = 10.0;
-    x->ampADSR.decayTime = 0.0;
-    x->ampADSR.sustainLevel = 1.0;
-    x->ampADSR.releaseTime = 750.0;
-    x->ampADSR.attackShape = 0.0;
-    x->ampADSR.releaseShape = 0.0;
+    // x->ampADSR.attackTime = 10.0;
+    // x->ampADSR.decayTime = 0.0;
+    // x->ampADSR.sustainLevel = 1.0;
+    // x->ampADSR.releaseTime = 750.0;
+    // x->ampADSR.attackShape = 0.0;
+    // x->ampADSR.releaseShape = 0.0;
 
-    x->voice->initialize();
-    synth.initialize();
+    // x->voice->initialize();
+    synth.initialize(outL, outR);
 
-    x->voice->setOutputBuffer(outL, outR);
-    x->voice->setFilterADSR(x->filterADSR);
-    x->voice->setAmpADSR(x->ampADSR);
+    // x->voice->setOutputBuffer(outL, outR);
+    // x->voice->setFilterADSR(x->filterADSR);
+    // x->voice->setAmpADSR(x->ampADSR);
 
     dsp_add(jpvoice_tilde_perform, 4,
             x,
@@ -596,14 +592,10 @@ void *jpvoice_tilde_new()
 {
     t_jpvoice *x = (t_jpvoice *)pd_new(jpvoice_class);
 
-    // register logger for DSP objects
-    DSP::registerLogger(&log);
-
-    //TODO x->voice = new JPVoice();
-    synth.setNumVoices(6);
-
     x->left_out = outlet_new(&x->x_obj, &s_signal);
     x->right_out = outlet_new(&x->x_obj, &s_signal);
+
+    DSP::registerLogger(&log);
 
     return (void *)x;
 }

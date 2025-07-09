@@ -1,49 +1,49 @@
+template <typename TVoice, typename TDerived>
+VoiceManager<TVoice, TDerived>::VoiceManager()
+{
+}
+
+template <typename TVoice, typename TDerived>
+VoiceManager<TVoice, TDerived>::~VoiceManager()
+{
+    
+}
 
 template <typename TVoice, typename TDerived>
 void VoiceManager<TVoice, TDerived>::initialize()
 {
-    nextVoiceIndex = 0;
+    midiProcessor.initialize();
+    tuningSystem.initialize();
 }
 
 template <typename TVoice, typename TDerived>
 void VoiceManager<TVoice, TDerived>::setNumVoices(size_t num)
 {
-    voices.resize(num);
-    
-    for (auto &v : voices)
+    allocator.clear();
+
+    for (size_t i = 0; i < num; ++i)
     {
-        if (!v.voice)
-            v.voice = std::make_unique<TVoice>();
+        // Create voice via factory method (returns std::unique_ptr<TVoice>)
+        std::unique_ptr<TVoice> voice = static_cast<TDerived*>(this)->createVoice();
 
-        v.status = VoiceStatus::stopped;
-        v.note = -1;
+        // Transfer ownership to allocator
+        allocator.add(std::move(voice));
     }
-}
-
-template <typename TVoice, typename TDerived>
-ManagedVoice<TVoice>* VoiceManager<TVoice, TDerived>::getNextVoice() 
-{
-    ManagedVoice<TVoice>* v = &voices[nextVoiceIndex];
-    nextVoiceIndex = (nextVoiceIndex + 1) % voices.size();
-    return v;
 }
 
 template <typename TVoice, typename TDerived>
 void VoiceManager<TVoice, TDerived>::handleNote(int note, host_float velocity)
 {
-    currentVoice = getNextVoice();
-}
-
-
-// ===============================================
-
-
-template<typename TVoice, typename TDerived>
-template<typename Method, typename... Args>
-void VoiceManager<TVoice, TDerived>::toAll(Method method, Args&&... args)
-{
-    for (auto& v : voices)
+    if (velocity > 0)
     {
-        (v.voice.get()->*method)(std::forward<Args>(args)...);
+        TVoice* v = allocator.allocate(note);
+        static_cast<TDerived*>(this)->noteOn(v, note);
     }
+    else
+    {
+        TVoice* v = allocator.select(note);
+        static_cast<TDerived*>(this)->noteOff(v);
+        allocator.setReclaimable(note);
+    }
+        
 }

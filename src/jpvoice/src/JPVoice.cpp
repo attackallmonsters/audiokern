@@ -383,7 +383,7 @@ void JPVoice::setAmpGain(dsp_float g)
 }
 
 // Sets the output buffers
-void JPVoice::setOutputBuffer(host_float *bufL, host_float *bufR)
+void JPVoice::setOutputBuffer(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR)
 {
     mixBufferL = bufL;
     mixBufferR = bufR;

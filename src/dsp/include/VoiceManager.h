@@ -3,29 +3,19 @@
 #include <vector>
 #include <memory>
 #include "MidiProcessor.h"
+#include "TunigSystem.h"
+#include "VoiceAllocator.h"
 #include <climits>
-
-enum class VoiceStatus
-{
-    stopped,
-    active 
-};
-
-// Internal wrapper per voice
-template <typename TVoice>
-struct ManagedVoice
-{
-    std::unique_ptr<TVoice> voice;
-    VoiceStatus status = VoiceStatus::stopped;
-    int note = -1; // Assigned MIDI note
-};
 
 template <typename TVoice, typename TDerived>
 class VoiceManager
 {
 public:
     // Ctor
-    VoiceManager() = default;
+    VoiceManager();
+
+    // Dtor
+    virtual ~VoiceManager();
 
     // Initializes the instance
     void initialize();
@@ -36,19 +26,23 @@ public:
     // Handles a note in event
     void handleNote(int note, host_float velocity);
 
-    // Template for sending various method calls to all voices
-    template <typename Method, typename... Args>
-    void toAll(Method method, Args &&...args);
+    // Abstract member for voice instanciation
+    virtual std::unique_ptr<TVoice> createVoice() = 0;
 
-    // MIDI and tuning options
+    // Note on event handeld by derived implementation
+    virtual void noteOn(TVoice *voice, int note) = 0;
+
+    // Note off event handeld by derived implementation
+    virtual void noteOff(TVoice *voice) = 0;
+
+    // MIDI processing
     MidiProcessor midiProcessor;
 
-private:
-    ManagedVoice<TVoice>* getNextVoice();
-    ManagedVoice<TVoice>* currentVoice;
+    // The tuning system
+    TunigSystem tuningSystem;
 
-    std::vector<ManagedVoice<TVoice>> voices;
-    int nextVoiceIndex;
+    // Voice allocation mangement, allocator contains global voice data
+    VoiceAllocator<TVoice> allocator;
 };
 
 #include "VoiceManager.tpp"
