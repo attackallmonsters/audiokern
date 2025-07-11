@@ -144,8 +144,11 @@ void JPVoice::setNumVoices(int count)
         return;
 
     numVoices = count;
-    paramFader.change([=]()
-                      { carrier->setNumVoices(numVoices); });
+    paramFader.change(
+        [=]()
+        {
+            carrier->setNumVoices(numVoices);
+        });
 }
 
 // Sets the volume level of the oscillators
@@ -204,15 +207,17 @@ void JPVoice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
     carrierTmp->setDetune(detune);
     carrierTmp->setNumVoices(numVoices);
 
-    paramFader.change([=]()
-                      {
-         if (carrier != carrierTmp)
-            carrier = carrierTmp;
+    paramFader.change(
+        [=]()
+        {
+            if (carrier == carrierTmp)
+                return;
 
-         carrier->modulationBufferL = modulator->outputBufferL;
-         carrier->modulationBufferR = modulator->outputBufferR;
+            carrier->modulationBufferL = modulator->outputBufferL;
+            carrier->modulationBufferR = modulator->outputBufferR;
 
-         filter.reset(); });
+            filter.reset();
+        });
 }
 
 // Assigns the modulation oscillator
@@ -259,15 +264,17 @@ void JPVoice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
 
     modulatorTmp->setFrequency(modulatorFrequency);
 
-    paramFader.change([=]()
-                      {
-         if (modulator != modulatorTmp)
-            modulator = modulatorTmp;
+    paramFader.change(
+        [=]()
+        {
+            if (modulator == modulatorTmp)
+                return;
 
-         carrier->modulationBufferL = modulator->outputBufferL;
-         carrier->modulationBufferR = modulator->outputBufferR;
+            carrier->modulationBufferL = modulator->outputBufferL;
+            carrier->modulationBufferR = modulator->outputBufferR;
 
-         filter.reset(); });
+            filter.reset();
+        });
 }
 
 // Changes the current noise type (white or pink)
@@ -445,19 +452,19 @@ void JPVoice::computeSamples()
         mixBufferR[i] = mixR;
     }
 
-    //DSP::logBuffer("mix:", mixBufferL);
+    // DSP::logBuffer("mix:", mixBufferL);
 
     // ADSR shares buffer with filter
     filterAdsr.generateBlock();
     filter.generateBlock();
 
-    //DSP::logBuffer("filter:", mixBufferL);
+    // DSP::logBuffer("filter:", mixBufferL);
 
     // amp envelope
     ampAdsr.generateBlock();
     ampAdsr.multiply(mixBufferL, mixBufferR);
 
-    //DSP::logBuffer("amp:", mixBufferL);
+    // DSP::logBuffer("amp:", mixBufferL);
 
     paramFader.processChanges();
 }
