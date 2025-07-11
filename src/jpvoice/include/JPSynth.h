@@ -12,7 +12,7 @@ struct SynthVoice
     JPVoice jpvoice;
 };
 
-class JPSynth 
+class JPSynth
 {
 public:
     // Static instance
@@ -25,7 +25,7 @@ public:
     void noteIn(int note, host_float velocity);
 
     // Computes the samples of all voices
-    void computeSamples();    
+    void processBlock();
 
 private:
     // Creates the voices

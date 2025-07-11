@@ -91,6 +91,7 @@ void WavetableOscillator::setFrequency(dsp_float value)
         return;
 
     frequency = clampmin(value, 0.0);
+    phaseIncrement = frequency / DSP::sampleRate;
 }
 
 // Sets the modulation index for frequency modulation.

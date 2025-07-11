@@ -23,8 +23,6 @@ typedef struct _jpvoice
     dsp_float right;
     dsp_float samplerate;
     size_t blockSize;
-    ADSRParams filterADSR;
-    ADSRParams ampADSR;
 } t_jpvoice;
 
 bool testDSP()
@@ -441,7 +439,7 @@ void jpvoice_tilde_drive(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom * /*arg
 }
 
 // Filter ADSR [fltadsr att dec sus rel cutoff attshape relshape(
-void jpvoice_tilde_fltadsr(t_jpvoice * x, t_symbol *, int argc, t_atom *argv)
+void jpvoice_tilde_fltadsr(t_jpvoice * x, t_symbol *, int argc, t_atom */*argv*/)
 {
     if (!testDSP())
     {
@@ -454,18 +452,18 @@ void jpvoice_tilde_fltadsr(t_jpvoice * x, t_symbol *, int argc, t_atom *argv)
         return;
     }
 
-    x->filterADSR.attackTime = atom_getfloat(&argv[0]);
-    x->filterADSR.decayTime = atom_getfloat(&argv[1]);
-    x->filterADSR.sustainLevel = atom_getfloat(&argv[2]);
-    x->filterADSR.releaseTime = atom_getfloat(&argv[3]);
-    x->filterADSR.attackShape = atom_getfloat(&argv[4]);
-    x->filterADSR.releaseShape = atom_getfloat(&argv[5]);
+    // x->filterADSR.attackTime = atom_getfloat(&argv[0]);
+    // x->filterADSR.decayTime = atom_getfloat(&argv[1]);
+    // x->filterADSR.sustainLevel = atom_getfloat(&argv[2]);
+    // x->filterADSR.releaseTime = atom_getfloat(&argv[3]);
+    // x->filterADSR.attackShape = atom_getfloat(&argv[4]);
+    // x->filterADSR.releaseShape = atom_getfloat(&argv[5]);
 
     // x->voice->setFilterADSR(x->filterADSR);
 }
 
 // Filter ADSR [ampadsr att dec sus rel cutoff attshape relshape(
-void jpvoice_tilde_ampadsr(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpvoice_tilde_ampadsr(t_jpvoice *x, t_symbol *, int argc, t_atom */*argv*/)
 {
     if (!testDSP())
     {
@@ -478,12 +476,12 @@ void jpvoice_tilde_ampadsr(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
         return;
     }
 
-    x->ampADSR.attackTime = atom_getfloat(&argv[0]);
-    x->ampADSR.decayTime = atom_getfloat(&argv[1]);
-    x->ampADSR.sustainLevel = atom_getfloat(&argv[2]);
-    x->ampADSR.releaseTime = atom_getfloat(&argv[3]);
-    x->ampADSR.attackShape = atom_getfloat(&argv[4]);
-    x->ampADSR.releaseShape = atom_getfloat(&argv[5]);
+    // x->ampADSR.attackTime = atom_getfloat(&argv[0]);
+    // x->ampADSR.decayTime = atom_getfloat(&argv[1]);
+    // x->ampADSR.sustainLevel = atom_getfloat(&argv[2]);
+    // x->ampADSR.releaseTime = atom_getfloat(&argv[3]);
+    // x->ampADSR.attackShape = atom_getfloat(&argv[4]);
+    // x->ampADSR.releaseShape = atom_getfloat(&argv[5]);
 
     // x->voice->setAmpADSR(x->ampADSR);
 }
@@ -523,7 +521,7 @@ void jpvoice_tilde_adsroneshot(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *
 // DSP perform function
 t_int *jpvoice_tilde_perform(t_int *w)
 {
-    synth.computeSamples();
+    synth.processBlock();
     return (w + 5);
 }
 

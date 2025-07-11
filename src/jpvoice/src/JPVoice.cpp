@@ -12,7 +12,6 @@ JPVoice::JPVoice()
 // It is assumed that carrier and modulator were allocated using 'new' and are not shared elsewhere.
 JPVoice::~JPVoice()
 {
-    DSP::log(">>>>>>>>>>>>>>>>> ~JPVoice");
 }
 
 void JPVoice::initialize()
@@ -68,6 +67,17 @@ void JPVoice::initialize()
     carrier->modulationBufferR = modulator->outputBufferR;
 
     linkADSR(true);
+
+    ADSRParams p;
+    p.attackTime = 10.0;
+    p.decayTime = 0.0;
+    p.sustainLevel = 1.0;
+    p.releaseTime = 750.0;
+    p.attackShape = 0.0;
+    p.releaseShape = 0.0;
+
+    setFilterADSR(p);
+    setAmpADSR(p);
 
     setCarrierFrequency(0.0);
     setModulatorFrequency(0.0);
@@ -378,9 +388,6 @@ void JPVoice::setOutputBuffer(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR)
 // Next sample block generation
 void JPVoice::computeSamples()
 {
-    // Signal next block processing for DSP
-    DSP::nextBlock();
-
     modulator->generateBlock();
 
     carrier->generateBlock();
@@ -433,7 +440,7 @@ void JPVoice::computeSamples()
         mixBufferR[i] = mixR;
     }
 
-    
+    // DSP::logTime(500);
     // DSP::logBuffer("modulator:", modulator->outputBufferL);
     // DSP::logBuffer("carrier:", carrier->outputBufferL);
     // DSP::logBuffer("mix:", mixBufferL);
