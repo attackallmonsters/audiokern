@@ -61,9 +61,6 @@ public:
     // Enables oscillator sync
     void setSyncEnabled(bool enable);
 
-    // Sets the filter mode
-    void setFilterMode(FilterMode mode);
-
     // Sets the carriers feedback amount
     void setFeedbackCarrier(host_float fb);
 
@@ -78,6 +75,9 @@ public:
 
     // Sets the filter drive
     void setFilterDrive(host_float d);
+
+    // Sets the filter mode
+    void setFilterMode(FilterMode mode);
 
     // Sets the filter envelope parameters
     void setFilterADSR(ADSRParams adsr);
@@ -120,5 +120,5 @@ private:
     MidiProcessor midi;
 
     // The number of voices
-    const size_t voiceCount = 1;
+    const size_t voiceCount = 6;
 };

@@ -48,7 +48,6 @@ enum class FMType
 // Enum for selecting the filter mode
 enum class FilterMode
 {
-    LPF12,
-    HPF12,
-    BPF12
+    LP,
+    HP
 };

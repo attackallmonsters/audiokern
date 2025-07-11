@@ -344,7 +344,7 @@ void jpvoice_tilde_sync(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 }
 
 // [filtermode <0|1|2>] → 0 = LPF12, 1 = BPF12, 2 = HPF12
-void jpvoice_tilde_filtermode(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpvoice_tilde_mode(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -353,18 +353,24 @@ void jpvoice_tilde_filtermode(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *a
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: filtermode <1=LPF12 | 2=BPF12 | 3=HPF12>");
+        post("[jpvoice~] usage: mode <0=LP | 1=HP>");
         return;
     }
 
     int mode = atom_getint(argv);
-    if (mode < 0 || mode > 2)
-    {
-        post("[jpvoice~] filtermode out of range 1 - 3, clamped.");
-    }
 
-    // TODO
-    //synth.setFilterMode(static_cast<FilterMode>(clamp(mode, 1, 3)));
+    switch (mode)
+    {
+    case 0:
+        synth.setFilterMode(FilterMode::LP);
+        break;
+    case 1:
+        synth.setFilterMode(FilterMode::HP);
+        break;    
+    default:
+        synth.setFilterMode(FilterMode::LP);
+        break;
+    }
 }
 
 // [carrierfb (0 - 1.2)]
@@ -618,6 +624,7 @@ extern "C" void jpvoice_tilde_setup(void)
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_cutoff, gensym("cutoff"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_reso, gensym("reso"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_drive, gensym("drive"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_mode, gensym("mode"), A_GIMME, 0);
 
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_fltadsr, gensym("fltadsr"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_ampadsr, gensym("ampadsr"), A_GIMME, 0);

@@ -3,6 +3,7 @@
 
 #include "DSPObject.h"
 #include "DSPSampleBuffer.h"
+#include "VoiceOptions.h"
 #include "dsp_types.h"
 #include "clamp.h"
 #include "dsp_math.h"
@@ -19,6 +20,9 @@ public:
 
     // Sets the filter drive
     void setDrive(dsp_float value);
+
+    // Sets the filter mode (LP, HP)
+    void setFilterMode(FilterMode mode);
 
     // The samples to be filtered
     DSPSampleBuffer outputBufferL;
@@ -52,4 +56,7 @@ private:
 
     // Control buffer for resonance    
     DSPSampleBuffer resoInitBuffer;
+
+    // Filtermode, Korgon supports LP and HP
+    FilterMode filterMode;
 };

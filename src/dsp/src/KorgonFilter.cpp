@@ -28,6 +28,24 @@ void KorgonFilter::initialize()
     drive = 1.0;
 }
 
+void KorgonFilter::setFilterMode(FilterMode mode)
+{
+    switch (mode)
+    {
+    case FilterMode::LP:
+        filterMode = FilterMode::LP;
+        break;
+    case FilterMode::HP:
+        filterMode = FilterMode::HP;
+        break;
+    default:
+        filterMode = FilterMode::LP;
+        break;
+    }
+
+    reset();
+}
+
 // Sets the filter drive
 void KorgonFilter::setDrive(dsp_float value)
 {
@@ -53,12 +71,21 @@ void KorgonFilter::processBlock(DSPObject *dsp)
     dsp_float drive = flt->drive;
     dsp_float reso_scale;
 
+    if (!std::isfinite(y1L))
+        y1L = 0.0;
+    if (!std::isfinite(y2L))
+        y2L = 0.0;
+    if (!std::isfinite(y1R))
+        y1R = 0.0;
+    if (!std::isfinite(y2R))
+        y2R = 0.0;
+
     for (size_t i = 0; i < blocksize; ++i)
     {
         left = (flt->outputBufferL)[i];
         right = (flt->outputBufferR)[i];
-        cutoff = clamp((flt->cutoffBuffer)[i], 0.0, 20000.0);
-        reso = (flt->resoBuffer)[i];
+        cutoff = (flt->cutoffBuffer)[i];
+        reso = flt->filterMode == FilterMode::LP ? (flt->resoBuffer)[i] : (flt->resoBuffer)[i] / 4;
 
         if (cutoff > 15000.0)
         {
@@ -88,7 +115,7 @@ void KorgonFilter::processBlock(DSPObject *dsp)
         // Apply asymmetric soft clip
         left = y2L * drive;
         left = (left >= 0.0) ? fast_tanh(left) : 1.5 * fast_tanh(0.5 * left);
-        (flt->outputBufferL)[i] = left;
+        (flt->outputBufferL)[i] = flt->filterMode == FilterMode::LP ? left : (flt->outputBufferL)[i] - y1L;
 
         // === right ===
         feedback = clamp(reso * reso_scale * (y2R - right), -15.0, 15.0);
@@ -103,7 +130,7 @@ void KorgonFilter::processBlock(DSPObject *dsp)
         // Apply asymmetric soft clip
         right = y2R * drive;
         right = (right >= 0.0) ? fast_tanh(right) : 1.5 * fast_tanh(0.5 * right);
-        (flt->outputBufferR)[i] = right;
+        (flt->outputBufferR)[i] = flt->filterMode == FilterMode::LP ? right : (flt->outputBufferR)[i] - y1R;
     }
 
     flt->y1L = y1L;

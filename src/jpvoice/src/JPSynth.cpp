@@ -186,15 +186,6 @@ void JPSynth::setSyncEnabled(bool enable)
         });
 }
 
-void JPSynth::setFilterMode(FilterMode mode)
-{
-    allocator.forEachVoice(
-        [&](auto &v)
-        {
-            v.jpvoice.setFilterMode(mode);
-        });
-}
-
 void JPSynth::setFeedbackCarrier(host_float fb)
 {
     allocator.forEachVoice(
@@ -237,6 +228,16 @@ void JPSynth::setFilterDrive(host_float d)
         [&](auto &v)
         {
             v.jpvoice.setFilterDrive(d);
+        });
+}
+
+// Sets the filter mode
+void JPSynth::setFilterMode(FilterMode mode)
+{
+    allocator.forEachVoice(
+        [&](auto &v)
+        {
+            v.jpvoice.setFilterMode(mode);
         });
 }
 
