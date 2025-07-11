@@ -207,12 +207,14 @@ void JPVoice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
     carrierTmp->setDetune(detune);
     carrierTmp->setNumVoices(numVoices);
 
+    if (carrier == carrierTmp)
+    {
+        return;
+    }
+
     paramFader.change(
         [=]()
         {
-            if (carrier == carrierTmp)
-                return;
-
             carrier->modulationBufferL = modulator->outputBufferL;
             carrier->modulationBufferR = modulator->outputBufferR;
 
@@ -267,9 +269,6 @@ void JPVoice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
     paramFader.change(
         [=]()
         {
-            if (modulator == modulatorTmp)
-                return;
-
             carrier->modulationBufferL = modulator->outputBufferL;
             carrier->modulationBufferR = modulator->outputBufferR;
 
