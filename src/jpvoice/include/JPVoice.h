@@ -61,14 +61,11 @@ public:
     // Enables or disables oscillator sync
     void setSyncEnabled(bool enabled);
 
-    // Sets the pitch offset for the modulator
-    void setPitchOffset(int offset);
-
-    // Sets the fine tunig for the modulator
-    void setFineTune(dsp_float fine);
-
     // Sets the frequency of oscillator 1/carrier
-    void setFrequency(dsp_float f);
+    void setCarrierFrequency(dsp_float f);
+
+    // Sets the frequency of oscillator 2/modulator
+    void setModulatorFrequency(dsp_float f);
 
     // Sets the number of voices
     void setNumVoices(int count);
@@ -136,7 +133,8 @@ private:
     WavetableOscillator *carrierTmp;   // Carrier oscillator for oscillator change
     WavetableOscillator *modulatorTmp; // Modulator oscillator for oscillator change
 
-    dsp_float frequency = 0.0; // Current frequency
+    dsp_float carrierFrequency = 0.0;   // Current frequency carrier
+    dsp_float modulatorFrequency = 0.0; // Current frequency modulator
 
     dsp_float modulationIndex = 0; // FM depth: how much modulator modulates carrier
 
@@ -146,9 +144,7 @@ private:
 
     dsp_float detune = 0;       // Detune factor supersaw oszillator
     dsp_float pulseWidth = 0.5; // Pulse width square oscillator
-    int pitchOffset = 0;        // Pitch offset modulator
-    dsp_float fineTune = 0;     // Fine tune modulator
-
+    
     // Oscillators
     NoiseGenerator noise;
     SineWavetable sineCarrier;
@@ -180,7 +176,6 @@ private:
     bool adsrLinked;
     void setFilterADSRLink(ADSRParams &params, bool setOther);
     void setAmpADSRLink(ADSRParams &params, bool setOther);
-
 
     // DSP working vars
     dsp_float carrierLeft, carrierRight;

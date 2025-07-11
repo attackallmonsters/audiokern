@@ -39,8 +39,6 @@ void WavetableOscillator::initialize()
     modulationBufferR.create(DSP::blockSize);
 
     setFrequency(0.0);
-    setFineTune(0);
-    setPitchOffset(0);
     setModIndex(0);
     setNumVoices(1);
     setDetune(0.03);
@@ -86,12 +84,6 @@ dsp_float WavetableOscillator::getFrequency()
     return frequency;
 }
 
-// Gets the calculated FM frequency
-dsp_float WavetableOscillator::getCalculatedFrequency()
-{
-    return calculatedFrequency;
-}
-
 // Sets the frequency
 void WavetableOscillator::setFrequency(dsp_float value)
 {
@@ -99,36 +91,6 @@ void WavetableOscillator::setFrequency(dsp_float value)
         return;
 
     frequency = clampmin(value, 0.0);
-    setCalculatedFrequency(frequency);
-}
-
-// Sets the pitch offset in semi tones
-void WavetableOscillator::setPitchOffset(int value)
-{
-    pitchOffset = clamp(value, -24, 24);
-    setCalculatedFrequency(frequency);
-}
-
-// Sets the fine tuning in cent
-void WavetableOscillator::setFineTune(dsp_float value)
-{
-    fineTune = clamp(value, -100.0, 100.0);
-    setCalculatedFrequency(frequency);
-}
-
-// Calculates the effective frequency based on base frequency,
-// pitch offset (in semitones), and fine-tuning (in cents).
-// Then updates the phase increment accordingly.
-void WavetableOscillator::setCalculatedFrequency(dsp_float f)
-{
-    // Convert pitch offset and fine tune to a total semitone offset
-    dsp_float semitoneOffset = static_cast<dsp_float>(pitchOffset) + (fineTune / 100.0);
-
-    // Apply equal temperament formula: f = f0 * 2^(n/12)
-    calculatedFrequency = f * std::pow(2.0, semitoneOffset / 12.0);
-
-    // Update phase increment for waveform generation
-    phaseIncrement = calculatedFrequency / DSP::sampleRate;
 }
 
 // Sets the modulation index for frequency modulation.
@@ -136,12 +98,6 @@ void WavetableOscillator::setCalculatedFrequency(dsp_float f)
 void WavetableOscillator::setModIndex(dsp_float index)
 {
     modulationIndex = clamp(index, 0.0, 100);
-
-    if (modulationIndex == 0)
-    {
-        setFrequency(frequency);
-        return;
-    }
 }
 
 void WavetableOscillator::setNumVoices(int count)
@@ -228,22 +184,20 @@ void WavetableOscillator::processBlock(DSPObject *dsp)
 {
     WavetableOscillator *osc = static_cast<WavetableOscillator *>(dsp);
 
-    size_t blocksize = DSP::blockSize;
     dsp_float phase = osc->currentPhase;
-    dsp_float frequency = osc->getCalculatedFrequency();
     bool wrappedFlag = false;
 
     // Select wavetable once per sample block
-    if (frequency != osc->lastFrequency)
+    if (osc->frequency != osc->lastFrequency)
     {
-        osc->selectTable(frequency);
-        osc->lastFrequency = frequency;
+        osc->selectTable(osc->frequency);
+        osc->lastFrequency = osc->frequency;
     }
 
     const DSPSampleBuffer &waveTable = *(osc->selectedWaveTable);
     size_t waveTableSize = osc->selectedWaveTableSize;
 
-    for (size_t i = 0; i < blocksize; ++i)
+    for (size_t i = 0; i < DSP::blockSize; ++i)
     {
         dsp_float modLeft = osc->modulationBufferL[i];
         dsp_float modRight = osc->modulationBufferR[i];
@@ -255,7 +209,7 @@ void WavetableOscillator::processBlock(DSPObject *dsp)
 
             for (auto &v : osc->voices)
             {
-                dsp_float voiceFreq = frequency * (1.0 + v.detune_ratio);
+                dsp_float voiceFreq = osc->frequency * (1.0 + v.detune_ratio);
 
                 // Modulation
                 dsp_float modSignal = (v.gainL > v.gainR) ? modLeft : modRight;

@@ -58,8 +58,6 @@ deploy:
 	@mkdir -p $(DEPLOY_DIR)
 	@echo "Deploying to $(DEPLOY_DIR)"
 	cp $(OUT_FILE) $(DEPLOY_DIR)/$(LIB_NAME)
-	cp ../../bin/adsr/$(DEPLOY_BASE)/adsr~.pd_linux $(DEPLOY_DIR)
-	cp ../../bin/lfo/$(DEPLOY_BASE)/lfo~.pd_linux $(DEPLOY_DIR)
 
 # === Clean ===
 clean:

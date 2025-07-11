@@ -42,20 +42,11 @@ public:
     // Sets the detune factor for the voices
     void setDetune(dsp_float value);
 
-    // Sets the desired oscillator frequency in Hertz
+    // Sets the oscillation frequency
     void setFrequency(dsp_float value);
-
-    // Sets the pitch offset in semi tones
-    void setPitchOffset(int value);
-
-    // Sets the fine tuning in cent
-    void setFineTune(dsp_float value);
 
     // Gets the current frequency
     dsp_float getFrequency();
-
-    // Gets the calculated frequency (base + pitchOffset + finetune))
-    dsp_float getCalculatedFrequency();
 
     // Sets the modulation index for frequency modulation.
     // This controls the intensity of the frequency modulation effect.
@@ -101,11 +92,6 @@ private:
     // Next sample block generation
     static void processBlock(DSPObject *dsp);
 
-    // Calculates the effective frequency based on base frequency,
-    // pitch offset (in semitones), and fine-tuning (in cents).
-    // Then updates the phase increment accordingly.
-    void setCalculatedFrequency(dsp_float f);
-
     // Loads a wavetable
     bool load();
 
@@ -134,7 +120,6 @@ private:
     dsp_float detune = 0.03;
 
     dsp_float frequency;           // The desired oscillator frequency in Hertz
-    dsp_float calculatedFrequency; // The calculated FM frequency in Hertz
     int pitchOffset;               // offset in half tones
     dsp_float fineTune;            // fine tune in cent
     dsp_float modulationIndex = 0; // Phase modulation depth: how much modulator modulates phase of carrier

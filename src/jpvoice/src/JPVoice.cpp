@@ -12,18 +12,11 @@ JPVoice::JPVoice()
 // It is assumed that carrier and modulator were allocated using 'new' and are not shared elsewhere.
 JPVoice::~JPVoice()
 {
+    DSP::log(">>>>>>>>>>>>>>>>> ~JPVoice");
 }
 
 void JPVoice::initialize()
 {
-    if (!DSP::isInitialized())
-    {
-        DSP::log("DSP not initialized. Do DSP::initializeAudio first.");
-        throw("DSP not initialized. Do DSP::initializeAudio first.");
-    }
-
-    DSP::log("=====> Initializing jpvoice...");
-
     DSPObject::initialize();
 
     modulationIndex = 0;
@@ -76,15 +69,12 @@ void JPVoice::initialize()
 
     linkADSR(true);
 
-    setFrequency(0.0);
+    setCarrierFrequency(0.0);
+    setModulatorFrequency(0.0);
     setDetune(0.0);
     setSyncEnabled(false);
-    setPitchOffset(0.0);
-    setFineTune(0.0);
     setNumVoices(1);
     setModIndex(0.0);
-
-    DSP::log("=====> jpvoice initialized");
 }
 
 // Start ADSRs
@@ -116,26 +106,18 @@ void JPVoice::setSyncEnabled(bool enabled)
     syncEnabled = enabled;
 }
 
-// Sets the pitch offset for the modulator
-void JPVoice::setPitchOffset(int offset)
-{
-    pitchOffset = offset;
-    modulator->setPitchOffset(pitchOffset);
-}
-
-// Sets the fine tunig for the modulator
-void JPVoice::setFineTune(dsp_float fine)
-{
-    fineTune = fine;
-    modulator->setFineTune(fineTune);
-}
-
-// Sets the current frequency
-void JPVoice::setFrequency(dsp_float f)
+// Sets the current frequency for the carrier
+void JPVoice::setCarrierFrequency(dsp_float f)
 {
     carrier->setFrequency(f);
+    carrierFrequency = f;
+}
+
+// Sets the current frequency for the modulator
+void JPVoice::setModulatorFrequency(dsp_float f)
+{
     modulator->setFrequency(f);
-    frequency = f;
+    modulatorFrequency = f;
 }
 
 // Sets the detune factorjpvoice_tilde_sync
@@ -171,8 +153,6 @@ void JPVoice::setNoiseMix(dsp_float mix)
 // Assigns the carrier oscillator
 void JPVoice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
 {
-    dsp_float f = (carrier) ? carrier->getFrequency() : 0.0;
-
     switch (oscillatorType)
     {
     case CarrierOscillatiorType::Saw:
@@ -209,7 +189,7 @@ void JPVoice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
         return;
     }
 
-    carrierTmp->setFrequency(f);
+    carrierTmp->setFrequency(carrierFrequency);
     carrierTmp->setModIndex(modulationIndex);
     carrierTmp->setDetune(detune);
     carrierTmp->setNumVoices(numVoices);
@@ -267,9 +247,7 @@ void JPVoice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
         return;
     }
 
-    modulatorTmp->setFrequency(frequency);
-    modulatorTmp->setPitchOffset(pitchOffset);
-    modulatorTmp->setFineTune(fineTune);
+    modulatorTmp->setFrequency(modulatorFrequency);
 
     paramFader.change([=]()
                       {
@@ -390,6 +368,7 @@ void JPVoice::setOutputBuffer(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR)
 
     paramFader.outputBufferL = mixBufferL;
     paramFader.outputBufferR = mixBufferR;
+
     filter.outputBufferL = mixBufferL;
     filter.outputBufferR = mixBufferR;
     filter.cutoffBuffer = filterAdsr.outputBuffer;
@@ -453,6 +432,11 @@ void JPVoice::computeSamples()
         mixBufferL[i] = mixL;
         mixBufferR[i] = mixR;
     }
+
+    
+    // DSP::logBuffer("modulator:", modulator->outputBufferL);
+    // DSP::logBuffer("carrier:", carrier->outputBufferL);
+    // DSP::logBuffer("mix:", mixBufferL);
 
     // ADSR shares buffer with filter
     filterAdsr.generateBlock();

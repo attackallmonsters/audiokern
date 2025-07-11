@@ -4,7 +4,7 @@
 #include "clamp.h"
 #include <cmath>
 
-class TunigSystem
+class TuningSystem
 {
 public:
     // Initialization
@@ -23,7 +23,7 @@ public:
     void setFinetune(dsp_float ft);
 
     // Calculates the frequency of the given interval
-    dsp_float calculateIntervallFrequency(int note);
+    dsp_float frequency(int note);
 
 private:
     dsp_float baseFrequency;

@@ -1,6 +1,16 @@
 #pragma once
 #include <vector>
-#include "ManagedVoice.h"
+
+// Structure representing a managed voice with metadata
+template <typename TVoice>
+struct ManagedVoice
+{
+    std::unique_ptr<TVoice> voice; // Owned voice instance
+    int age = 0;                   // Allocation age counter
+    int note = -1;                 // Last assigned MIDI note
+    bool reclaimable = true;       // Can be reused if needed (e.g., after Note-Off)
+};
+
 
 // Allocates and tracks voices for polyphonic playback
 template <typename TVoice>
@@ -31,6 +41,10 @@ public:
 
     // Return the note of a voice
     int getNote(int index) const;
+
+    // 
+    template <typename Func>
+    void forEachVoice(Func&& fn);
 
 private:
     std::vector<ManagedVoice<TVoice>> voices;

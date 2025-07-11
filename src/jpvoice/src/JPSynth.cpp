@@ -16,9 +16,11 @@ void JPSynth::initialize(host_float *bufL, host_float *bufR)
 
     DSP::log("=====> Initializing jpvoice...");
 
-    VoiceManager::initialize();
+    carrierTuning.initialize();
+    modulatorTuning.initialize();
+    midi.initialize();
 
-    setNumVoices(voiceCount);
+    createVoices();
 
     mixerL.clear();
     mixerR.clear();
@@ -26,13 +28,11 @@ void JPSynth::initialize(host_float *bufL, host_float *bufR)
     mixerL.create(voiceCount, bufL);
     mixerR.create(voiceCount, bufR);
 
-    for (int i = 0; i < voiceCount; ++i)
+    for (size_t i = 0; i < voiceCount; ++i)
     {
-        JPVoice *voice = allocator.getVoice(i);
+        SynthVoice *voice = allocator.getVoice(i);
 
-        voice->initialize();
-
-        voice->setOutputBuffer(mixerL.getBuffer(i), mixerR.getBuffer(i));
+        voice->jpvoice.setOutputBuffer(mixerL.getBuffer(i), mixerR.getBuffer(i));
     }
 
     DSP::log("=====> jpvoice initialized");
@@ -40,34 +40,49 @@ void JPSynth::initialize(host_float *bufL, host_float *bufR)
 
 void JPSynth::noteIn(int note, host_float velocity)
 {
-    handleNote(note, velocity);
-}
+    if (velocity > 0)
+    {
+        allocator.forEachVoice(
+            [&](auto &v)
+            {
+                v.jpvoice.setCarrierFrequency(carrierTuning.frequency(note));
+                v.jpvoice.setModulatorFrequency(modulatorTuning.frequency(note));
+                v.jpvoice.setAmpGain(midi.rmsVelocity(velocity));
+            });
 
-std::unique_ptr<JPVoice> JPSynth::createVoice()
-{
-    return std::make_unique<JPVoice>();
+        currentVoice = allocator.allocate(note);
+        currentVoice->jpvoice.playNote();
+    }
+    else
+    {
+        currentVoice = allocator.select(note);
+        currentVoice->jpvoice.stopNote();
+        allocator.setReclaimable(note);
+    }
 }
 
 void JPSynth::computeSamples()
 {
     for (auto *voice : allocator.getVoices())
     {
-        voice->computeSamples();
+        voice->jpvoice.computeSamples();
     }
 
     mixerL.mix();
     mixerR.mix();
 }
 
-void JPSynth::noteOn(JPVoice *voice, int note)
+void JPSynth::createVoices()
 {
-    voice->setFrequency(tuningSystem.calculateIntervallFrequency(note));
-    voice->playNote();
+    allocator.clear();
 
-    tuningSystem.setFinetune(10);
-}
+    for (size_t i = 0; i < voiceCount; ++i)
+    {
+        std::unique_ptr<SynthVoice> voice = std::make_unique<SynthVoice>();
 
-void JPSynth::noteOff(JPVoice *voice)
-{
-    voice->stopNote();
+        voice->jpvoice.initialize();
+
+        // Transfer ownership to allocator
+        allocator.add(std::move(voice));
+    }
 }

@@ -118,3 +118,14 @@ int VoiceAllocator<TVoice>::getNote(int index) const
 {
     return voices[index].note;
 }
+
+template <typename TVoice>
+template <typename Func>
+void VoiceAllocator<TVoice>::forEachVoice(Func &&fn)
+{
+    for (auto &managed : voices)
+    {
+        if (managed.voice)
+            fn(*managed.voice);
+    }
+}

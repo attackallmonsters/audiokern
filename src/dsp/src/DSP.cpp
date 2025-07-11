@@ -73,9 +73,8 @@ void DSP::initializeAudio(dsp_float rate, size_t size)
 
     DSP::log("DSP audio settings: samplerate is %f", sampleRate);
     DSP::log("DSP audio settings: block size is %i", blockSize);
-
 #ifdef DEBUG
-    logTime(100);
+    DSP::logTime(300);
 #endif
 
     initialized = true;

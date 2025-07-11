@@ -1,6 +1,6 @@
-#include "TunigSystem.h"
+#include "TuningSystem.h"
 
-void TunigSystem::initialize()
+void TuningSystem::initialize()
 {
     setBaseFrequency(440.0);
     setIntervalSteps(12.0);
@@ -8,27 +8,27 @@ void TunigSystem::initialize()
     setFinetune(0.0);
 }
 
-void TunigSystem::setBaseFrequency(dsp_float f)
+void TuningSystem::setBaseFrequency(dsp_float f)
 {
     baseFrequency = clampmin(f, 0.0);
 }
 
-void TunigSystem::setIntervalSteps(dsp_float n)
+void TuningSystem::setIntervalSteps(dsp_float n)
 {
     intervalSteps = clampmin(n, 1.0);
 }
 
-void TunigSystem::setHalftoneOffset(int halfTones)
+void TuningSystem::setHalftoneOffset(int halfTones)
 {
     halftoneOffset = clamp(halfTones, -127, 127);
 }
 
-void TunigSystem::setFinetune(dsp_float ft)
+void TuningSystem::setFinetune(dsp_float ft)
 {
     finetune = clamp(ft, -1200, 1200) / 1200.0;
 }
 
-dsp_float TunigSystem::calculateIntervallFrequency(int note)
+dsp_float TuningSystem::frequency(int note)
 {
     return baseFrequency * std::pow(2.0, (clampmin(note + halftoneOffset, 1) - 69) / intervalSteps + finetune);
 }
