@@ -291,6 +291,7 @@ void JPVoice::setFeedbackModulator(dsp_float feedback)
 // Sets the filter type
 void JPVoice::setFilterMode(FilterMode /*mode*/)
 {
+    // TODO
 }
 
 // Sets the cutoff frequency
@@ -325,6 +326,8 @@ void JPVoice::setAmpADSR(ADSRParams &params)
 
 void JPVoice::setFilterADSRLink(ADSRParams &params, bool setOther)
 {
+    DSP::log("FILTER: A: 5f; D: %f; S: %f; R: %f", params.attackTime, params.decayTime, params.sustainLevel, params.releaseTime);
+
     filterAdsr.setAttack(params.attackTime);
     filterAdsr.setDecay(params.decayTime);
     filterAdsr.setSustain(params.sustainLevel);
@@ -340,6 +343,8 @@ void JPVoice::setFilterADSRLink(ADSRParams &params, bool setOther)
 
 void JPVoice::setAmpADSRLink(ADSRParams &params, bool setOther)
 {
+    DSP::log("AMP: A: 5f; D: %f; S: %f; R: %f", params.attackTime, params.decayTime, params.sustainLevel, params.releaseTime);
+
     ampAdsr.setAttack(params.attackTime);
     ampAdsr.setDecay(params.decayTime);
     ampAdsr.setSustain(params.sustainLevel);
@@ -359,7 +364,7 @@ void JPVoice::linkADSR(bool isEnabled)
     adsrLinked = isEnabled;
 }
 // Set adrss to one shot mode
-void JPVoice::setAdsrOneshot(bool isEnabled)
+void JPVoice::setADSROneshot(bool isEnabled)
 {
     filterAdsr.setOneShot(isEnabled);
     ampAdsr.setOneShot(isEnabled);
@@ -440,18 +445,19 @@ void JPVoice::computeSamples()
         mixBufferR[i] = mixR;
     }
 
-    // DSP::logTime(500);
-    // DSP::logBuffer("modulator:", modulator->outputBufferL);
-    // DSP::logBuffer("carrier:", carrier->outputBufferL);
-    // DSP::logBuffer("mix:", mixBufferL);
+    //DSP::logBuffer("mix:", mixBufferL);
 
     // ADSR shares buffer with filter
     filterAdsr.generateBlock();
     filter.generateBlock();
 
+    //DSP::logBuffer("filter:", mixBufferL);
+
     // amp envelope
     ampAdsr.generateBlock();
     ampAdsr.multiply(mixBufferL, mixBufferR);
+
+    //DSP::logBuffer("amp:", mixBufferL);
 
     paramFader.processChanges();
 }

@@ -11,10 +11,25 @@ public:
     void initialize();
 
     // Sets the global loudness scale
-    void setLoudnessScale(host_float s);
+    void setLoudnessScale(host_float scale);
 
-    // Converts MIDI velocity to DSP gain
-    host_float rmsVelocity(int velocity);
+    // Normalizes velocity to -1/1
+    host_float normalizeVelocity(host_float velocity);
+
+    // Normalizes velocity to -1/1 (RMS scaled)
+    host_float normalizeVelocityRMS(host_float velocity);
+
+    // Normalizes pitch bend to -1/1
+    host_float normalizePitchBend(host_float bend);
+
+    // Normalizes pitch bend to -1/1 (RMS scaled)
+    host_float normalizePitchBendRMS(host_float bend);
+
+    // Normalizes modulation value to -1/1
+    host_float normalizeModulation(host_float mod);
+
+    // Normalizes modulation value to -1/1 (RMS scaled)
+    host_float normalizeModulationRMS(host_float mod);
 
 private:
     host_float loudnessScale;

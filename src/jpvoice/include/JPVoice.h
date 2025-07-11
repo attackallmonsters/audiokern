@@ -119,7 +119,7 @@ public:
     void linkADSR(bool isEnabled);
 
     // Set adrss to one shot mode
-    void setAdsrOneshot(bool isEnabled);
+    void setADSROneshot(bool isEnabled);
 
     // Sets the amp envelope gain
     void setAmpGain(dsp_float g);
