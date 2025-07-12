@@ -18,6 +18,7 @@ void JPSynth::initialize(host_float *bufL, host_float *bufR)
 
     carrierTuning.initialize();
     modulatorTuning.initialize();
+    limiter.initialize();
     midi.initialize();
 
     createVoices();
@@ -27,6 +28,9 @@ void JPSynth::initialize(host_float *bufL, host_float *bufR)
 
     mixerL.create(voiceCount, bufL);
     mixerR.create(voiceCount, bufR);
+
+    limiter.outputBufferL = bufL;
+    limiter.outputBufferR = bufR;
 
     for (size_t i = 0; i < voiceCount; ++i)
     {
@@ -290,6 +294,10 @@ void JPSynth::processBlock()
 
     mixerL.mix();
     mixerR.mix();
+
+    // limiter.generateBlock();
+
+    // DSP::logBuffer("TAN", limiter.outputBufferL);
 }
 
 void JPSynth::createVoices()

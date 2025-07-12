@@ -1,4 +1,3 @@
-// === ms20filter.h ===
 #pragma once
 
 #include "DSPObject.h"
@@ -19,7 +18,7 @@ public:
     void initialize() override;
 
     // Sets the filter drive
-    void setDrive(dsp_float value);
+    void setDrive(host_float value);
 
     // Sets the filter mode (LP, HP)
     void setFilterMode(FilterMode mode);
@@ -39,14 +38,14 @@ public:
 
 private:
     // Filter state variables:
-    dsp_float y1L;   // Output of first integrator left
-    dsp_float y2L;   // Output of second integrator (filter output) left
-    dsp_float y1R;   // Output of first integrator right
-    dsp_float y2R;   // Output of second integrator (filter output) right
-    dsp_float T;     // Simplified impulse invariant/bilinear transformation
-    dsp_float drive; // The filter drive
+    host_float y1L;   // Output of first integrator left
+    host_float y2L;   // Output of second integrator (filter output) left
+    host_float y1R;   // Output of first integrator right
+    host_float y2R;   // Output of second integrator (filter output) right
+    host_float T;     // Simplified impulse invariant/bilinear transformation
+    host_float drive; // The filter drive
 
-    static dsp_float nonlinearFeedback(dsp_float s); // Nonlinear feedback (simulates diode behavior)
+    static host_float nonlinearFeedback(host_float s); // Nonlinear feedback (simulates diode behavior)
 
     // Processes data in bufferL, buffer R
     static void processBlock(DSPObject *dsp);

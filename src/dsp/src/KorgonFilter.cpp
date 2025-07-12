@@ -47,7 +47,7 @@ void KorgonFilter::setFilterMode(FilterMode mode)
 }
 
 // Sets the filter drive
-void KorgonFilter::setDrive(dsp_float value)
+void KorgonFilter::setDrive(host_float value)
 {
     drive = clamp(value, 0.0, 1.0) * 1.0 + 1.0;
 }
@@ -58,18 +58,18 @@ void KorgonFilter::processBlock(DSPObject *dsp)
     KorgonFilter *flt = static_cast<KorgonFilter *>(dsp);
 
     size_t blocksize = DSP::blockSize;
-    dsp_float left, right;
-    dsp_float cutoff, reso;
-    dsp_float wc, alpha;
-    dsp_float feedback;
-    dsp_float x1;
-    dsp_float y1L = flt->y1L;
-    dsp_float y2L = flt->y2L;
-    dsp_float y1R = flt->y1R;
-    dsp_float y2R = flt->y2R;
-    dsp_float T = flt->T;
-    dsp_float drive = flt->drive;
-    dsp_float reso_scale;
+    host_float left, right;
+    host_float cutoff, reso;
+    host_float wc, alpha;
+    host_float fbL, fbR;
+    host_float xL, xR;
+    host_float y1L = flt->y1L;
+    host_float y2L = flt->y2L;
+    host_float y1R = flt->y1R;
+    host_float y2R = flt->y2R;
+    host_float T = flt->T;
+    host_float drive = flt->drive;
+    host_float reso_scale;
 
     if (!std::isfinite(y1L))
         y1L = 0.0;
@@ -80,57 +80,87 @@ void KorgonFilter::processBlock(DSPObject *dsp)
     if (!std::isfinite(y2R))
         y2R = 0.0;
 
-    for (size_t i = 0; i < blocksize; ++i)
+    if (flt->filterMode == FilterMode::LP)
     {
-        left = (flt->outputBufferL)[i];
-        right = (flt->outputBufferR)[i];
-        cutoff = (flt->cutoffBuffer)[i];
-        reso = flt->filterMode == FilterMode::LP ? (flt->resoBuffer)[i] : (flt->resoBuffer)[i] / 4;
-
-        if (cutoff > 15000.0)
+        for (size_t i = 0; i < blocksize; ++i)
         {
+            left = (flt->outputBufferL)[i];
+            right = (flt->outputBufferR)[i];
+            cutoff = (flt->cutoffBuffer)[i];
+            reso = (flt->resoBuffer)[i];
+
+            if (cutoff > 15000.0)
+            {
+                (flt->outputBufferL)[i] = left;
+                (flt->outputBufferR)[i] = right;
+                continue;
+            }
+
+            reso_scale = (cutoff <= 2500.0) ? 1.0 : clamp(1.0 - (cutoff - 2500.0) / 7500.0, 0.0, 1.0);
+
+            // Calculate coefficient based on cutoff
+            wc = 2.0 * M_PI * cutoff;
+
+            alpha = clamp(wc * T / (1.0 + wc * T), 0.0, 1.0); // Bilinear transform approximation
+
+            // feedback calculation
+            fbL = clamp(reso * reso_scale * (y2L - left), -15.0, 15.0);
+            fbR = clamp(reso * reso_scale * (y2R - right), -15.0, 15.0);
+
+            // First integrator (emulating Sallen-Key stage)
+            xL = left - fbL;
+            xR = right - fbR;
+
+            y1L += alpha * (xL - y1L);
+            y1R += alpha * (xR - y1R);
+
+            // Second integrator
+            y2L += alpha * (y1L - y2L);
+            y2R += alpha * (y1R - y2R);
+
+            // Apply asymmetric soft clip
+            left = y2L * drive;
+            right = y2R * drive;
+
+            //left = (left >= 0.0) ? fast_tanh(left) : 1.5 * fast_tanh(0.5 * left);
+            //right = (right >= 0.0) ? fast_tanh(right) : 1.5 * fast_tanh(0.5 * right);
+
             (flt->outputBufferL)[i] = left;
             (flt->outputBufferR)[i] = right;
-            continue;
         }
+    }
+    else
+    {
+        for (size_t i = 0; i < blocksize; ++i)
+        {
+            left = (flt->outputBufferL)[i];
+            right = (flt->outputBufferR)[i];
+            cutoff = (flt->cutoffBuffer)[i];
 
-        reso_scale = (cutoff <= 2500.0) ? 1.0 : clamp(1.0 - (cutoff - 2500.0) / 7500.0, 0.0, 1.0);
+            if (cutoff > 15000.0)
+            {
+                (flt->outputBufferL)[i] = left;
+                (flt->outputBufferR)[i] = right;
+                continue;
+            }
 
-        // Calculate coefficient based on cutoff
-        wc = 2.0 * M_PI * cutoff;
+            // Calculate coefficient based on cutoff
+            wc = 2.0 * M_PI * cutoff;
 
-        alpha = clamp(wc * T / (1.0 + wc * T), 0.0, 1.0); // Bilinear transform approximation
+            alpha = clamp(wc * T / (1.0 + wc * T), 0.0, 1.0); // Bilinear transform approximation
 
-        // === left ===
-        feedback = clamp(reso * reso_scale * (y2L - left), -15.0, 15.0);
+            y1L += alpha * (left - y1L);
+            y1R += alpha * (right - y1R);
 
-        // First integrator (emulating Sallen-Key stage)
-        x1 = left - feedback;
+            left = (flt->outputBufferL)[i] - y1L;
+            right = (flt->outputBufferR)[i] - y1R;
 
-        y1L += alpha * (x1 - y1L);
+            left = (left >= 0.0) ? fast_tanh(left) : 1.5 * fast_tanh(0.5 * left);
+            right = (right >= 0.0) ? fast_tanh(right) : 1.5 * fast_tanh(0.5 * right);
 
-        // Second integrator
-        y2L += alpha * (y1L - y2L);
-
-        // Apply asymmetric soft clip
-        left = y2L * drive;
-        left = (left >= 0.0) ? fast_tanh(left) : 1.5 * fast_tanh(0.5 * left);
-        (flt->outputBufferL)[i] = flt->filterMode == FilterMode::LP ? left : (flt->outputBufferL)[i] - y1L;
-
-        // === right ===
-        feedback = clamp(reso * reso_scale * (y2R - right), -15.0, 15.0);
-
-        // First integrator (emulating Sallen-Key stage)
-        x1 = right - feedback;
-        y1R += alpha * (x1 - y1R);
-
-        // Second integrator
-        y2R += alpha * (y1R - y2R);
-
-        // Apply asymmetric soft clip
-        right = y2R * drive;
-        right = (right >= 0.0) ? fast_tanh(right) : 1.5 * fast_tanh(0.5 * right);
-        (flt->outputBufferR)[i] = flt->filterMode == FilterMode::LP ? right : (flt->outputBufferR)[i] - y1R;
+            (flt->outputBufferL)[i] = left;
+            (flt->outputBufferR)[i] = right;
+        }
     }
 
     flt->y1L = y1L;

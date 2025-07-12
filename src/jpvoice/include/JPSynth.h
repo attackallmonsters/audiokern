@@ -6,6 +6,7 @@
 #include "TuningSystem.h"
 #include "VoiceAllocator.h"
 #include "MidiProcessor.h"
+#include "FastTan.h"
 
 struct SynthVoice
 {
@@ -109,6 +110,9 @@ private:
 
     // Mixer right channel
     Mixer mixerR;
+
+    // Limiter/saturator
+    FastTan limiter;
 
     // Tuning system carrier
     TuningSystem carrierTuning;

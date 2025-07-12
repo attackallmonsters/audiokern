@@ -26,12 +26,12 @@
 
 struct ADSRParams
 {
-    dsp_float attackTime;
-    dsp_float decayTime;
-    dsp_float sustainLevel;
-    dsp_float releaseTime;
-    dsp_float attackShape;
-    dsp_float releaseShape;
+    host_float attackTime;
+    host_float decayTime;
+    host_float sustainLevel;
+    host_float releaseTime;
+    host_float attackShape;
+    host_float releaseShape;
 };
 
 // The Voice class manages two oscillators and handles interactions like
@@ -56,25 +56,25 @@ public:
 
     // Sets the modulation index for frequency modulation.
     // This controls the intensity of the frequency modulation effect.
-    void setModIndex(dsp_float index);
+    void setModIndex(host_float index);
 
     // Enables or disables oscillator sync
     void setSyncEnabled(bool enabled);
 
     // Sets the frequency of oscillator 1/carrier
-    void setCarrierFrequency(dsp_float f);
+    void setCarrierFrequency(host_float f);
 
     // Sets the frequency of oscillator 2/modulator
-    void setModulatorFrequency(dsp_float f);
+    void setModulatorFrequency(host_float f);
 
     // Sets the number of voices
     void setNumVoices(int count);
 
     // Sets the volume level of the oscillators
-    void setOscillatorMix(dsp_float mix);
+    void setOscillatorMix(host_float mix);
 
     // Sets the volume level of the noise generator
-    void setNoiseMix(dsp_float mix);
+    void setNoiseMix(host_float mix);
 
     // Assigns the carrier oscillator
     void setCarrierOscillatorType(CarrierOscillatiorType oscillatorType);
@@ -86,25 +86,25 @@ public:
     void setNoiseType(NoiseType type);
 
     // Sets the detune factor
-    void setDetune(dsp_float value);
+    void setDetune(host_float value);
 
     // Sets the feedback amount for the carrier
-    void setFeedbackCarrier(dsp_float feedback);
+    void setFeedbackCarrier(host_float feedback);
 
     // Sets the feedback amount for the modulator
-    void setFeedbackModulator(dsp_float feedback);
+    void setFeedbackModulator(host_float feedback);
 
     // Sets the filter type
     void setFilterMode(FilterMode mode);
 
     // Sets the cutoff frequency
-    void setFilterCutoff(dsp_float f);
+    void setFilterCutoff(host_float f);
 
     // Sets the filter resonance
-    void setFilterResonance(dsp_float r);
+    void setFilterResonance(host_float r);
 
     // Sets the filter drive
-    void setFilterDrive(dsp_float value);
+    void setFilterDrive(host_float value);
 
     // Sets the output buffers
     void setOutputBuffer(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR);
@@ -122,7 +122,7 @@ public:
     void setADSROneshot(bool isEnabled);
 
     // Sets the amp envelope gain
-    void setAmpGain(dsp_float g);
+    void setAmpGain(host_float g);
 
     // Next sample block generation
     void computeSamples();
@@ -133,17 +133,19 @@ private:
     WavetableOscillator *carrierTmp;   // Carrier oscillator for oscillator change
     WavetableOscillator *modulatorTmp; // Modulator oscillator for oscillator change
 
-    dsp_float carrierFrequency = 0.0;   // Current frequency carrier
-    dsp_float modulatorFrequency = 0.0; // Current frequency modulator
+    host_float carrierFrequency = 0.0;   // Current frequency carrier
+    host_float modulatorFrequency = 0.0; // Current frequency modulator
 
-    dsp_float modulationIndex = 0; // FM depth: how much modulator modulates carrier
+    host_float modulationIndex = 0; // FM depth: how much modulator modulates carrier
 
-    dsp_float oscmix = 0.0;   // Mix carrier <=> modulator
-    dsp_float noisemix = 0.0; // Mix oscillators <=> noise
+    host_float oscmix = 0.0;   // Mix carrier <=> modulator
+    host_float noisemix = 0.0; // Mix oscillators <=> noise
     bool syncEnabled = false; // True if Sync is active
 
-    dsp_float detune = 0;       // Detune factor supersaw oszillator
-    dsp_float pulseWidth = 0.5; // Pulse width square oscillator
+    host_float filterResonance; // filter reso
+
+    host_float detune = 0.0;       // Detune factor supersaw oszillator
+    host_float pulseWidth = 0.5; // Pulse width square oscillator
     
     // Oscillators
     NoiseGenerator noise;
@@ -178,26 +180,26 @@ private:
     void setAmpADSRLink(ADSRParams &params, bool setOther);
 
     // DSP working vars
-    dsp_float carrierLeft, carrierRight;
-    dsp_float modLeft, modRight;
-    dsp_float mixL, mixR;
-    dsp_float amp_carrier;
-    dsp_float amp_modulator;
-    dsp_float amp_oscmix;
-    dsp_float amp_osc_noise;
-    dsp_float amp_noise;
+    host_float carrierLeft, carrierRight;
+    host_float modLeft, modRight;
+    host_float mixL, mixR;
+    host_float amp_carrier;
+    host_float amp_modulator;
+    host_float amp_oscmix;
+    host_float amp_osc_noise;
+    host_float amp_noise;
 
     // Output buffers of host
     DSPSampleBuffer mixBufferL; // Mixing buffer left channel
     DSPSampleBuffer mixBufferR; // Mixing buffer right channel
 
     // Feedback
-    dsp_float lastSampleCarrierLeft;
-    dsp_float lastSampleCarrierRight;
-    dsp_float lastSampleModulatorLeft;
-    dsp_float lastSampleModulatorRight;
-    dsp_float feedbackAmountCarrier = 0.0;
-    dsp_float feedbackAmountModulator = 0.0;
+    host_float lastSampleCarrierLeft;
+    host_float lastSampleCarrierRight;
+    host_float lastSampleModulatorLeft;
+    host_float lastSampleModulatorRight;
+    host_float feedbackAmountCarrier = 0.0;
+    host_float feedbackAmountModulator = 0.0;
 
     // Number of voices
     int numVoices = 1;

@@ -103,7 +103,7 @@ void JPVoice::stopNote()
 
 // Sets the modulation index for frequency modulation.
 // This controls the intensity of the frequency modulation effect.
-void JPVoice::setModIndex(dsp_float index)
+void JPVoice::setModIndex(host_float index)
 {
     modulationIndex = index;
     carrier->setModIndex(modulationIndex);
@@ -117,21 +117,21 @@ void JPVoice::setSyncEnabled(bool enabled)
 }
 
 // Sets the current frequency for the carrier
-void JPVoice::setCarrierFrequency(dsp_float f)
+void JPVoice::setCarrierFrequency(host_float f)
 {
     carrier->setFrequency(f);
     carrierFrequency = f;
 }
 
 // Sets the current frequency for the modulator
-void JPVoice::setModulatorFrequency(dsp_float f)
+void JPVoice::setModulatorFrequency(host_float f)
 {
     modulator->setFrequency(f);
     modulatorFrequency = f;
 }
 
 // Sets the detune factorjpvoice_tilde_sync
-void JPVoice::setDetune(dsp_float value)
+void JPVoice::setDetune(host_float value)
 {
     detune = value;
     carrier->setDetune(detune);
@@ -152,13 +152,13 @@ void JPVoice::setNumVoices(int count)
 }
 
 // Sets the volume level of the oscillators
-void JPVoice::setOscillatorMix(dsp_float mix)
+void JPVoice::setOscillatorMix(host_float mix)
 {
     oscmix = clamp(mix, 0.0, 1.0);
 }
 
 // Sets the volume level of the noise generator
-void JPVoice::setNoiseMix(dsp_float mix)
+void JPVoice::setNoiseMix(host_float mix)
 {
     noisemix = clamp(mix, 0.0, 1.0);
 }
@@ -210,6 +210,7 @@ void JPVoice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
     paramFader.change(
         [=]()
         {
+            carrier = carrierTmp;
             carrier->modulationBufferL = modulator->outputBufferL;
             carrier->modulationBufferR = modulator->outputBufferR;
 
@@ -264,6 +265,7 @@ void JPVoice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
     paramFader.change(
         [=]()
         {
+            modulator = modulatorTmp;
             carrier->modulationBufferL = modulator->outputBufferL;
             carrier->modulationBufferR = modulator->outputBufferR;
 
@@ -278,13 +280,13 @@ void JPVoice::setNoiseType(NoiseType type)
 }
 
 // Sets the feedback amount for the carrier
-void JPVoice::setFeedbackCarrier(dsp_float feedback)
+void JPVoice::setFeedbackCarrier(host_float feedback)
 {
     feedbackAmountCarrier = clamp(feedback, 0.0, 2.0);
 }
 
 // Sets the feedback amount for the modulator
-void JPVoice::setFeedbackModulator(dsp_float feedback)
+void JPVoice::setFeedbackModulator(host_float feedback)
 {
     feedbackAmountModulator = clamp(feedback, 0.0, 2.0);
 }
@@ -301,19 +303,19 @@ void JPVoice::setFilterMode(FilterMode mode)
 }
 
 // Sets the cutoff frequency
-void JPVoice::setFilterCutoff(dsp_float f)
+void JPVoice::setFilterCutoff(host_float f)
 {
     filterAdsr.setGain(clamp(f, 0.0, 20000.0));
 }
 
 // Sets the filter resonance
-void JPVoice::setFilterResonance(dsp_float r)
+void JPVoice::setFilterResonance(host_float r)
 {
-    resoBuffer.fill(clampmin(r, 0.0));
+    filterResonance = clampmin(r, 0.0);
 }
 
 // Sets the filter drive
-void JPVoice::setFilterDrive(dsp_float value)
+void JPVoice::setFilterDrive(host_float value)
 {
     filter.setDrive(value);
 }
@@ -372,7 +374,7 @@ void JPVoice::setADSROneshot(bool isEnabled)
     ampAdsr.setOneShot(isEnabled);
 }
 
-void JPVoice::setAmpGain(dsp_float g)
+void JPVoice::setAmpGain(host_float g)
 {
     ampAdsr.setGain(clampmin(g, 0.0));
 }
@@ -414,6 +416,8 @@ void JPVoice::computeSamples()
     amp_modulator = std::sin(oscmix * 0.5 * M_PI);
     amp_osc_noise = std::cos(noisemix * 0.5 * M_PI);
     amp_noise = std::sin(noisemix * 0.5 * M_PI);
+
+    resoBuffer.fill(filterResonance);
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
