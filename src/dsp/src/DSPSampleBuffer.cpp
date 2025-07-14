@@ -88,3 +88,17 @@ size_t DSPSampleBuffer::size() const
 {
     return bufferSize;
 }
+
+host_float DSPSampleBuffer::getPeakValue() const
+{
+    host_float peak = 0.0;
+
+    for (size_t i = 0; i < bufferSize; ++i)
+    {
+        host_float absVal = std::abs(buffer[i]);
+
+        if (absVal > peak)
+            peak = absVal;
+    }
+    return peak;
+}

@@ -18,25 +18,18 @@ void JPSynth::initialize(host_float *bufL, host_float *bufR)
 
     carrierTuning.initialize();
     modulatorTuning.initialize();
-    limiter.initialize();
     midi.initialize();
 
     createVoices();
 
-    mixerL.clear();
-    mixerR.clear();
-
-    mixerL.create(voiceCount, bufL);
-    mixerR.create(voiceCount, bufR);
-
-    limiter.outputBufferL = bufL;
-    limiter.outputBufferR = bufR;
+    mixer.clear();
+    mixer.create(voiceCount, bufL, bufR);
 
     for (size_t i = 0; i < voiceCount; ++i)
     {
         SynthVoice *voice = allocator.getVoice(i);
 
-        voice->jpvoice.setOutputBuffer(mixerL.getBuffer(i), mixerR.getBuffer(i));
+        voice->jpvoice.setOutputBuffer(mixer.getBufferL(i), mixer.getBufferR(i));
     }
 
     DSP::log("=====> jpvoice initialized");
@@ -284,7 +277,6 @@ void JPSynth::setADSROneshot(bool enable)
 
 void JPSynth::processBlock()
 {
-    // Signal next block processing for DSP (optional, statistic, debug)
     DSP::nextBlock();
 
     for (auto *voice : allocator.getVoices())
@@ -292,12 +284,7 @@ void JPSynth::processBlock()
         voice->jpvoice.computeSamples();
     }
 
-    mixerL.mix();
-    mixerR.mix();
-
-    // limiter.generateBlock();
-
-    // DSP::logBuffer("TAN", limiter.outputBufferL);
+    mixer.mix();;
 }
 
 void JPSynth::createVoices()

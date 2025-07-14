@@ -85,3 +85,17 @@ size_t DSPBuffer::size() const
 {
     return bufferSize;
 }
+
+dsp_float DSPBuffer::getPeakValue() const
+{
+    dsp_float peak = 0.0;
+
+    for (size_t i = 0; i < bufferSize; ++i)
+    {
+        dsp_float absVal = std::abs(buffer[i]);
+
+        if (absVal > peak)
+            peak = absVal;
+    }
+    return peak;
+}

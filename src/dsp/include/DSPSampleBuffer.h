@@ -41,6 +41,9 @@ public:
     const host_float* data() const;
     size_t size() const;
 
+    // Gets the highest value in the buffer
+    host_float getPeakValue() const;
+
 private:
     host_float* buffer = nullptr;
     size_t bufferSize = 0;

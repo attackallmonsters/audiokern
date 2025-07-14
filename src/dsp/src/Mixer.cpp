@@ -1,35 +1,61 @@
 #include "Mixer.h"
 
-void Mixer::create(size_t count, host_float *buf)
+void Mixer::create(size_t count, host_float *bufL, host_float *bufR)
 {
-    outputBuffer = buf;
-    buffers.clear();
-    buffers.resize(count);
+    bufferCount = count;
 
-    for (auto& buf : buffers)
+    outputBufferL = bufL;
+    outputBufferR = bufR;
+
+    buffersL.clear();
+    buffersL.resize(bufferCount);
+
+    buffersR.clear();
+    buffersR.resize(bufferCount);
+
+    for (size_t i = 0; i < bufferCount; ++i)
     {
-        buf.create(DSP::blockSize);
+        buffersL[i].create(DSP::blockSize);
+        buffersR[i].create(DSP::blockSize);
     }
 }
 
-DSPSampleBuffer& Mixer::getBuffer(size_t index)
+DSPSampleBuffer &Mixer::getBufferL(size_t index)
 {
-    return buffers[index];
+    return buffersL[index];
+}
+
+DSPSampleBuffer &Mixer::getBufferR(size_t index)
+{
+    return buffersR[index];
 }
 
 void Mixer::clear()
 {
-    buffers.clear();
-    outputBuffer = nullptr;
+    buffersL.clear();
+    buffersR.clear();
+
+    outputBufferL = nullptr;
+    outputBufferR = nullptr;
 }
 
 void Mixer::mix()
 {
-    for (const auto& buf : buffers)
+    for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        for (size_t i = 0; i < DSP::blockSize; ++i)
+        outputBufferL[i] = 0.0;
+        outputBufferR[i] = 0.0;
+    }
+
+    for (size_t i = 0; i < bufferCount; ++i)
+    {
+        DSPSampleBuffer &bufL = buffersL[i];
+        DSPSampleBuffer &bufR = buffersR[i];
+
+        for (size_t l = 0; l < DSP::blockSize; ++l)
         {
-            outputBuffer[i] += buf[i];
+            outputBufferL[l] += bufL[l];
+            outputBufferR[l] += bufR[l];
         }
     }
 }

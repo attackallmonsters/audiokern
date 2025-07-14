@@ -9,7 +9,7 @@ Limiter::Limiter()
 // Initializes the instance
 void Limiter::initialize()
 {
-    setThreshold(1.0);
+    setThreshold(-3.0);
     setReleaseTime(20.0);
     setLookaheadTime(20.0);
     reset();
@@ -18,7 +18,7 @@ void Limiter::initialize()
 // Sets the amplitude threshold
 void Limiter::setThreshold(dsp_float thres)
 {
-    threshold = clampmin(thres, 0.0);
+    threshold = std::pow(10.0, clamp(thres, -100.0, 0.0) / 20.0);
 }
 
 // Sets the release time in milliseconds
@@ -32,6 +32,9 @@ void Limiter::setReleaseTime(dsp_float releaseMs)
 void Limiter::setLookaheadTime(dsp_float ms)
 {
     lookaheadSamples = static_cast<int>((DSP::sampleRate / 1000.0) * ms);
+    lookaheadBuffer.assign(lookaheadSamples + 1, std::make_pair(0.0, 0.0));
+    lookaheadSamples++;
+
 }
 
 // Resets the status
@@ -68,8 +71,8 @@ void Limiter::processBlock(DSPObject *dsp)
         // Write to ring buffer and apply delayed gain
         limiter->lookaheadBuffer[limiter->bufferIndex] = {inputL, inputR};
 
-        size_t readIndex = (limiter->bufferIndex + 1) % limiter->lookaheadBuffer.size();
-        limiter->bufferIndex = (limiter->bufferIndex + 1) % limiter->lookaheadBuffer.size();
+        size_t readIndex = (limiter->bufferIndex + 1) % limiter->lookaheadSamples;
+        limiter->bufferIndex = (limiter->bufferIndex + 1) % limiter->lookaheadSamples;
 
         auto& delayed = limiter->lookaheadBuffer[readIndex];
 

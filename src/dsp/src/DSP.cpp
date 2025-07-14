@@ -108,7 +108,21 @@ void DSP::log(const char *fmt, ...)
 }
 
 #ifdef DEBUG
-void DSP::logBuffer(const std::string &label, const DSPSampleBuffer &buffer)
+void DSP::dspLog(const char *fmt, ...)
+{
+    if (!doLog())
+        return;
+        
+    char buffer[2048];
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buffer, sizeof(buffer), fmt, args);
+    va_end(args);
+
+    logger(std::string(buffer));
+}
+
+void DSP::dspLogBuffer(const std::string &label, const DSPSampleBuffer &buffer)
 {
     if (!doLog())
         return;
@@ -135,7 +149,7 @@ void DSP::logBuffer(const std::string &label, const DSPSampleBuffer &buffer)
     logger(std::string(buf));
 }
 
-void DSP::logBuffer(const std::string &label, const DSPBuffer &buffer)
+void DSP::dspLogBuffer(const std::string &label, const DSPBuffer &buffer)
 {
     if (!doLog())
         return;
@@ -162,7 +176,7 @@ void DSP::logBuffer(const std::string &label, const DSPBuffer &buffer)
     logger(std::string(buf));
 }
 
-void DSP::logBuffer(const std::string &label, host_float *buffer)
+void DSP::dspLogBuffer(const std::string &label, host_float *buffer)
 {
     if (!doLog())
         return;
@@ -190,7 +204,7 @@ void DSP::logBuffer(const std::string &label, host_float *buffer)
 }
 
 // Logging to file "dsp.log"
-void DSP::log2File(const char *fmt, ...)
+void DSP::dspLog2File(const char *fmt, ...)
 {
     if (!doLog())
         return;

@@ -6,7 +6,6 @@
 #include "TuningSystem.h"
 #include "VoiceAllocator.h"
 #include "MidiProcessor.h"
-#include "FastTan.h"
 
 struct SynthVoice
 {
@@ -105,14 +104,8 @@ private:
     // Poly voice allocation management
     VoiceAllocator<SynthVoice> allocator;
 
-    // Mixer left channel
-    Mixer mixerL;
-
-    // Mixer right channel
-    Mixer mixerR;
-
-    // Limiter/saturator
-    FastTan limiter;
+    // Mixer
+    Mixer mixer;
 
     // Tuning system carrier
     TuningSystem carrierTuning;

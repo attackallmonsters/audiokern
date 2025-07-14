@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 // The PI
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -31,3 +33,4 @@ inline dsp_float soft_clip(dsp_float x)
     else
         return x * (1.0 - (x * x) / (3.0 * threshold * threshold));
 }
+

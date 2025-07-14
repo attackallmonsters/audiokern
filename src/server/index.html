@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>VU Meter with dB Scale</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #111;
+      color: #ccc;
+      padding: 20px;
+    }
+
+    h2 {
+      color: #eee;
+    }
+
+    .meter-container {
+      width: 300px;
+      height: 20px;
+      background: #222;
+      margin-bottom: 20px;
+      position: relative;
+      border: 1px solid #444;
+    }
+
+    .bar {
+      height: 100%;
+      background: limegreen;
+      width: 0%;
+      transition: width 0.1s linear;
+    }
+
+    .peak {
+      position: absolute;
+      top: 0;
+      width: 2px;
+      height: 100%;
+      background: white;
+      pointer-events: none;
+    }
+
+    .label {
+      margin-bottom: 5px;
+    }
+
+    .db-scale {
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      width: 300px;
+      margin-bottom: 5px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <h2>VU Meter (dB + Peak Hold)</h2>
+
+  <div class="label">Left</div>
+  <div class="db-scale"><span>0 dB</span><span>-20 dB</span><span>-40 dB</span><span>-60 dB</span></div>
+  <div class="meter-container">
+    <div id="barL" class="bar"></div>
+    <div id="peakL" class="peak"></div>
+  </div>
+
+  <div class="label">Right</div>
+  <div class="db-scale"><span>0 dB</span><span>-20 dB</span><span>-40 dB</span><span>-60 dB</span></div>
+  <div class="meter-container">
+    <div id="barR" class="bar"></div>
+    <div id="peakR" class="peak"></div>
+  </div>
+
+  <script>
+    let ws;
+    let peakL = 0;
+    let peakR = 0;
+    let lastUpdate = Date.now();
+
+    function dbToPercent(db) {
+      return (1 + db / 60) * 100; // maps -60 dB..0 dB to 0..100%
+    }
+
+    function ampToDb(amp) {
+      return amp <= 0.00001 ? -60 : 20 * Math.log10(amp);
+    }
+
+    function updateMeters(lAmp, rAmp) {
+      const now = Date.now();
+      const dt = (now - lastUpdate) / 1000.0;
+      lastUpdate = now;
+
+      const dBL = ampToDb(lAmp);
+      const dBR = ampToDb(rAmp);
+
+      const widthL = Math.max(0, dbToPercent(dBL));
+      const widthR = Math.max(0, dbToPercent(dBR));
+
+      document.getElementById("barL").style.width = widthL + "%";
+      document.getElementById("barR").style.width = widthR + "%";
+
+      // Peak Hold
+      peakL = Math.max(peakL - dt * 20, dBL); // falls 20 dB pro Sekunde
+      peakR = Math.max(peakR - dt * 20, dBR);
+
+      const peakPosL = Math.max(0, dbToPercent(peakL));
+      const peakPosR = Math.max(0, dbToPercent(peakR));
+
+      document.getElementById("peakL").style.left = peakPosL + "%";
+      document.getElementById("peakR").style.left = peakPosR + "%";
+    }
+
+    function connect() {
+      ws = new WebSocket("ws://localhost:8080");
+
+      ws.onopen = () => {
+        console.log("WebSocket connected");
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === "level") {
+            const l = Math.max(0, Math.min(1, data.payload.L));
+            const r = Math.max(0, Math.min(1, data.payload.R));
+            updateMeters(l, r);
+          }
+        } catch (e) {
+          console.warn("Invalid message:", event.data);
+        }
+      };
+
+      ws.onerror = (e) => {
+        console.error("WebSocket error", e);
+      };
+
+      ws.onclose = () => {
+        console.warn("WebSocket closed. Reconnecting in 2s...");
+        setTimeout(connect, 2000);
+      };
+    }
+
+    window.addEventListener("DOMContentLoaded", connect);
+  </script>
+</body>
+</html>

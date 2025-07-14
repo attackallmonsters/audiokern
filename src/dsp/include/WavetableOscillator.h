@@ -104,6 +104,9 @@ private:
     // Update detune on voices
     void updateDetune();
 
+    // Adjusts the volume to the number of voices
+    dsp_float getVocieGain(int numVoices);
+
     // The waveform name
     std::string waveformName;
 
@@ -126,4 +129,5 @@ private:
     dsp_float phaseIncrement;      // Increment based on frquency and sample rate
     dsp_float currentPhase;        // Current phase of the oscillator in radians [0, 2π]
     bool wrapped = false;          // True when phase wrapped
+    dsp_float voiceGain;           // The gain of a single voice
 };

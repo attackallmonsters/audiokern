@@ -118,7 +118,6 @@ void lfo_tilde_dsp(t_lfo_tilde *x, t_signal **sp)
     x->samplerate = sp[0]->s_sr;
     x->blockSize = sp[0]->s_n;
 
-    // dsp_add(lfo_tilde_perform, 3, x, sp[0]->s_vec, sp[0]->s_n);
     dsp_add(lfo_tilde_perform, 4, x, sp[0]->s_vec, sp[1]->s_vec, sp[0]->s_n);
 
     DSP::initializeAudio(x->samplerate, x->blockSize);

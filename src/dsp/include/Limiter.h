@@ -17,7 +17,7 @@ public:
     // Initializes the instance
     void initialize();
 
-    // Sets the amplitude threshold
+    // Sets the amplitude threshold in dBFS (-100 - 0)
     void setThreshold(dsp_float thres);
 
     // Sets the release time in milliseconds

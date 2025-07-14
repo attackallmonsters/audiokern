@@ -44,6 +44,9 @@ public:
     // Returns the buffer size
     size_t size() const;
 
+    // Gets the highest value in the buffer
+    dsp_float getPeakValue() const;
+
 private:
     dsp_float* buffer = nullptr;
     size_t bufferSize = 0;

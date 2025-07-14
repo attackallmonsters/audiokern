@@ -36,7 +36,11 @@ public:
     void reset();
     host_float* getBuffer();
 
-    std::function<void()> onPhaseWrap;
+    // Called on phase wrap
+    std::function<void()> onPhaseWrap = nullptr;
+
+    // Called for first buffer element each block 
+    std::function<void(host_float)> processLFOValue = nullptr;
 
 private:
     static void processBlock(DSPObject* dsp);

@@ -56,17 +56,20 @@ public:
     static size_t blockSize;
 
 #ifdef DEBUG
-    // Logs the content of a DSPSampleBuffer
-    static void logBuffer(const std::string &label, const DSPSampleBuffer &buffer);
+    // Audio rate log function
+    static void dspLog(const char *fmt, ...);
 
-    // Logs the content of a DSPBuffer
-    static void logBuffer(const std::string &label, const DSPBuffer &buffer);
+    // Logs the content of a DSPSampleBuffer at audio rate
+    static void dspLogBuffer(const std::string &label, const DSPSampleBuffer &buffer);
 
-    // Logs the content of a host_float buffer with block size
-    static void logBuffer(const std::string &label, host_float *buffer);
+    // Logs the content of a DSPBuffer at audio rate
+    static void dspLogBuffer(const std::string &label, const DSPBuffer &buffer);
 
-    // Log to file function
-    static void log2File(const char *fmt, ...);
+    // Logs the content of a host_float buffer with block size at audio rate
+    static void dspLogBuffer(const std::string &label, host_float *buffer);
+
+    // Log to file function at audio rate
+    static void dspLog2File(const char *fmt, ...);
 
     // Log output interval
     static void logTime(int timeMs);

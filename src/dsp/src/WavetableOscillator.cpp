@@ -58,13 +58,13 @@ void WavetableOscillator::initialize()
             dsp_float freq = baseFrequencies[i];
 
             // Create a new DSPBuffer instance and resize it to the desired table size
-            DSPBuffer* buffer = new DSPBuffer();
+            DSPBuffer *buffer = new DSPBuffer();
             buffer->create(size);
 
             // Let the subclass generate the actual waveform data
             createWavetable(*buffer, freq);
 
-            // Store the buffer for later use 
+            // Store the buffer for later use
             wavetableCalcBuffers.push_back(buffer);
         }
 
@@ -126,6 +126,8 @@ void WavetableOscillator::setNumVoices(int count)
         voices[i].amp_ratio = 3.5 / numVoices;
 
     updateDetune(); // ensure detune_ratios match after resizing
+
+    voiceGain = getVocieGain(numVoices);
 }
 
 void WavetableOscillator::updateDetune()
@@ -242,8 +244,8 @@ void WavetableOscillator::processBlock(DSPObject *dsp)
                 }
             }
 
-            osc->outputBufferL[i] = sumL;
-            osc->outputBufferR[i] = sumR;
+            osc->outputBufferL[i] = sumL * osc->voiceGain;
+            osc->outputBufferR[i] = sumR * osc->voiceGain;
         }
         else
         {
@@ -340,7 +342,8 @@ bool WavetableOscillator::load()
 
             size_t size = static_cast<size_t>(std::stoul(item));
 
-            DSPSampleBuffer* buffer = new DSPSampleBuffer();;
+            DSPSampleBuffer *buffer = new DSPSampleBuffer();
+            ;
             buffer->create(size);
 
             // Read data
@@ -413,5 +416,33 @@ void WavetableOscillator::save() const
     catch (...)
     {
         DSP::log("Error writung wave form to wavetable %s", absolutePath(fileName).c_str());
+    }
+}
+
+dsp_float WavetableOscillator::getVocieGain(int numVoices)
+{
+    //Empirically determined values
+    switch (numVoices)
+    {
+    case 1:
+        return 1.0;
+    case 2:
+        return 0.55;
+    case 3:
+        return 0.55;
+    case 4:
+        return 0.65;
+    case 5:
+        return 0.7;
+    case 6:
+        return 0.75;
+    case 7:
+        return 0.8;
+    case 8:
+        return 0.9;
+    case 9:
+        return 1.0;
+    default:
+        return 1.0;
     }
 }

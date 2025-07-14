@@ -13,7 +13,7 @@ void LFO::initialize()
 
     phase = 0.0;
     phaseInc = 0.0;
-    
+
     setFreq(0.0);
     setOffset(0.0);
     setDepth(1.0);
@@ -164,9 +164,8 @@ void LFO::processBlock(DSPObject *dsp)
         lfo->phase = phase;
         host_float val = (lfo->*lfo->lfoFunc)();
 
-        host_float target = val * lfo->depth + lfo->offset;
-        lfo->smoothVal += lfo->smoothCoeff * (target - lfo->smoothVal);
-        lfo->lfoBuffer[i] = lfo->smoothVal;
+        lfo->smoothVal += lfo->smoothCoeff * (val - lfo->smoothVal);
+        lfo->lfoBuffer[i] = lfo->smoothVal * lfo->depth + lfo->offset;
 
         phase += inc;
 
@@ -177,6 +176,11 @@ void LFO::processBlock(DSPObject *dsp)
             if (lfo->onPhaseWrap)
                 lfo->onPhaseWrap();
         }
+    }
+
+    if (lfo->processLFOValue)
+    {
+        lfo->processLFOValue(lfo->lfoBuffer[0]);
     }
 
     lfo->phase = phase;

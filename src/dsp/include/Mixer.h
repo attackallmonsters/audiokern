@@ -11,10 +11,11 @@ public:
     Mixer() = default;
 
     // Initializes the mixer with a number of buffers
-    void create(size_t count, host_float *buf);
+    void create(size_t count, host_float *bufL, host_float *bufR);
 
-    // Returns a reference to a buffer for direkt usage in sound generators
-    DSPSampleBuffer& getBuffer(size_t index);
+    // Returns a reference to a buffer for direct usage in sound generators
+    DSPSampleBuffer& getBufferL(size_t index);
+    DSPSampleBuffer& getBufferR(size_t index);
 
     // Removes the buffers
     void clear();
@@ -23,6 +24,11 @@ public:
     void mix();
 
 private:
-    std::vector<DSPSampleBuffer> buffers;
-    host_float* outputBuffer = nullptr;
+    size_t bufferCount;
+
+    std::vector<DSPSampleBuffer> buffersL;
+    std::vector<DSPSampleBuffer> buffersR;
+
+    host_float* outputBufferL = nullptr;
+    host_float* outputBufferR = nullptr;
 };
