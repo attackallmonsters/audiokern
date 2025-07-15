@@ -566,6 +566,30 @@ void jpvoice_tilde_lfo1(t_jpvoice * x, t_symbol *, int argc, t_atom *argv)
     synth.setFilterADSR(x->filterADSR);
 }
 
+// LFO2 [lfo2 type freq offset depth shape pw smooth target(
+void jpvoice_tilde_lfo2(t_jpvoice * x, t_symbol *, int argc, t_atom *argv)
+{
+    if (!testDSP())
+    {
+        return;
+    }
+
+    if (argc < 6)
+    {
+        pd_error(x, "[jpvoice~]: expected filter ADSR settings [fltadsr att dec sus rel cutoff attshape relshape(");
+        return;
+    }
+
+    x->filterADSR.attackTime = atom_getfloat(&argv[0]);
+    x->filterADSR.decayTime = atom_getfloat(&argv[1]);
+    x->filterADSR.sustainLevel = atom_getfloat(&argv[2]);
+    x->filterADSR.releaseTime = atom_getfloat(&argv[3]);
+    x->filterADSR.attackShape = atom_getfloat(&argv[4]);
+    x->filterADSR.releaseShape = atom_getfloat(&argv[5]);
+
+    synth.setFilterADSR(x->filterADSR);
+}
+
 // DSP perform function
 t_int *jpvoice_tilde_perform(t_int *w)
 {

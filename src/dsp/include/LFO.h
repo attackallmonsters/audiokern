@@ -2,6 +2,7 @@
 
 #include "DSPObject.h"
 #include "DSPSampleBuffer.h"
+#include "RingSampleBuffer.h"
 #include "dsp_types.h"
 #include "dsp_math.h"
 #include "clamp.h"
@@ -16,6 +17,12 @@ enum class LFOType {
     Triangle,
     Square,
     Random
+};
+
+enum class LFOMode
+{
+    Buffered,
+    Value
 };
 
 class LFO : public DSPObject
@@ -34,6 +41,7 @@ public:
     void setSmooth(host_float f);
     void setIdleSignal(host_float f);
     void isUnipolar(bool enabled);
+    void setMode(LFOMode mode);
     void reset();
 
     // Called on phase wrap
@@ -49,7 +57,8 @@ public:
     DSPSampleBuffer modulationBuffer;
 
 private:
-    static void processBlock(DSPObject* dsp);
+    static void processBlockBuffer(DSPObject* dsp);
+    static void processBlockValue(DSPObject* dsp);
 
     // Current sample rate derived values
     host_float phase;
@@ -64,10 +73,15 @@ private:
     host_float smoothCoeff;
     host_float idleSignal;
     bool unipolar;
+    LFOMode lfoMode;
 
     DSPSampleBuffer modBufferDefault;
+    RingSampleBuffer smoothBuffer;
 
     LFOType lfoType;
+
+    // Waveshaper
+    host_float shapedRamp(host_float x);
 
     // Internal waveform calculation functions
     host_float lfoSine();
@@ -76,7 +90,7 @@ private:
     host_float lfoTriangle();
     host_float lfoSquare();
     host_float lfoRandom();
-    host_float shapedRamp(host_float x);
+
     bool fmEnabled;
 
     host_float (LFO::*lfoFunc)() = nullptr;

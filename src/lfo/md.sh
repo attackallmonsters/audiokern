@@ -2,6 +2,8 @@
 
 RUN_DEPS=false
 
+clear
+
 # Parse -d Option
 while getopts ":d" opt; do
   case ${opt} in

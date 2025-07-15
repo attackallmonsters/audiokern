@@ -118,11 +118,12 @@ void lfo_tilde_dsp(t_lfo_tilde *x, t_signal **sp)
     DSP::initializeAudio(x->samplerate, x->blockSize);
 
     x->lfo->initialize();
+    x->lfo->setMode(LFOMode::Buffered);
 
     x->lfo->outputBuffer = out;
 }
 
-void log(const std::string &entry)
+inline void log(const std::string &entry)
 {
     post("%s", entry.c_str());
 }

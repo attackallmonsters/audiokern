@@ -2,7 +2,7 @@
 
 LFO::LFO()
 {
-    registerBlockProcessor(&LFO::processBlock);
+    registerBlockProcessor(&LFO::processBlockBuffer);
     initialize();
 }
 
@@ -11,9 +11,11 @@ void LFO::initialize()
     samplerate = DSP::sampleRate;
     outputBuffer.initialize(DSP::blockSize);
 
+    smoothVal = 0.0;
     phase = 0.0;
     phaseInc = 0.0;
 
+    setMode(LFOMode::Buffered);
     setFreq(0.0);
     setOffset(0.0);
     setDepth(1.0);
@@ -78,7 +80,15 @@ inline host_float LFO::lfoRandom()
 void LFO::setFreq(host_float f)
 {
     freq = clampmin(f, 0.0);
-    phaseInc = freq / samplerate;
+
+    if (lfoMode == LFOMode::Value)
+    {
+        phaseInc = freq / samplerate * DSP::blockSize;
+    }
+    else
+    {
+        phaseInc = freq / samplerate;
+    }
 }
 
 void LFO::setType(LFOType t)
@@ -149,14 +159,39 @@ void LFO::reset()
         onPhaseWrap();
 }
 
-void LFO::processBlock(DSPObject *dsp)
+void LFO::setMode(LFOMode mode)
+{
+    if (mode == lfoMode)
+    {
+        return;
+    }
+
+    lfoMode = mode;
+
+    setFreq(freq);
+
+    setType(lfoType);
+
+    switch (lfoMode)
+    {
+    case LFOMode::Buffered:
+        registerBlockProcessor(&LFO::processBlockBuffer);
+        break;
+
+    case LFOMode::Value:
+        registerBlockProcessor(&LFO::processBlockValue);
+        break;
+    }
+}
+
+void LFO::processBlockBuffer(DSPObject *dsp)
 {
     LFO *lfo = static_cast<LFO *>(dsp);
 
     if (lfo->freq <= 0.0)
     {
         lfo->phase = 0.0;
-        
+
         for (size_t i = 0; i < DSP::blockSize; ++i)
         {
             lfo->outputBuffer[i] = lfo->idleSignal;
@@ -165,13 +200,8 @@ void LFO::processBlock(DSPObject *dsp)
         return;
     }
 
-    host_float phase = lfo->phase;
-    host_float inc = lfo->phaseInc;
-
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        lfo->phase = phase;
-
         host_float val = (lfo->*lfo->lfoFunc)();
 
         if (lfo->unipolar)
@@ -180,21 +210,54 @@ void LFO::processBlock(DSPObject *dsp)
         lfo->smoothVal += lfo->smoothCoeff * (val - lfo->smoothVal);
         lfo->outputBuffer[i] = lfo->smoothVal * lfo->depth + lfo->offset;
 
-        phase += inc;
-
-        if (phase >= 1.0)
+        if (lfo->phase >= 1.0)
         {
-            phase -= 1.0;
+            lfo->phase -= 1.0;
 
             if (lfo->onPhaseWrap)
                 lfo->onPhaseWrap();
         }
+
+        lfo->phase += lfo->phaseInc;
     }
 
     if (lfo->processLFOValue)
     {
         lfo->processLFOValue(lfo->outputBuffer[0]);
     }
+}
 
-    lfo->phase = phase;
+void LFO::processBlockValue(DSPObject *dsp)
+{
+    LFO *lfo = static_cast<LFO *>(dsp);
+
+    if (lfo->freq <= 0.0)
+    {
+        lfo->phase = 0.0;
+
+        if (lfo->processLFOValue)
+            lfo->processLFOValue(lfo->idleSignal);
+
+        return;
+    }
+
+    host_float val = (lfo->*lfo->lfoFunc)();
+
+    if (lfo->unipolar)
+        val = 0.5 * (val + 1.0);
+
+    lfo->smoothBuffer.push(val);
+
+    if (lfo->processLFOValue)
+        lfo->processLFOValue(val * lfo->depth + lfo->offset);
+
+    if (lfo->phase >= 1.0)
+    {
+        lfo->phase -= 1.0;
+
+        if (lfo->onPhaseWrap)
+            lfo->onPhaseWrap();
+    }
+
+    lfo->phase += lfo->phaseInc;
 }
