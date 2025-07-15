@@ -275,6 +275,15 @@ void JPSynth::setADSROneshot(bool enable)
         });
 }
 
+void JPSynth::setLFO1(LFOParams params)
+{
+
+}
+
+void JPSynth::setLFO2(LFOParams params)
+{
+}
+
 void JPSynth::processBlock()
 {
     DSP::nextBlock();
@@ -284,7 +293,8 @@ void JPSynth::processBlock()
         voice->jpvoice.computeSamples();
     }
 
-    mixer.mix();;
+    mixer.mix();
+    ;
 }
 
 void JPSynth::createVoices()

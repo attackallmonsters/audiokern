@@ -33,14 +33,20 @@ public:
     void setPulseWidth(host_float f);
     void setSmooth(host_float f);
     void setIdleSignal(host_float f);
+    void isUnipolar(bool enabled);
     void reset();
-    host_float* getBuffer();
 
     // Called on phase wrap
     std::function<void()> onPhaseWrap = nullptr;
 
     // Called for first buffer element each block 
     std::function<void(host_float)> processLFOValue = nullptr;
+
+    // Output biffer
+    DSPSampleBuffer outputBuffer;
+
+    // FM modulation buffer
+    DSPSampleBuffer modulationBuffer;
 
 private:
     static void processBlock(DSPObject* dsp);
@@ -57,9 +63,8 @@ private:
     host_float smoothVal;
     host_float smoothCoeff;
     host_float idleSignal;
+    bool unipolar;
 
-    DSPSampleBuffer lfoBuffer;
-    DSPSampleBuffer modBuffer;
     DSPSampleBuffer modBufferDefault;
 
     LFOType lfoType;

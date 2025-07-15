@@ -25,6 +25,8 @@ typedef struct _jpvoice
     size_t blockSize;
     ADSRParams filterADSR;
     ADSRParams ampADSR;
+    LFOParams lfo1;
+    LFOParams lfo2;
 } t_jpvoice;
 
 bool testDSP()
@@ -540,6 +542,30 @@ void jpvoice_tilde_adsroneshot(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *
     synth.setADSROneshot(atom_getfloat(argv) != 0.0);
 }
 
+// LFO1 [lfo1 type freq offset depth shape pw smooth target(
+void jpvoice_tilde_lfo1(t_jpvoice * x, t_symbol *, int argc, t_atom *argv)
+{
+    if (!testDSP())
+    {
+        return;
+    }
+
+    if (argc < 6)
+    {
+        pd_error(x, "[jpvoice~]: expected filter ADSR settings [fltadsr att dec sus rel cutoff attshape relshape(");
+        return;
+    }
+
+    x->filterADSR.attackTime = atom_getfloat(&argv[0]);
+    x->filterADSR.decayTime = atom_getfloat(&argv[1]);
+    x->filterADSR.sustainLevel = atom_getfloat(&argv[2]);
+    x->filterADSR.releaseTime = atom_getfloat(&argv[3]);
+    x->filterADSR.attackShape = atom_getfloat(&argv[4]);
+    x->filterADSR.releaseShape = atom_getfloat(&argv[5]);
+
+    synth.setFilterADSR(x->filterADSR);
+}
+
 // DSP perform function
 t_int *jpvoice_tilde_perform(t_int *w)
 {
@@ -630,4 +656,7 @@ extern "C" void jpvoice_tilde_setup(void)
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_ampadsr, gensym("ampadsr"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_adsrlink, gensym("adsrlink"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_adsroneshot, gensym("adsroneshot"), A_GIMME, 0);
+
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_lfo1, gensym("lfo1"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_lfo2, gensym("lfo2"), A_GIMME, 0);
 }

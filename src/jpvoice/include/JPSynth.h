@@ -6,11 +6,28 @@
 #include "TuningSystem.h"
 #include "VoiceAllocator.h"
 #include "MidiProcessor.h"
+#include "LFO.h"
 
 struct SynthVoice
 {
     JPVoice jpvoice;
     int note;
+};
+
+enum class LFOTargets
+{
+    
+};
+
+struct LFOParams
+{
+    LFOType type;
+    host_float frequency;
+    host_float offset;
+    host_float depth;
+    host_float shape;
+    host_float pw;
+    host_float smooth;
 };
 
 class JPSynth
@@ -91,6 +108,12 @@ public:
     // Sets ADSRs to one shot mode (ignores key release)
     void setADSROneshot(bool enable);
 
+    // Sets the parameters for LFO 1
+    void setLFO1(LFOParams params);
+
+    // Sets the parameters for LFO 2
+    void setLFO2(LFOParams params);
+
     // Computes the samples of all voices
     void processBlock();
 
@@ -106,6 +129,12 @@ private:
 
     // Mixer
     Mixer mixer;
+
+    // LFO 1
+    LFO lfo1;
+
+    // LFO 2
+    LFO lfo2;
 
     // Tuning system carrier
     TuningSystem carrierTuning;

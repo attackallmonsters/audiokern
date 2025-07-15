@@ -4,7 +4,6 @@
 
 #include "m_pd.h"
 #include "LFO.h"
-#include "pdbase.h"
 #include <cmath>
 #include <cstdlib>
 
@@ -59,6 +58,11 @@ void lfo_tilde_setsmooth(t_lfo_tilde *x, t_floatarg f)
     x->lfo->setSmooth(f);
 }
 
+void lfo_tilde_unipolar(t_lfo_tilde *x, t_floatarg f)
+{
+    x->lfo->isUnipolar(f != 0.0);
+}
+
 void lfo_tilde_setfreq(t_lfo_tilde *x, t_floatarg f)
 {
     x->lfo->setFreq(f);
@@ -97,24 +101,15 @@ void lfo_tilde_settype(t_lfo_tilde *x, t_floatarg f)
 t_int *lfo_tilde_perform(t_int *w)
 {
     t_lfo_tilde *x = (t_lfo_tilde *)(w[1]);
-    //t_sample *in_fm = (t_sample *)(w[2]);
-    t_sample *out = (t_sample *)(w[3]);
-    int n = (int)(w[4]);
 
     x->lfo->generateBlock();
-
-    dsp_float *buf = x->lfo->getBuffer();
-
-    for (int i = 0; i < n; ++i)
-    {
-        out[i] = static_cast<t_sample>(buf[i]);
-    }
 
     return (w + 5);
 }
 
 void lfo_tilde_dsp(t_lfo_tilde *x, t_signal **sp)
 {
+    t_sample *out = sp[0]->s_vec;
     x->samplerate = sp[0]->s_sr;
     x->blockSize = sp[0]->s_n;
 
@@ -123,6 +118,13 @@ void lfo_tilde_dsp(t_lfo_tilde *x, t_signal **sp)
     DSP::initializeAudio(x->samplerate, x->blockSize);
 
     x->lfo->initialize();
+
+    x->lfo->outputBuffer = out;
+}
+
+void log(const std::string &entry)
+{
+    post("%s", entry.c_str());
 }
 
 void *lfo_tilde_new(t_floatarg f)
@@ -169,6 +171,7 @@ extern "C"
         class_addmethod(lfo_tilde_class, (t_method)lfo_tilde_setshape, gensym("shape"), A_DEFFLOAT, A_NULL);
         class_addmethod(lfo_tilde_class, (t_method)lfo_tilde_setpw, gensym("pw"), A_DEFFLOAT, A_NULL);
         class_addmethod(lfo_tilde_class, (t_method)lfo_tilde_setsmooth, gensym("smooth"), A_DEFFLOAT, A_NULL);
+        class_addmethod(lfo_tilde_class, (t_method)lfo_tilde_unipolar, gensym("unipolar"), A_DEFFLOAT, A_NULL);
         class_addmethod(lfo_tilde_class, (t_method)lfo_tilde_reset, gensym("reset"), A_NULL);
     }
 }
