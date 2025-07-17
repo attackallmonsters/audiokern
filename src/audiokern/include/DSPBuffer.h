@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <algorithm>
 #include <cstring>
+#include <cmath>
 
 class DSPBuffer {
 public:

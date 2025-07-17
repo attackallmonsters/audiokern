@@ -92,7 +92,7 @@ dsp_float DSPBuffer::getPeakValue() const
 
     for (size_t i = 0; i < bufferSize; ++i)
     {
-        dsp_float absVal = std::abs(buffer[i]);
+        dsp_float absVal = std::fabs(buffer[i]);
 
         if (absVal > peak)
             peak = absVal;

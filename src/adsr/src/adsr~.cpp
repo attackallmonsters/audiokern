@@ -1,8 +1,6 @@
 // adsr~.cpp — Pure Data external for a nonlinear ADSR envelope with clamping and validation
 #pragma GCC diagnostic ignored "-Wcast-function-type"
 
-#include "m_pd.h"
-#include "pdbase.h"
 #include "ADSR.h"
 
 static t_class *adsr_tilde_class;
@@ -54,6 +52,7 @@ void adsr_sustain(t_adsr_tilde *x, t_floatarg f)
 {
     x->adsr->setSustain(f);
 }
+make: *** [Makefile:54: release] Error 2
 
 void adsr_attackshape(t_adsr_tilde *x, t_floatarg f)
 {
