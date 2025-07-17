@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <algorithm>
 #include <cstring>
+#include <cmath>
 
 // This is a buffer that manages buffers used by the host.
 // Set preprocessor/compiole flag HOST_USE_DOUBLE to use double

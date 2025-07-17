@@ -95,7 +95,7 @@ host_float DSPSampleBuffer::getPeakValue() const
 
     for (size_t i = 0; i < bufferSize; ++i)
     {
-        host_float absVal = std::abs(buffer[i]);
+        host_float absVal = std::fabs(buffer[i]);
 
         if (absVal > peak)
             peak = absVal;
