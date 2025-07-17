@@ -15,7 +15,7 @@ ifeq ($(UNAME),armv7l)
 	CXXFLAGS_BASE = -Wall -Wextra -std=c++17 -fPIC -Iinclude -mfpu=neon -mfloat-abi=hard -march=armv7-a -DUSE_SINGLE_PRECISION
 endif
 
-OBJ_NAME    = libdsp
+OBJ_NAME    = libaudiokern
 SRC_DIR     = src
 OBJ_DIR     = ../../obj/$(OBJ_NAME)
 LIB_DIR     = ../../lib

@@ -13,12 +13,12 @@ ifeq ($(UNAME),x86_64)
 endif
 
 ifeq ($(UNAME),armv7l)
-	CXXFLAGS_BASE = -Wall -Wextra -std=c++17 -fPIC -Iinclude -I../dsp/include -mfpu=neon -mfloat-abi=hard -march=armv7-a -DUSE_SINGLE_PRECISION
+	CXXFLAGS_BASE = -Wall -Wextra -std=c++17 -fPIC -Iinclude -I../audiokern/include-mfpu=neon -mfloat-abi=hard -march=armv7-a -DUSE_SINGLE_PRECISION
 	DEPLOY_DIR = ../../bin/lfo/linux_arm
 endif
 
 LIB_DIR   = ../../lib
-DSP_LIB   = $(LIB_DIR)/libdsp.a
+DSP_LIB   = $(LIB_DIR)/libaudiokern.a
 
 # === [lfo] ===
 LFO_NAME      = lfo

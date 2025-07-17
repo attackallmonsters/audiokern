@@ -8,12 +8,12 @@ UNAME := $(shell uname -m)
 CXXFLAGS_HOST = -DHOST_SINGLE_PRECISION
 
 ifeq ($(UNAME),x86_64)
-	CXXFLAGS_BASE = -Wall -Wextra -std=c++17 -fPIC -Iinclude -I../dsp/include 
+	CXXFLAGS_BASE = -Wall -Wextra -std=c++17 -fPIC -Iinclude -I../audiokern/include
 	DEPLOY_BASE = linux_x64
 endif
 
 ifeq ($(UNAME),armv7l)
-	CXXFLAGS_BASE = -Wall -Wextra -std=c++17 -fPIC -Iinclude -I../dsp/include -mfpu=neon -mfloat-abi=hard -march=armv7-a -DUSE_SINGLE_PRECISION
+	CXXFLAGS_BASE = -Wall -Wextra -std=c++17 -fPIC -Iinclude -I../audiokern/include -mfpu=neon -mfloat-abi=hard -march=armv7-a -DUSE_SINGLE_PRECISION
 	DEPLOY_BASE = linux_arm
 endif
 
@@ -25,7 +25,7 @@ OBJ_DIR     = ../../obj/$(OBJ_NAME)
 LIB_DIR     = ../../lib
 LIB_NAME    = $(OBJ_NAME).pd_linux
 OUT_FILE    = $(LIB_DIR)/$(LIB_NAME)
-DSP_LIB     = $(LIB_DIR)/libdsp.a
+DSP_LIB     = $(LIB_DIR)/libaudiokern.a
 
 # === Source & Object files ===
 SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
