@@ -8,6 +8,7 @@
 #include "VoiceAllocator.h"
 #include "MidiProcessor.h"
 #include "LFO.h"
+#include "dsp_runtime.h"
 
 struct SynthVoice
 {
@@ -17,7 +18,7 @@ struct SynthVoice
 
 enum class LFOTargets
 {
-    
+
 };
 
 struct LFOParams
@@ -119,6 +120,9 @@ public:
     void processBlock();
 
 private:
+    // Creates the samples vor the voice buffer
+    void processVoiceBlock();
+
     // Creates the voices
     void createVoices();
 
@@ -127,6 +131,9 @@ private:
 
     // Poly voice allocation management
     VoiceAllocator<SynthVoice> allocator;
+
+    // Thread pool for voices
+    DSPThreadPool voicePool;
 
     // Mixer
     Mixer mixer;

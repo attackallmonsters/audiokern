@@ -16,6 +16,7 @@ void JPSynth::initialize(host_float *bufL, host_float *bufR)
 
     DSP::log("=====> Initializing jpvoice...");
 
+    voicePool.initialize(cpu_count() / 2);
     carrierTuning.initialize();
     modulatorTuning.initialize();
     midi.initialize();
@@ -288,12 +289,21 @@ void JPSynth::processBlock()
 {
     DSP::nextBlock();
 
-    for (auto *voice : allocator.getVoices())
-    {
-        voice->jpvoice.computeSamples();
-    }
+    processVoiceBlock();
+
+    voicePool.wait();
 
     mixer.mix();
+}
+
+void JPSynth::processVoiceBlock()
+{
+    for (auto *voice : allocator.getVoices())
+    {
+        voicePool.execute([voice]() {
+            voice->jpvoice.computeSamples();
+        });
+    }
 }
 
 void JPSynth::createVoices()

@@ -2,81 +2,110 @@
 
 DSPThreadPool::DSPThreadPool()
 {
-    stop = false;
-    unsigned int maxThreads = std::max(1u, std::thread::hardware_concurrency() / 2);
-
-    for (uint i = 0; i < maxThreads; ++i)
-    {
-        workers.emplace_back([this]()
-                             {
-                while (true) {
-                    Task task;
-
-                    {
-                        std::unique_lock<std::mutex> lock(queueMutex);
-                        condition.wait(lock, [this]() {
-                            return stop || !queue.empty();
-                        });
-
-                        if (stop && queue.empty())
-                            return;
-
-                        task = queue.front();
-                        queue.pop();
-                    }
-
-                    task.func(task.object);
-                } });
-    }
+#ifdef __linux__
+#include <pthread.h>
+    pthread_setname_np(pthread_self(), "DSPThreadPool");
+#endif
 }
 
 DSPThreadPool::~DSPThreadPool()
 {
     {
-        std::lock_guard<std::mutex> lock(queueMutex);
-        stop = true;
+        std::lock_guard<std::mutex> lock(taskMutex);
+        shuttingDown = true;
     }
+    
+    taskAvailable.notify_all();
 
-    condition.notify_all();
-    for (auto &worker : workers)
-        if (worker.joinable())
-            worker.join();
+    for (auto &thread : workers)
+    {
+        if (thread.joinable())
+            thread.join();
+    }
 }
 
-void DSPThreadPool::initialize()
+void DSPThreadPool::initialize(size_t numThreads)
+{
+    // Ensure all tasks are completed before reinitializing
+    wait();
+
+    // Shut down existing threads
+    {
+        std::lock_guard<std::mutex> lock(taskMutex);
+        shuttingDown = true;
+    }
+    taskAvailable.notify_all();
+
+    for (auto &thread : workers)
+    {
+        if (thread.joinable())
+            thread.join();
+    }
+
+    workers.clear();
+
+    {
+        std::lock_guard<std::mutex> lock(taskMutex);
+        shuttingDown = false;
+
+        // Clear remaining tasks
+        std::queue<std::function<void()>> empty;
+        std::swap(tasks, empty);
+
+        activeTasks = 0;
+    }
+
+    // Start new threads
+    for (size_t i = 0; i < numThreads; ++i)
+    {
+        workers.emplace_back(&DSPThreadPool::workerThread, this);
+    }
+}
+
+void DSPThreadPool::execute(std::function<void()> task)
 {
     {
-        std::lock_guard<std::mutex> lock(queueMutex);
-        jobs.clear(); // Remove all configured persistent jobs
-        std::queue<Task> empty;
-        std::swap(queue, empty); // Clear the queue efficiently
+        std::lock_guard<std::mutex> lock(taskMutex);
+        tasks.push(std::move(task));
+        activeTasks++;
     }
-}
 
-void DSPThreadPool::setExecute(void *object, TaskFunc func)
-{
-    jobs.push_back({object, func});
-}
-
-void DSPThreadPool::execute()
-{
-    {
-        std::lock_guard<std::mutex> lock(queueMutex);
-        for (const auto &task : jobs)
-            queue.push(task);
-    }
-    condition.notify_all();
+    taskAvailable.notify_one();
 }
 
 void DSPThreadPool::wait()
 {
+    std::unique_lock<std::mutex> lock(waitMutex);
+    allTasksDone.wait(lock, [this]()
+                      { return activeTasks.load() == 0; });
+}
+
+void DSPThreadPool::workerThread()
+{
     while (true)
     {
+        std::function<void()> task;
+
         {
-            std::lock_guard<std::mutex> lock(queueMutex);
-            if (queue.empty())
-                break;
+            std::unique_lock<std::mutex> lock(taskMutex);
+            taskAvailable.wait(lock, [this]()
+                               { return !tasks.empty() || shuttingDown; });
+
+            if (shuttingDown && tasks.empty())
+                return;
+
+            task = std::move(tasks.front());
+            tasks.pop();
         }
-        std::this_thread::yield();
+
+        // Run task
+        task();
+
+        // Signal task completion
+        if (--activeTasks == 0)
+        {
+            std::lock_guard<std::mutex> lock(waitMutex);
+            allTasksDone.notify_all();
+        }
     }
 }
