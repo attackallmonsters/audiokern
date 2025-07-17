@@ -462,3 +462,8 @@ void JPVoice::computeSamples()
     // Assign changed params
     paramFader.processChanges();
 }
+
+void JPVoice::getExecute(void *ptr)
+{
+    static_cast<JPVoice *>(ptr)->computeSamples();
+}

@@ -127,6 +127,9 @@ public:
     // Next sample block generation
     void computeSamples();
 
+    // Used by DSPThreadPool to invoke computeSamples
+    static void getExecute(void* ptr);
+
 private:
     WavetableOscillator *carrier;      // Carrier oscillator (may be modulated)
     WavetableOscillator *modulator;    // Modulator oscillator (for FM or sync)

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "DSPThreadPool.h"
 #include "JPVoice.h"
 #include "DSPSampleBuffer.h"
 #include "Mixer.h"
@@ -118,6 +119,9 @@ public:
     void processBlock();
 
 private:
+    // Threads for voice pool
+    DSPThreadPool voicePool;
+
     // Creates the voices
     void createVoices();
 
