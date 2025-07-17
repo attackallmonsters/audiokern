@@ -8,7 +8,7 @@ UNAME := $(shell uname -m)
 CXXFLAGS_HOST = -DHOST_SINGLE_PRECISION
 
 ifeq ($(UNAME),x86_64)
-	CXXFLAGS_BASE = -Wall -Wextra -std=c++17 -fPIC -Iinclude -I../dsp/include
+	CXXFLAGS_BASE = -Wall -Wextra -std=c++17 -fPIC -Iinclude -I../audiokern/include
 	DEPLOY_DIR = ../../bin/lfo/linux_x64
 endif
 
