@@ -5,11 +5,12 @@ clear
 cd src/audiokern
 make -B release
 
-cd ../adsr
-make -B release
+###### TODO, does not build currently
+# cd ../adsr
+# make -B release
 
-cd ../lfo
-make -B release
+# cd ../lfo
+# make -B release
 
 cd ../jpvoice
 make -B release
