@@ -2,7 +2,7 @@
 
 clear
 
-cd src/dsp
+cd src/audiokern
 make -B clean
 make debug
 
