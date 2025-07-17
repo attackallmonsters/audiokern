@@ -2,10 +2,10 @@
 
 DSPThreadPool::DSPThreadPool()
 {
-    unsigned int maxThreads = std::max(1u, std::thread::hardware_concurrency() / 2);
     stop = false;
+    unsigned int maxThreads = std::max(1u, std::thread::hardware_concurrency() / 2);
 
-    for (unsigned int i = 0; i < maxThreads; ++i)
+    for (uint i = 0; i < maxThreads; ++i)
     {
         workers.emplace_back([this]()
                              {

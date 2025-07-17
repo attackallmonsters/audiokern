@@ -119,9 +119,6 @@ public:
     void processBlock();
 
 private:
-    // Threads for voice pool
-    DSPThreadPool voicePool;
-
     // Creates the voices
     void createVoices();
 
