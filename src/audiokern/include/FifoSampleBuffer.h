@@ -9,10 +9,10 @@
 // A simple generic ring buffer (circular buffer) with FIFO behavior
 // Stores up to 'bufferSize' elements, overwriting the oldest when full
 
-class RingSampleBuffer
+class FifoSampleBuffer
 {
 public:
-    RingSampleBuffer(); // Default constructor
+    FifoSampleBuffer(); // Default constructor
 
     // Allocate internal storage with given capacity and reset state
     void create(size_t size);

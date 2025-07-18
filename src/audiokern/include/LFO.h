@@ -2,7 +2,6 @@
 
 #include "DSPObject.h"
 #include "DSPSampleBuffer.h"
-#include "RingSampleBuffer.h"
 #include "dsp_types.h"
 #include "dsp_math.h"
 #include "clamp.h"
@@ -76,7 +75,6 @@ private:
     LFOMode lfoMode;
 
     DSPSampleBuffer modBufferDefault;
-    RingSampleBuffer smoothBuffer;
 
     LFOType lfoType;
 

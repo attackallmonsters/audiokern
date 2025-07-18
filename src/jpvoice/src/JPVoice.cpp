@@ -388,8 +388,8 @@ void JPVoice::setOutputBuffer(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR)
     paramFader.outputBufferL = mixBufferL;
     paramFader.outputBufferR = mixBufferR;
 
-    filter.outputBufferL = mixBufferL;
-    filter.outputBufferR = mixBufferR;
+    filter.processBufferL = mixBufferL;
+    filter.processBufferR = mixBufferR;
     filter.cutoffBuffer = filterAdsr.outputBuffer;
     filter.resoBuffer = resoBuffer;
 }

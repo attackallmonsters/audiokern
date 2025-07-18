@@ -1,9 +1,8 @@
 #include "SlewLimiter.h"
 
 // Constructor: slewTimeMs in milliseconds
-SlewLimiter::SlewLimiter(dsp_float ms)
+SlewLimiter::SlewLimiter()
 {
-    slewTime = ms;
 }
 
 // Initializes the slew limiter
@@ -11,12 +10,8 @@ void SlewLimiter::initialize()
 {
     DSPObject::initialize();
     
-    samplerate = DSP::sampleRate;
-    remaining = 0;
-    current = 0.0;
-    target = 0.0;
-    step = 0.0;
-    calcSamples();
+    setTarget(0.0);
+    setSlewTime(0.0);
 }
 
 // Set new target (starts smoothing)
@@ -49,7 +44,7 @@ void SlewLimiter::setSlewTime(double ms)
 // Calculates the samples for current samplerate
 void SlewLimiter::calcSamples()
 {
-    slewSamples = static_cast<size_t>(slewTime * samplerate * 0.001);
+    slewSamples = static_cast<size_t>(slewTime * DSP::sampleRate * 0.001);
 }
 
 // Advance one sample

@@ -16,7 +16,7 @@ void FastTan::processBlock(DSPObject *dsp)
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        (ft->outputBufferL)[i] = fast_tanh((ft->outputBufferL)[i]);
-        (ft->outputBufferR)[i] = fast_tanh((ft->outputBufferR)[i]);
+        (ft->outputBufferL)[i] = dsp_math::fast_tanh((ft->outputBufferL)[i]);
+        (ft->outputBufferR)[i] = dsp_math::fast_tanh((ft->outputBufferR)[i]);
     }
 }

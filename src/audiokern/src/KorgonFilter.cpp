@@ -84,15 +84,15 @@ void KorgonFilter::processBlock(DSPObject *dsp)
     {
         for (size_t i = 0; i < blocksize; ++i)
         {
-            left = (flt->outputBufferL)[i];
-            right = (flt->outputBufferR)[i];
+            left = (flt->processBufferL)[i];
+            right = (flt->processBufferR)[i];
             cutoff = (flt->cutoffBuffer)[i];
             reso = (flt->resoBuffer)[i];
 
             if (cutoff > 15000.0)
             {
-                (flt->outputBufferL)[i] = left;
-                (flt->outputBufferR)[i] = right;
+                (flt->processBufferL)[i] = left;
+                (flt->processBufferR)[i] = right;
                 continue;
             }
 
@@ -125,22 +125,22 @@ void KorgonFilter::processBlock(DSPObject *dsp)
             //left = (left >= 0.0) ? fast_tanh(left) : 1.5 * fast_tanh(0.5 * left);
             //right = (right >= 0.0) ? fast_tanh(right) : 1.5 * fast_tanh(0.5 * right);
 
-            (flt->outputBufferL)[i] = left;
-            (flt->outputBufferR)[i] = right;
+            (flt->processBufferL)[i] = left;
+            (flt->processBufferR)[i] = right;
         }
     }
     else
     {
         for (size_t i = 0; i < blocksize; ++i)
         {
-            left = (flt->outputBufferL)[i];
-            right = (flt->outputBufferR)[i];
+            left = (flt->processBufferL)[i];
+            right = (flt->processBufferR)[i];
             cutoff = (flt->cutoffBuffer)[i];
 
             if (cutoff > 15000.0)
             {
-                (flt->outputBufferL)[i] = left;
-                (flt->outputBufferR)[i] = right;
+                (flt->processBufferL)[i] = left;
+                (flt->processBufferR)[i] = right;
                 continue;
             }
 
@@ -152,14 +152,14 @@ void KorgonFilter::processBlock(DSPObject *dsp)
             y1L += alpha * (left - y1L);
             y1R += alpha * (right - y1R);
 
-            left = (flt->outputBufferL)[i] - y1L;
-            right = (flt->outputBufferR)[i] - y1R;
+            left = (flt->processBufferL)[i] - y1L;
+            right = (flt->processBufferR)[i] - y1R;
 
-            left = (left >= 0.0) ? fast_tanh(left) : 1.5 * fast_tanh(0.5 * left);
-            right = (right >= 0.0) ? fast_tanh(right) : 1.5 * fast_tanh(0.5 * right);
+            left = (left >= 0.0) ? dsp_math::fast_tanh(left) : 1.5 * dsp_math::fast_tanh(0.5 * left);
+            right = (right >= 0.0) ? dsp_math::fast_tanh(right) : 1.5 * dsp_math::fast_tanh(0.5 * right);
 
-            (flt->outputBufferL)[i] = left;
-            (flt->outputBufferR)[i] = right;
+            (flt->processBufferL)[i] = left;
+            (flt->processBufferR)[i] = right;
         }
     }
 

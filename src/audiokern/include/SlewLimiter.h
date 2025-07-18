@@ -8,7 +8,7 @@ class SlewLimiter : public DSPObject
 {
 public:
     // Constructor: slewTimeMs in milliseconds
-    SlewLimiter(dsp_float ms);
+    SlewLimiter();
 
     // Initializes the slew limiter
     void initialize() override;

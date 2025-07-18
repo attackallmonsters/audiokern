@@ -5,7 +5,7 @@
       "includePath": [
         "${workspaceFolder}/**"
       ],
-      "defines": ["DEBUG", "M_PI", "M_2PI"],
+      "defines": ["DEBUG", "M_PI", "M_2PI", "M_1D_SQRT2"],
       "compilerPath": "/usr/bin/g++",
       "cStandard": "c17",
       "cppStandard": "c++17",

@@ -1,17 +1,17 @@
-#include "RingSampleBuffer.h"
+#include "FifoSampleBuffer.h"
 
-RingSampleBuffer::RingSampleBuffer()
+FifoSampleBuffer::FifoSampleBuffer()
 {
 }
 
-void RingSampleBuffer::create(size_t size)
+void FifoSampleBuffer::create(size_t size)
 {
     bufferSize = clampmin(size, static_cast<size_t>(0));
     buffer.resize(bufferSize);
     clear();
 }
 
-void RingSampleBuffer::push(const host_float &value)
+void FifoSampleBuffer::push(const host_float &value)
 {
     buffer[writeIndex] = value;
     writeIndex = (writeIndex + 1) % bufferSize;
@@ -22,37 +22,37 @@ void RingSampleBuffer::push(const host_float &value)
         readIndex = (readIndex + 1) % bufferSize;
 }
 
-host_float &RingSampleBuffer::operator[](size_t i)
+host_float &FifoSampleBuffer::operator[](size_t i)
 {
     return buffer[(readIndex + i) % bufferSize];
 }
 
-host_float RingSampleBuffer::operator[](size_t i) const
+host_float FifoSampleBuffer::operator[](size_t i) const
 {
     return buffer[(readIndex + i) % bufferSize];
 }
 
-size_t RingSampleBuffer::count() const
+size_t FifoSampleBuffer::count() const
 {
     return elements;
 }
 
-size_t RingSampleBuffer::size() const
+size_t FifoSampleBuffer::size() const
 {
     return bufferSize;
 }
 
-bool RingSampleBuffer::isEmpty() const
+bool FifoSampleBuffer::isEmpty() const
 {
     return elements == 0;
 }
 
-bool RingSampleBuffer::isFull() const
+bool FifoSampleBuffer::isFull() const
 {
     return elements == bufferSize;
 }
 
-host_float RingSampleBuffer::getSum()
+host_float FifoSampleBuffer::getSum()
 {
     host_float sum = 0.0;
 
@@ -62,7 +62,7 @@ host_float RingSampleBuffer::getSum()
     return sum;
 }
 
-void RingSampleBuffer::clear()
+void FifoSampleBuffer::clear()
 {
     writeIndex = 0;
     readIndex = 0;

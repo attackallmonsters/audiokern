@@ -8,6 +8,7 @@
 #include "clamp.h"
 #include "DSP.h"
 #include "dsp_types.h"
+#include"dsp_math.h"
 
 size_t DSP::blockSize = 64;
 dsp_float DSP::sampleRate = -1.0;
@@ -33,6 +34,7 @@ DSP::LogFunc DSP::logger = &defaultLogger;
 // Contructor
 DSP::DSP()
 {
+    dsp_math::init_trig_lut();
 }
 
 // Destructor

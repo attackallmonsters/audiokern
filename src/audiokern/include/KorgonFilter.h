@@ -24,8 +24,8 @@ public:
     void setFilterMode(FilterMode mode);
 
     // The samples to be filtered
-    DSPSampleBuffer outputBufferL;
-    DSPSampleBuffer outputBufferR;
+    DSPSampleBuffer processBufferL;
+    DSPSampleBuffer processBufferR;
 
     // Buffer for cutoff calculation
     DSPSampleBuffer cutoffBuffer;

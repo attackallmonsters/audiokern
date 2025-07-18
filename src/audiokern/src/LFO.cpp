@@ -246,8 +246,6 @@ void LFO::processBlockValue(DSPObject *dsp)
     if (lfo->unipolar)
         val = 0.5 * (val + 1.0);
 
-    lfo->smoothBuffer.push(val);
-
     if (lfo->processLFOValue)
         lfo->processLFOValue(val * lfo->depth + lfo->offset);
 
