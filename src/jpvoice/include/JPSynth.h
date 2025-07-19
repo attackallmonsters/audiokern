@@ -9,6 +9,7 @@
 #include "MidiProcessor.h"
 #include "LFO.h"
 #include "dsp_runtime.h"
+#include "NebularReverb.h"
 
 struct SynthVoice
 {
@@ -39,7 +40,7 @@ public:
     static JPSynth &instance();
 
     // Initializes the instance
-    void initialize(host_float *bufL, host_float *bufR);
+    void initialize(host_float *outL, host_float *outR);
 
     // Handles a note in event
     void noteIn(int note, host_float velocity);
@@ -133,16 +134,19 @@ private:
     VoiceAllocator<SynthVoice> allocator;
 
     // Thread pool for voices
-    DSPThreadPool voicePool;
+    DSPThreadPool voiceThreads;
 
     // Mixer
-    Mixer mixer;
+    Mixer voiceMixer;
 
     // LFO 1
     LFO lfo1;
 
     // LFO 2
     LFO lfo2;
+
+    // Reverb
+    NebularReverb reverb;
 
     // Tuning system carrier
     TuningSystem carrierTuning;

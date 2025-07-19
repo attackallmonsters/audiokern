@@ -343,7 +343,7 @@ bool WavetableOscillator::load()
             size_t size = static_cast<size_t>(std::stoul(item));
 
             DSPSampleBuffer *buffer = new DSPSampleBuffer();
-            ;
+            
             buffer->create(size);
 
             // Read data

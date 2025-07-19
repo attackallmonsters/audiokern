@@ -3,12 +3,13 @@
 NebularReverb::NebularReverb()
 {
     registerBlockProcessor(&NebularReverb::processBlock);
-
-    delays.resize(maxDelays);
 }
 
 void NebularReverb::initialize()
 {
+    inputBufferL.initialize(DSP::blockSize);
+    inputBufferR.initialize(DSP::blockSize);
+
     outputBufferL.create(DSP::blockSize);
     outputBufferR.create(DSP::blockSize);
 
@@ -19,6 +20,7 @@ void NebularReverb::initialize()
 
     setDensity(4);
     setRoomSize(0.5);
+    setDamping(5000.0);
 }
 
 void NebularReverb::setDensity(int d)
@@ -35,10 +37,8 @@ void NebularReverb::setSpace(dsp_float size)
 
 void NebularReverb::setDamping(dsp_float damping)
 {
-    dampingFrequency = clamp(damping, 0.0, 1.0) * 20000.0;
-
     for (auto &delay : delays)
-        delay.setDamping(dampingFrequency);
+        delay.setDamping(damping);
 }
 
 void NebularReverb::setRoomSize(dsp_float size)
@@ -57,16 +57,19 @@ void NebularReverb::updateDelays()
     }
 }
 
-// void NebularReverb::setBuffers(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR)
-// {
-//     for (int i = 0; i < density; ++i)
-//     {
-//         delays[i].delayBuffer.push(bufL, bufR);
-//     }
-// }
+void NebularReverb::push(const DSPSampleBuffer &bufL, const DSPSampleBuffer &bufR)
+{
+    for (int i = 0; i < density; ++i)
+    {
+        delays[i].delayBuffer.push(bufL, bufR);
+    }
+}
 
 void NebularReverb::processBlock()
 {
+    // Feeds the reverb with samples
+    push(inputBufferL, inputBufferR);
+
     for (int i = 0; i < density; ++i)
     {
         delays[i].processBlock();

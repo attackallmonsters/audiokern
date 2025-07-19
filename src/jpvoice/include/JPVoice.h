@@ -127,7 +127,14 @@ public:
     // Next sample block generation
     void processBlock();
 
+    // Output buffers 
+    DSPSampleBuffer outputBufferL; // Mixing buffer left channel
+    DSPSampleBuffer outputBufferR; // Mixing buffer right channel
+
 private:
+    // Next sample block generation
+    static void processBlock(DSPObject *dsp);
+
     WavetableOscillator *carrier;      // Carrier oscillator (may be modulated)
     WavetableOscillator *modulator;    // Modulator oscillator (for FM or sync)
     WavetableOscillator *carrierTmp;   // Carrier oscillator for oscillator change
@@ -188,10 +195,6 @@ private:
     host_float amp_oscmix;
     host_float amp_osc_noise;
     host_float amp_noise;
-
-    // Output buffers of host
-    DSPSampleBuffer mixBufferL; // Mixing buffer left channel
-    DSPSampleBuffer mixBufferR; // Mixing buffer right channel
 
     // Feedback
     host_float lastSampleCarrierLeft;

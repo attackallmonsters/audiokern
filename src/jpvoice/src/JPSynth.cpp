@@ -6,7 +6,7 @@ JPSynth &JPSynth::instance()
     return instance;
 }
 
-void JPSynth::initialize(host_float *bufL, host_float *bufR)
+void JPSynth::initialize(host_float *outL, host_float *outR)
 {
     if (!DSP::isInitialized())
     {
@@ -16,21 +16,26 @@ void JPSynth::initialize(host_float *bufL, host_float *bufR)
 
     DSP::log("=====> Initializing jpvoice...");
 
-    voicePool.initialize(cpu_count() / 2);
+    voiceThreads.initialize(cpu_count() / 2);
     carrierTuning.initialize();
     modulatorTuning.initialize();
     midi.initialize();
+    voiceMixer.initialize(voiceCount);
+    reverb.initialize();
 
     createVoices();
 
-    mixer.clear();
-    mixer.create(voiceCount, bufL, bufR);
+    reverb.inputBufferL = voiceMixer.outputBufferL;
+    reverb.inputBufferR = voiceMixer.outputBufferR;
+
+    reverb.outputBufferL = outL;
+    reverb.outputBufferR = outR;
 
     for (size_t i = 0; i < voiceCount; ++i)
     {
         SynthVoice *voice = allocator.getVoice(i);
 
-        voice->jpvoice.setOutputBuffer(mixer.getBufferL(i), mixer.getBufferR(i));
+        voice->jpvoice.setOutputBuffer(voiceMixer.getInputBufferL(i), voiceMixer.getInputBufferL(i));
     }
 
     DSP::log("=====> jpvoice initialized");
@@ -291,19 +296,23 @@ void JPSynth::processBlock()
 
     processVoiceBlock();
 
-    voicePool.wait();
+    voiceMixer.mix();
 
-    mixer.mix();
+    reverb.processBlock();
+
+    DSP::dspLogBuffer("m", reverb.outputBufferL);
 }
 
 void JPSynth::processVoiceBlock()
 {
     for (auto *voice : allocator.getVoices())
     {
-        voicePool.execute([voice]() {
-            voice->jpvoice.computeSamples();
+        voiceThreads.execute([voice]() {
+            voice->jpvoice.generateBlock();
         });
     }
+
+    voiceThreads.wait();
 }
 
 void JPSynth::createVoices()

@@ -80,13 +80,7 @@ protected:
     std::vector<host_float> baseFrequencies;
 
     // Define the corresponding table size for each frequency range
-    std::vector<size_t> tableSizes;
-
-    // High-precision wavetable buffers
-    std::vector<DSPBuffer*> wavetableCalcBuffers;
-
-    // Wavetable sample buffers
-    std::vector<DSPSampleBuffer*> wavetableSampleBuffers;
+    std::vector<size_t> tableSizes;   
 
 private:
     // Next sample block generation
@@ -118,6 +112,12 @@ private:
     // The number of voices
     int numVoices = 1;
     std::vector<WavetableVoice> voices;
+
+    // High-precision wavetable buffers
+    std::vector<DSPBuffer*> wavetableCalcBuffers;
+
+    // Wavetable sample buffers
+    std::vector<DSPSampleBuffer*> wavetableSampleBuffers;
 
     // Voices detune
     dsp_float detune = 0.03;

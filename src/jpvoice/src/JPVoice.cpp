@@ -6,6 +6,8 @@ JPVoice::JPVoice()
 {
     carrier = &sawCarrier;
     modulator = &sineModulator;
+
+    registerBlockProcessor(JPVoice::processBlock);
 }
 
 // Destructor: cleans up oscillator instances.
@@ -56,9 +58,9 @@ void JPVoice::initialize()
     resoBuffer.create(DSP::blockSize);
     resoBuffer.fill(0.0);
 
-    // Real buffers will be set to hosts output buffers
-    mixBufferL.initialize(DSP::blockSize);
-    mixBufferR.initialize(DSP::blockSize);
+    // Real buffers will be set to consumers output buffers
+    outputBufferL.initialize(DSP::blockSize);
+    outputBufferR.initialize(DSP::blockSize);
 
     setCarrierOscillatorType(CarrierOscillatiorType::Saw);
     setModulatorOscillatorType(ModulatorOscillatorType::Sine);
@@ -382,14 +384,14 @@ void JPVoice::setAmpGain(host_float g)
 // Sets the output buffers
 void JPVoice::setOutputBuffer(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR)
 {
-    mixBufferL = bufL;
-    mixBufferR = bufR;
+    outputBufferL = bufL;
+    outputBufferR = bufR;
 
-    paramFader.outputBufferL = mixBufferL;
-    paramFader.outputBufferR = mixBufferR;
+    paramFader.outputBufferL = outputBufferL;
+    paramFader.outputBufferR = outputBufferR;
 
-    filter.processBufferL = mixBufferL;
-    filter.processBufferR = mixBufferR;
+    filter.processBufferL = outputBufferL;
+    filter.processBufferR = outputBufferR;
     filter.cutoffBuffer = filterAdsr.outputBuffer;
     filter.resoBuffer = resoBuffer;
 }
@@ -447,8 +449,8 @@ void JPVoice::processBlock()
             mixR = amp_osc_noise * mixR + amp_noise * noise.outputBufferR[i];
         }
 
-        mixBufferL[i] = mixL;
-        mixBufferR[i] = mixR;
+        outputBufferL[i] = mixL;
+        outputBufferR[i] = mixR;
     }
 
     // ADSR shares buffer with filter
@@ -457,8 +459,16 @@ void JPVoice::processBlock()
 
     // amp envelope
     ampAdsr.generateBlock();
-    ampAdsr.multiply(mixBufferL, mixBufferR);
+    ampAdsr.multiply(outputBufferL, outputBufferR);
 
     // Assign changed params
     paramFader.processChanges();
+}
+
+// Next sample block generation
+void JPVoice::processBlock(DSPObject *dsp)
+{
+    JPVoice* self = static_cast<JPVoice *>(dsp);
+
+    self->processBlock();
 }
