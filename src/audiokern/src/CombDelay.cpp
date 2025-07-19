@@ -37,29 +37,34 @@ void CombDelay::setDamping(dsp_float freqHz)
     dampingCoeff = std::exp(-2.0 * M_PI * f / DSP::sampleRate);
 }
 
-void CombDelay::processBlock(DSPObject* obj)
+void CombDelay::processBlock()
 {
-    CombDelay* self = static_cast<CombDelay*>(obj);
-
     // Ring buffer provides new samples in its output buffer
-    self->delayBuffer.provideNextBlock();
+    delayBuffer.provideNextBlock();
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
         // Read output (delayed samples) of ring buffer
-        host_float delayedL = self->delayBuffer.outputBufferL[i];
-        host_float delayedR = self->delayBuffer.outputBufferR[i];
+        host_float delayedL = delayBuffer.outputBufferL[i];
+        host_float delayedR = delayBuffer.outputBufferR[i];
 
         // Damping of feedback signal (y[n] = (1 - a) * x[n] + a * y[n - 1])
-        self->dampingStateL = (1.0 - self->dampingCoeff) * delayedL + self->dampingCoeff * self->dampingStateL;
-        self->dampingStateR = (1.0 - self->dampingCoeff) * delayedR + self->dampingCoeff * self->dampingStateR;
+        dampingStateL = (1.0 - dampingCoeff) * delayedL + dampingCoeff * dampingStateL;
+        dampingStateR = (1.0 - dampingCoeff) * delayedR + dampingCoeff * dampingStateR;
 
         // Write damped signal to ring buffers feedback buffer
-        self->delayBuffer.feedbackBufferL[i] = delayedL + self->dampingStateL * self->feedback;
-        self->delayBuffer.feedbackBufferR[i] = delayedR + self->dampingStateR * self->feedback;
+        delayBuffer.feedbackBufferL[i] = delayedL + dampingStateL * feedback;
+        delayBuffer.feedbackBufferR[i] = delayedR + dampingStateR * feedback;
 
         // Signal output
-        self->outputBufferL[i] = delayedL;
-        self->outputBufferR[i] = delayedR;
+        outputBufferL[i] = delayedL;
+        outputBufferR[i] = delayedR;
     }
+}
+
+void CombDelay::processBlock(DSPObject* obj)
+{
+    CombDelay* self = static_cast<CombDelay*>(obj);
+
+    self->processBlock();
 }

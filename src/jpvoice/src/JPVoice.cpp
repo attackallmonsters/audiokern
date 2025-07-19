@@ -395,7 +395,7 @@ void JPVoice::setOutputBuffer(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR)
 }
 
 // Next sample block generation
-void JPVoice::computeSamples()
+void JPVoice::processBlock()
 {
     modulator->generateBlock();
 
@@ -431,14 +431,14 @@ void JPVoice::computeSamples()
 
         if (feedbackAmountCarrier > 0)
         {
-            lastSampleCarrierLeft = fast_tanh(carrierLeft);
-            lastSampleCarrierRight = fast_tanh(carrierRight);
+            lastSampleCarrierLeft = dsp_math::fast_tanh(carrierLeft);
+            lastSampleCarrierRight = dsp_math::fast_tanh(carrierRight);
         }
 
         if (feedbackAmountModulator > 0)
         {
-            lastSampleModulatorLeft = fast_tanh(modLeft);
-            lastSampleModulatorRight = fast_tanh(modRight);
+            lastSampleModulatorLeft = dsp_math::fast_tanh(modLeft);
+            lastSampleModulatorRight = dsp_math::fast_tanh(modRight);
         }
 
         if (noisemix > 0)

@@ -1,20 +1,24 @@
 #include "NebularReverb.h"
 
-
 NebularReverb::NebularReverb()
 {
     registerBlockProcessor(&NebularReverb::processBlock);
+
+    delays.resize(maxDelays);
 }
 
 void NebularReverb::initialize()
 {
-    
+    outputBufferL.create(DSP::blockSize);
+    outputBufferR.create(DSP::blockSize);
 
-    for (int i = 0; i < density; ++i)
+    for (int i = 0; i < maxDelays; ++i)
     {
-        delaysL[i].initialize();
-        delaysR[i].initialize();
+        delays[i].initialize();
     }
+
+    setDensity(4);
+    setRoomSize(0.5);
 }
 
 void NebularReverb::setDensity(int d)
@@ -33,13 +37,13 @@ void NebularReverb::setDamping(dsp_float damping)
 {
     dampingFrequency = clamp(damping, 0.0, 1.0) * 20000.0;
 
-    for (auto& delay : delaysL)
+    for (auto &delay : delays)
         delay.setDamping(dampingFrequency);
 }
 
-void NebularReverb::setSpaceSize(dsp_float size)
+void NebularReverb::setRoomSize(dsp_float size)
 {
-    for (auto& delay : delaysL)
+    for (auto &delay : delays)
         delay.setFeedback(size);
 }
 
@@ -49,25 +53,44 @@ void NebularReverb::updateDelays()
     {
         // Spread factors across a range for density variation
         dsp_float factor = 0.8 + 0.4 * (i / static_cast<dsp_float>(density - 1));
-        delaysL[i].setTime(delayTime * factor);
+        delays[i].setTime(delayTime * factor);
     }
 }
 
-void NebularReverb::processBlock(DSPObject* dsp)
+// void NebularReverb::setBuffers(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR)
+// {
+//     for (int i = 0; i < density; ++i)
+//     {
+//         delays[i].delayBuffer.push(bufL, bufR);
+//     }
+// }
+
+void NebularReverb::processBlock()
 {
-    NebularReverb* self = static_cast<NebularReverb*>(dsp);
+    for (int i = 0; i < density; ++i)
+    {
+        delays[i].processBlock();
+    }
 
-    // for (size_t i = 0; i < DSP::blockSize; ++i)
-    // {
-    //     dsp_float accL = 0.0, accR = 0.0;
+    for (size_t i = 0; i < DSP::blockSize; ++i)
+    {
+        host_float sumL = 0.0;
+        host_float sumR = 0.0;
 
-    //     for (int j = 0; j < self->density; ++j)
-    //     {
-    //         accL += self->delaysL[j].processSample(inL[i], 0); 
-    //         accR += self->delaysR[j].processSample(inR[i], 1);
-    //     }
+        for (int j = 0; j < density; ++j)
+        {
+            sumL += delays[j].outputBufferL[i];
+            sumR += delays[j].outputBufferR[i];
+        }
 
-    //     outL[i] = accL / self->density;
-    //     outR[i] = accR / self->density;
-    // }
+        outputBufferL[i] = sumL / density;
+        outputBufferR[i] = sumR / density;
+    }
+}
+
+void NebularReverb::processBlock(DSPObject *dsp)
+{
+    NebularReverb *self = static_cast<NebularReverb *>(dsp);
+
+    self->processBlock();
 }

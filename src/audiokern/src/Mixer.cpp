@@ -1,11 +1,11 @@
 #include "Mixer.h"
 
-void Mixer::create(size_t count, host_float *bufL, host_float *bufR)
+void Mixer::initialize(size_t count)
 {
     bufferCount = count;
 
-    outputBufferL = bufL;
-    outputBufferR = bufR;
+    outputBufferL.create(DSP::blockSize);
+    outputBufferR.create(DSP::blockSize);
 
     buffersL.clear();
     buffersL.resize(bufferCount);
@@ -20,23 +20,14 @@ void Mixer::create(size_t count, host_float *bufL, host_float *bufR)
     }
 }
 
-DSPSampleBuffer &Mixer::getBufferL(size_t index)
+DSPSampleBuffer &Mixer::getInputBufferL(size_t index)
 {
     return buffersL[index];
 }
 
-DSPSampleBuffer &Mixer::getBufferR(size_t index)
+DSPSampleBuffer &Mixer::getInputBufferR(size_t index)
 {
     return buffersR[index];
-}
-
-void Mixer::clear()
-{
-    buffersL.clear();
-    buffersR.clear();
-
-    outputBufferL = nullptr;
-    outputBufferR = nullptr;
 }
 
 void Mixer::mix()

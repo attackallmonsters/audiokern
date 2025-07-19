@@ -125,7 +125,7 @@ public:
     void setAmpGain(host_float g);
 
     // Next sample block generation
-    void computeSamples();
+    void processBlock();
 
 private:
     WavetableOscillator *carrier;      // Carrier oscillator (may be modulated)

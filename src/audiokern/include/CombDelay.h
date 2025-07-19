@@ -23,6 +23,9 @@ public:
     // Set damping lowpass filter frequency (Hz)
     void setDamping(dsp_float freqHz);
 
+    // Processes the next block
+    void processBlock();
+
     // Internal delay buffers
     DelayBlockBuffer delayBuffer;
 
