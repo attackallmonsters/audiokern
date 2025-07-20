@@ -1,5 +1,10 @@
 #include "Mixer.h"
 
+Mixer::Mixer()
+{
+    registerBlockProcessor(&Mixer::processBlock);
+}
+
 void Mixer::initialize(size_t count)
 {
     bufferCount = count;
@@ -30,7 +35,7 @@ DSPSampleBuffer &Mixer::getInputBufferR(size_t index)
     return buffersR[index];
 }
 
-void Mixer::mix()
+void Mixer::processBlock()
 {
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
@@ -49,4 +54,10 @@ void Mixer::mix()
             outputBufferR[l] += bufR[l];
         }
     }
+}
+
+void Mixer::processBlock(DSPObject *dsp)
+{
+    Mixer *self = static_cast<Mixer *>(dsp);
+    self->processBlock();
 }

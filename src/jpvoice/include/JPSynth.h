@@ -10,6 +10,7 @@
 #include "LFO.h"
 #include "dsp_runtime.h"
 #include "NebularReverb.h"
+#include "ButterworthFilter.h"
 
 struct SynthVoice
 {
@@ -117,6 +118,18 @@ public:
     // Sets the parameters for LFO 2
     void setLFO2(LFOParams params);
 
+    // Sets the reverb space reflections
+    void setReverbSpace(host_float space);
+
+    // Sets the reverb room size
+    void setReverbRoom(host_float room);
+
+    // Sets the reverb damping cutoff frequency
+    void setReverbDamping(host_float damping);
+
+    // Sets the reverb density
+    void setReverbDensity(host_float density);
+
     // Computes the samples of all voices
     void processBlock();
 
@@ -144,6 +157,9 @@ private:
 
     // LFO 2
     LFO lfo2;
+
+    // Butterworth fixed high pass 80 Hz
+    ButterworthFilter butterworth;
 
     // Reverb
     NebularReverb reverb;

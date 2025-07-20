@@ -7,10 +7,14 @@ CombDelay::CombDelay()
 
 void CombDelay::initialize()
 {
+    delayBuffer.initialize();
     delayBuffer.setTime(0);
 
     outputBufferL.create(DSP::blockSize);
     outputBufferR.create(DSP::blockSize);
+
+    paramFader.outputBufferL = outputBufferL;
+    paramFader.outputBufferR = outputBufferR;
 
     writeIndex = 0;
 
@@ -20,9 +24,13 @@ void CombDelay::initialize()
 
 void CombDelay::setTime(dsp_float timeMS)
 {
-    dsp_float t = clamp(timeMS, 0.0, 200.0);
+    dsp_float t = clampmin(timeMS, 0.0);
 
-    delayBuffer.setTime(t);
+     paramFader.change(
+        [=]()
+        {
+            delayBuffer.setTime(t);
+        });
 }
 
 void CombDelay::setFeedback(dsp_float fb)
@@ -33,15 +41,12 @@ void CombDelay::setFeedback(dsp_float fb)
 void CombDelay::setDamping(dsp_float freqHz)
 {
     dsp_float f = clamp(freqHz, 0.0, 20000.0);
-        
+
     dampingCoeff = std::exp(-2.0 * M_PI * f / DSP::sampleRate);
 }
 
 void CombDelay::processBlock()
 {
-    // Ring buffer provides new samples in its output buffer
-    delayBuffer.provideNextBlock();
-
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
         // Read output (delayed samples) of ring buffer
@@ -53,18 +58,20 @@ void CombDelay::processBlock()
         dampingStateR = (1.0 - dampingCoeff) * delayedR + dampingCoeff * dampingStateR;
 
         // Write damped signal to ring buffers feedback buffer
-        delayBuffer.feedbackBufferL[i] = delayedL + dampingStateL * feedback;
-        delayBuffer.feedbackBufferR[i] = delayedR + dampingStateR * feedback;
+        delayBuffer.feedbackBufferL[i] = dampingStateL * feedback;
+        delayBuffer.feedbackBufferR[i] = dampingStateR * feedback;
 
         // Signal output
-        outputBufferL[i] = delayedL;
-        outputBufferR[i] = delayedR;
+        outputBufferL[i] = delayedL + delayBuffer.feedbackBufferL[i];
+        outputBufferR[i] = delayedR + delayBuffer.feedbackBufferR[i];
     }
+
+    paramFader.generateBlock();
 }
 
-void CombDelay::processBlock(DSPObject* obj)
+void CombDelay::processBlock(DSPObject *obj)
 {
-    CombDelay* self = static_cast<CombDelay*>(obj);
+    CombDelay *self = static_cast<CombDelay *>(obj);
 
     self->processBlock();
 }

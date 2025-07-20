@@ -462,7 +462,7 @@ void JPVoice::processBlock()
     ampAdsr.multiply(outputBufferL, outputBufferR);
 
     // Assign changed params
-    paramFader.processChanges();
+    paramFader.generateBlock();
 }
 
 // Next sample block generation

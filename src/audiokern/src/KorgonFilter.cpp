@@ -52,23 +52,14 @@ void KorgonFilter::setDrive(host_float value)
     drive = clamp(value, 0.0, 1.0) * 1.0 + 1.0;
 }
 
-// Process a single sample through the MS-20 style lowpass filter
-void KorgonFilter::processBlock(DSPObject *dsp)
+void KorgonFilter::processBlock()
 {
-    KorgonFilter *flt = static_cast<KorgonFilter *>(dsp);
-
     size_t blocksize = DSP::blockSize;
     host_float left, right;
     host_float cutoff, reso;
     host_float wc, alpha;
     host_float fbL, fbR;
     host_float xL, xR;
-    host_float y1L = flt->y1L;
-    host_float y2L = flt->y2L;
-    host_float y1R = flt->y1R;
-    host_float y2R = flt->y2R;
-    host_float T = flt->T;
-    host_float drive = flt->drive;
     host_float reso_scale;
 
     if (!std::isfinite(y1L))
@@ -80,19 +71,19 @@ void KorgonFilter::processBlock(DSPObject *dsp)
     if (!std::isfinite(y2R))
         y2R = 0.0;
 
-    if (flt->filterMode == FilterMode::LP)
+    if (filterMode == FilterMode::LP)
     {
         for (size_t i = 0; i < blocksize; ++i)
         {
-            left = (flt->processBufferL)[i];
-            right = (flt->processBufferR)[i];
-            cutoff = (flt->cutoffBuffer)[i];
-            reso = (flt->resoBuffer)[i];
+            left = (processBufferL)[i];
+            right = (processBufferR)[i];
+            cutoff = (cutoffBuffer)[i];
+            reso = (resoBuffer)[i];
 
             if (cutoff > 15000.0)
             {
-                (flt->processBufferL)[i] = left;
-                (flt->processBufferR)[i] = right;
+                (processBufferL)[i] = left;
+                (processBufferR)[i] = right;
                 continue;
             }
 
@@ -122,51 +113,53 @@ void KorgonFilter::processBlock(DSPObject *dsp)
             left = y2L * drive;
             right = y2R * drive;
 
-            //left = (left >= 0.0) ? fast_tanh(left) : 1.5 * fast_tanh(0.5 * left);
-            //right = (right >= 0.0) ? fast_tanh(right) : 1.5 * fast_tanh(0.5 * right);
+            left = (left >= 0.0) ? dsp_math::fast_tanh(left) : 1.5 * dsp_math::fast_tanh(0.5 * left);
+            right = (right >= 0.0) ? dsp_math::fast_tanh(right) : 1.5 * dsp_math::fast_tanh(0.5 * right);
 
-            (flt->processBufferL)[i] = left;
-            (flt->processBufferR)[i] = right;
+            (processBufferL)[i] = left;
+            (processBufferR)[i] = right;
         }
     }
     else
     {
         for (size_t i = 0; i < blocksize; ++i)
         {
-            left = (flt->processBufferL)[i];
-            right = (flt->processBufferR)[i];
-            cutoff = (flt->cutoffBuffer)[i];
+            left = (processBufferL)[i];
+            right = (processBufferR)[i];
+            cutoff = (cutoffBuffer)[i];
 
             if (cutoff > 15000.0)
             {
-                (flt->processBufferL)[i] = left;
-                (flt->processBufferR)[i] = right;
+                (processBufferL)[i] = left;
+                (processBufferR)[i] = right;
                 continue;
             }
 
-            // Calculate coefficient based on cutoff
             wc = 2.0 * M_PI * cutoff;
 
-            alpha = clamp(wc * T / (1.0 + wc * T), 0.0, 1.0); // Bilinear transform approximation
+            alpha = clamp(wc * T / (1.0 + wc * T), 0.0, 1.0);
 
             y1L += alpha * (left - y1L);
             y1R += alpha * (right - y1R);
 
-            left = (flt->processBufferL)[i] - y1L;
-            right = (flt->processBufferR)[i] - y1R;
+            left = (processBufferL)[i] - y1L;
+            right = (processBufferR)[i] - y1R;
 
             left = (left >= 0.0) ? dsp_math::fast_tanh(left) : 1.5 * dsp_math::fast_tanh(0.5 * left);
             right = (right >= 0.0) ? dsp_math::fast_tanh(right) : 1.5 * dsp_math::fast_tanh(0.5 * right);
 
-            (flt->processBufferL)[i] = left;
-            (flt->processBufferR)[i] = right;
+            (processBufferL)[i] = left;
+            (processBufferR)[i] = right;
         }
     }
+}
 
-    flt->y1L = y1L;
-    flt->y2L = y2L;
-    flt->y1R = y1R;
-    flt->y2R = y2R;
+// Process a single sample through the MS-20 style lowpass filter
+void KorgonFilter::processBlock(DSPObject *dsp)
+{
+    KorgonFilter *self = static_cast<KorgonFilter *>(dsp);
+
+    self->processBlock();
 }
 
 // Optional: reset internal state variables

@@ -183,7 +183,7 @@ void DSP::dspLogBuffer(const std::string &label, host_float *buffer)
     if (!doLog())
         return;
 
-    constexpr size_t MAX_LOG = 32;
+    size_t MAX_LOG = blockSize;
     constexpr size_t BUFLEN = 2048;
     char buf[BUFLEN];
     size_t pos = 0;
@@ -205,12 +205,76 @@ void DSP::dspLogBuffer(const std::string &label, host_float *buffer)
     logger(std::string(buf));
 }
 
-// Logging to file "dsp.log"
-void DSP::dspLog2File(const char *fmt, ...)
+void DSP::dspLogBuffer(const std::string &label, std::vector<host_float> *buffer)
 {
     if (!doLog())
         return;
 
+    size_t MAX_LOG = blockSize;
+    constexpr size_t BUFLEN = 2048;
+    char buf[BUFLEN];
+    size_t pos = 0;
+
+    pos += snprintf(buf + pos, BUFLEN - pos, "%s [", label.c_str());
+
+    for (size_t i = 0; i < std::min(blockSize, size_t(MAX_LOG)); ++i)
+    {
+        pos += snprintf(buf + pos, BUFLEN - pos, "%.4f%s", (*buffer)[i], (i < MAX_LOG - 1 ? ", " : ""));
+        if (pos >= BUFLEN - 16)
+            break;
+    }
+
+    if (blockSize > MAX_LOG)
+        pos += snprintf(buf + pos, BUFLEN - pos, ", ...");
+
+    snprintf(buf + pos, BUFLEN - pos, "]");
+
+    logger(std::string(buf));
+}
+
+#include <iomanip>
+#include <sstream>
+
+// Logs DSPSampleBuffer content
+void DSP::dspLog2File(const char* label, const DSPSampleBuffer& buffer)
+{
+    std::ostringstream oss;
+    oss << label << " (" << buffer.size() << "): ";
+
+    for (size_t i = 0; i < DSP::blockSize; ++i)
+        oss << std::fixed << std::setprecision(5) << buffer[i] << (i < buffer.size() - 1 ? ", " : "");
+
+    dspLog2File("%s", oss.str().c_str());
+}
+
+// Logs raw float array (with DSP::blockSize entries)
+void DSP::dspLog2File(const char* label, const host_float* buffer)
+{
+    std::ostringstream oss;
+    oss << label << " (" << DSP::blockSize << "): ";
+
+    for (size_t i = 0; i < DSP::blockSize; ++i)
+        oss << std::fixed << std::setprecision(5) << buffer[i] << (i < DSP::blockSize - 1 ? ", " : "");
+
+    dspLog2File("%s", oss.str().c_str());
+}
+
+// Logs std::vector<host_float>* (full content)
+void DSP::dspLog2File(const char* label, const std::vector<host_float>* buffer)
+{
+    std::ostringstream oss;
+    oss << label << " (" << buffer->size() << "): ";
+
+    for (size_t i = 0; i < buffer->size(); ++i)
+        oss << std::fixed << std::setprecision(5) << (*buffer)[i] << (i < buffer->size() - 1 ? ", " : "");
+
+    dspLog2File("%s", oss.str().c_str());
+}
+
+
+// Logging to file "dsp.log"
+void DSP::dspLog2File(const char *fmt, ...)
+{
     const char *logFileName = "dsp.log";
 
     const char *mode = logFileInitialized ? "a" : "w";
@@ -252,7 +316,9 @@ void DSP::dspLog2File(const char *fmt, ...)
 
 void DSP::logTime(int timeMs)
 {
-    logSampels = sampleRate / 1000 * timeMs;
+    int t = clampmin(timeMs, 0.0);
+
+    logSampels = (t != 0) ? sampleRate / 1000 * t : 0;
 }
 
 bool DSP::doLog()

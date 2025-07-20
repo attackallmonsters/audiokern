@@ -10,12 +10,28 @@ DelayBlockBuffer::DelayBlockBuffer()
     feedbackBufferR.create(DSP::blockSize);
 }
 
+// Allocate buffer and clear content
+void DelayBlockBuffer::initialize()
+{
+    outputBufferL.fill(0.0);
+    outputBufferR.fill(0.0);
+
+    feedbackBufferL.fill(0.0);
+    feedbackBufferR.fill(0.0);
+
+    std::fill(bufferL.begin(), bufferL.end(), 0.0);
+    std::fill(bufferR.begin(), bufferR.end(), 0.0);
+
+    writeIndex = 0;
+    setTime(1);
+}
+
 // Set target buffer length in milliseconds (no allocation yet)
 void DelayBlockBuffer::setTime(dsp_float timeMS)
 {
-    timeMs = timeMS;
+    delayTimeMs = timeMS;
 
-    size_t rawSize = static_cast<size_t>((timeMs / 1000.0) * DSP::sampleRate);
+    size_t rawSize = static_cast<size_t>((delayTimeMs / 1000.0) * DSP::sampleRate);
 
     if (rawSize < DSP::blockSize)
         rawSize = DSP::blockSize;
@@ -29,16 +45,11 @@ void DelayBlockBuffer::setTime(dsp_float timeMS)
     bufferR.resize(bufferSize);
 
     blockCount = bufferSize / DSP::blockSize;
+
+    writeIndex = 0;
 }
 
-// Allocate buffer and clear content
-void DelayBlockBuffer::initialize()
-{
-    writeIndex = readBlockIndex = 0;
-    canRead = false;
-    setTime(1);
-}
-
+#include <stdexcept>
 // Push a sample into the circular buffer
 void DelayBlockBuffer::push(const DSPSampleBuffer &blockL, const DSPSampleBuffer &blockR)
 {
@@ -48,35 +59,21 @@ void DelayBlockBuffer::push(const DSPSampleBuffer &blockL, const DSPSampleBuffer
         bufferR[writeIndex + i] = blockR[i] + feedbackBufferR[i];
     }
 
+    if (std::isnan(feedbackBufferR[0]))
+    {
+        throw std::runtime_error("feedbackBufferR nan");
+    }
+
+    // Next write index is the oldest block in buffer
     writeIndex += DSP::blockSize;
 
     if (writeIndex >= bufferSize)
     {
         writeIndex = 0;
-        canRead = true;
-    }
-}
-
-// Writes the next blocks to output buffers
-void DelayBlockBuffer::provideNextBlock()
-{
-    if (canRead)
-    {
-        size_t readIndex = readBlockIndex * DSP::blockSize;
-
-        outputBufferL.copy(&bufferL[readIndex]);
-        outputBufferR.copy(&bufferR[readIndex]);
-    }
-    else
-    {
-        outputBufferL.fill(0.0);
-        outputBufferR.fill(0.0);
     }
 
-    readBlockIndex++;
-
-    if (readBlockIndex >= blockCount)
-        readBlockIndex = 0;
+    outputBufferL.copy(&bufferL[writeIndex]);
+    outputBufferR.copy(&bufferR[writeIndex]);
 }
 
 // Return current buffer blocks

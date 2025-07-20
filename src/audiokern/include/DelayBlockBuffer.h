@@ -17,11 +17,8 @@ public:
     // Allocate and clear the buffer according to time and DSP::sampleRate
     void initialize();
 
-    // Pushes a sample buffer into the buffer
+    // Pushes a sample buffer into the buffer and the delayed buffer to the outbut buffer
     void push(const DSPSampleBuffer &blockL, const DSPSampleBuffer &blockR);
-
-    // Writes the next blocks to output buffers
-    void provideNextBlock();
 
     // Return the current buffer size in blocks
     size_t size() const;
@@ -39,9 +36,7 @@ private:
     std::vector<host_float> bufferR;
 
     size_t writeIndex;
-    size_t readBlockIndex;
-    bool canRead;
     size_t bufferSize;
     size_t blockCount;
-    dsp_float timeMs;
+    dsp_float delayTimeMs;
 };

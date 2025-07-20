@@ -21,21 +21,30 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     modulatorTuning.initialize();
     midi.initialize();
     voiceMixer.initialize(voiceCount);
+    butterworth.initialize();
     reverb.initialize();
 
     createVoices();
 
-    reverb.inputBufferL = voiceMixer.outputBufferL;
-    reverb.inputBufferR = voiceMixer.outputBufferR;
+    butterworth.processBufferL = voiceMixer.outputBufferL;
+    butterworth.processBufferR = voiceMixer.outputBufferR;
 
+    butterworth.setFilterMode(FilterMode::HP);
+    butterworth.setCutoffFrequency(200.0);
+
+    reverb.inputBufferL = butterworth.processBufferL;
+    reverb.inputBufferR = butterworth.processBufferR;
     reverb.outputBufferL = outL;
     reverb.outputBufferR = outR;
+
+    reverb.setSpace(0.1);
+    reverb.setRoomSize(0.95);
 
     for (size_t i = 0; i < voiceCount; ++i)
     {
         SynthVoice *voice = allocator.getVoice(i);
 
-        voice->jpvoice.setOutputBuffer(voiceMixer.getInputBufferL(i), voiceMixer.getInputBufferL(i));
+        voice->jpvoice.setOutputBuffer(voiceMixer.getInputBufferL(i), voiceMixer.getInputBufferR(i));
     }
 
     DSP::log("=====> jpvoice initialized");
@@ -281,13 +290,33 @@ void JPSynth::setADSROneshot(bool enable)
         });
 }
 
-void JPSynth::setLFO1(LFOParams params)
+void JPSynth::setLFO1(LFOParams /*params*/)
 {
 
 }
 
-void JPSynth::setLFO2(LFOParams params)
+void JPSynth::setLFO2(LFOParams /*params*/)
 {
+}
+
+void JPSynth::setReverbSpace(host_float space)
+{
+    reverb.setSpace(space);
+}
+
+void JPSynth::setReverbRoom(host_float room)
+{
+    reverb.setRoomSize(room);
+}
+
+void JPSynth::setReverbDamping(host_float damping)
+{
+    reverb.setDamping(damping);
+}
+
+void JPSynth::setReverbDensity(host_float density)
+{
+    reverb.setDensity(density);
 }
 
 void JPSynth::processBlock()
@@ -296,11 +325,11 @@ void JPSynth::processBlock()
 
     processVoiceBlock();
 
-    voiceMixer.mix();
+    voiceMixer.generateBlock();
 
-    reverb.processBlock();
+    butterworth.generateBlock();
 
-    DSP::dspLogBuffer("m", reverb.outputBufferL);
+    reverb.generateBlock();
 }
 
 void JPSynth::processVoiceBlock()

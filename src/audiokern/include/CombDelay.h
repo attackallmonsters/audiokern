@@ -3,6 +3,7 @@
 #include "DSPObject.h"
 #include "DelayBlockBuffer.h"
 #include "DSPSampleBuffer.h"
+#include "ParamFader.h"
 #include <vector>
 
 class CombDelay : public DSPObject
@@ -44,4 +45,6 @@ private:
     dsp_float dampingCoeff = 0.5;
     dsp_float dampingStateL = 0.0;
     dsp_float dampingStateR = 0.0;
+
+    ParamFader paramFader;
 };

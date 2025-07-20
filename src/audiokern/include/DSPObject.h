@@ -16,6 +16,9 @@ public:
     // Initializes a DSP-Object
     virtual void initialize();
 
+    // Initializes the DSP objectwith an amount of objects
+    virtual void initialize(size_t count);
+
     // Calculates the next sample buffer
     void generateBlock();
 

@@ -27,9 +27,12 @@ public:
     // Set the filter mode (Lowpass or Highpass)
     void setFilterMode(FilterMode mode);
 
+    // Processes the filter
+    void processBlock();
+
     // Output buffers for left and right channel
-    DSPSampleBuffer bufferL;
-    DSPSampleBuffer bufferR;
+    DSPSampleBuffer processBufferL;
+    DSPSampleBuffer processBufferR;
 
 private:
     // Cutoff frequency
@@ -46,4 +49,8 @@ private:
 
     // DSP processing function
     static void processBlock(DSPObject *dsp);
+
+    // Filter states
+    host_float x1L, y1L, x2L, y2L;
+    host_float x1R, y1R, x2R, y2R;
 };

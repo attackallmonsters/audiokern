@@ -1,5 +1,10 @@
 #include "ParamFader.h"
 
+ParamFader::ParamFader()
+{
+    registerBlockProcessor(processBlock);
+}
+
 // Queue a parameter change
 void ParamFader::change(ParamChange fn)
 {
@@ -7,7 +12,7 @@ void ParamFader::change(ParamChange fn)
     applyParamChange = true;
 }
 
-void ParamFader::processChanges()
+void ParamFader::processBlock()
 {
     if (applyParamChange)
     {
@@ -44,4 +49,10 @@ void ParamFader::processChanges()
             outputBufferR[i] *= fadeValue;
         }
     }
+}
+
+void ParamFader::processBlock(DSPObject *dsp)
+{
+    ParamFader *self = static_cast<ParamFader *>(dsp);
+    self->processBlock();
 }

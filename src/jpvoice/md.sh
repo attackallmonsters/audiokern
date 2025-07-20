@@ -15,7 +15,6 @@ while getopts ":d" opt; do
   esac
 done
 
-clear
 echo "RUN_DEPS = $RUN_DEPS"
 
 make clean

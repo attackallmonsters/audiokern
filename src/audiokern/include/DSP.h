@@ -2,10 +2,11 @@
 
 #include "DSPSampleBuffer.h"
 #include "DSPBuffer.h"
+#include "dsp_types.h"
 #include <stddef.h>
 #include <string>
 #include <mutex>
-#include "dsp_types.h"
+#include <vector>
 
 class DSP
 {
@@ -67,6 +68,18 @@ public:
 
     // Logs the content of a host_float buffer with block size at audio rate, needs DSP::nextBlock() once in the DSP loop
     static void dspLogBuffer(const std::string &label, host_float *buffer);
+
+    // Logs the content of a host_float buffer with block size at audio rate, needs DSP::nextBlock() once in the DSP loop
+    static void dspLogBuffer(const std::string &label, std::vector<host_float> *buffer);
+
+    // Logs a buffer to dsp.log
+    static void dspLog2File(const char* label, const DSPSampleBuffer& buffer);
+
+    // Logs a buffer to dsp.log
+    static void dspLog2File(const char* label, const host_float* data);
+
+    // Logs a buffer to dsp.log
+    static void dspLog2File(const char* label, const std::vector<host_float>* vec);
 
     // Log to file function at audio rate, needs DSP::nextBlock() once in the DSP loop
     static void dspLog2File(const char *fmt, ...);

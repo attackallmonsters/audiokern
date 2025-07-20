@@ -4,23 +4,29 @@
 #include <queue>
 #include "DSP.h"
 #include "DSPSampleBuffer.h"
+#include "DSPObject.h"
 #include "dsp_types.h"
 
-class ParamFader
+class ParamFader : public DSPObject
 {
 public:
+    ParamFader();
+    
     using ParamChange = std::function<void()>;
 
     // Queue a parameter change: paramFader.change([=]() { carrier->setDetune(detune); });
     void change(ParamChange fn);
 
     // Apply all queued changes
-    void processChanges();
+    void processBlock();
 
     DSPSampleBuffer outputBufferL;
     DSPSampleBuffer outputBufferR;
 
 private:
+    // DSP callback
+    static void processBlock(DSPObject* dsp);
+    
     std::queue<ParamChange> changes;
     int fadeCounter = 0;           // Amplitude for param change
     const int fadeLength = 16;     // Fade in/out samples for param change

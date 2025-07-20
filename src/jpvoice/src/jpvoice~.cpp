@@ -590,6 +590,74 @@ void jpvoice_tilde_lfo2(t_jpvoice * x, t_symbol *, int argc, t_atom *argv)
     synth.setFilterADSR(x->filterADSR);
 }
 
+void jpvoice_tilde_revroom(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom * argv)
+{
+    if (!testDSP())
+    {
+        return;
+    }
+
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: revroom (amount 0.0 - 1.0)");
+        return;
+    }
+
+    host_float room = atom_getfloat(argv);
+    synth.setReverbRoom(room);
+}
+
+void jpvoice_tilde_revspace(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom * argv)
+{
+    if (!testDSP())
+    {
+        return;
+    }
+
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: revspace (amount 0.0 - 1.0)");
+        return;
+    }
+
+    host_float space = atom_getfloat(argv);
+    synth.setReverbSpace(space);
+}
+
+void jpvoice_tilde_revdamp(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom * argv)
+{
+    if (!testDSP())
+    {
+        return;
+    }
+
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: revdamp (amount 0.0 - 10000.0)");
+        return;
+    }
+
+    host_float damping = atom_getfloat(argv);
+    synth.setReverbDamping(damping);
+}
+
+void jpvoice_tilde_revdense(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom * argv)
+{
+    if (!testDSP())
+    {
+        return;
+    }
+
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: revdense (amount 0.0 - 1,0)");
+        return;
+    }
+
+    host_float density = atom_getfloat(argv);
+    synth.setReverbDensity(density);
+}
+
 // DSP perform function
 t_int *jpvoice_tilde_perform(t_int *w)
 {
@@ -683,4 +751,9 @@ extern "C" void jpvoice_tilde_setup(void)
 
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_lfo1, gensym("lfo1"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_lfo2, gensym("lfo2"), A_GIMME, 0);
+
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revroom, gensym("revroom"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revspace, gensym("revspace"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revdamp, gensym("revdamp"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revdense, gensym("revdense"), A_GIMME, 0);
 }

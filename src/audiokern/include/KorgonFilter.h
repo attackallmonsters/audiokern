@@ -23,6 +23,9 @@ public:
     // Sets the filter mode (LP, HP)
     void setFilterMode(FilterMode mode);
 
+    // Processes the next block of samples
+    void processBlock();
+
     // The samples to be filtered
     DSPSampleBuffer processBufferL;
     DSPSampleBuffer processBufferR;
@@ -37,6 +40,9 @@ public:
     void reset();
 
 private:
+    // Static DSP callback used for processing audio blocks
+    static void processBlock(DSPObject *dsp);
+    
     // Filter state variables:
     host_float y1L;   // Output of first integrator left
     host_float y2L;   // Output of second integrator (filter output) left
@@ -46,9 +52,6 @@ private:
     host_float drive; // The filter drive
 
     static host_float nonlinearFeedback(host_float s); // Nonlinear feedback (simulates diode behavior)
-
-    // Processes data in bufferL, buffer R
-    static void processBlock(DSPObject *dsp);
 
     // Control buffer for cutoff
     DSPSampleBuffer cutoffInitBuffer;

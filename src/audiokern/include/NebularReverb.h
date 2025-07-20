@@ -17,7 +17,7 @@ public:
     void initialize() override;
 
     // Sets the number of parallel delay lines (2 to 8)
-    void setDensity(int d);
+    void setDensity(dsp_float dense);
 
     // Sets space amount 0 - 1 (controls the spread of the reverb)
     void setSpace(dsp_float size);
@@ -43,8 +43,8 @@ private:
     // Static DSP callback used for processing audio blocks
     static void processBlock(DSPObject *dsp);
 
-    // Pushes samples to the ring buffers
-    void push(const DSPSampleBuffer &bufL, const DSPSampleBuffer &bufR);
+    // Pushes samples inputBufferL/R to the ring buffers
+    void push();
 
     // Maximum number of comb delay lines
     static constexpr int maxDelays = 8;

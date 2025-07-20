@@ -1,14 +1,14 @@
 #pragma once
 
 #include "DSPSampleBuffer.h"
-#include "DSP.h"
+#include "DSPObject.h"
 #include <vector>
 #include <cstddef>
 
-class Mixer
+class Mixer : public DSPObject
 {
 public:
-    Mixer() = default;
+    Mixer();
 
     // Initializes the mixer with a number of buffers
     void initialize(size_t count);
@@ -17,13 +17,16 @@ public:
     DSPSampleBuffer &getInputBufferL(size_t index);
     DSPSampleBuffer &getInputBufferR(size_t index);
 
-    // Mixes all buffers to the output buffer
-    void mix();
+    // Processes the next block of samples
+    void processBlock();
 
     DSPSampleBuffer outputBufferL;
     DSPSampleBuffer outputBufferR;
 
 private:
+    // Static DSP callback used for processing audio blocks
+    static void processBlock(DSPObject *dsp);
+
     size_t bufferCount;
 
     std::vector<DSPSampleBuffer> buffersL;
