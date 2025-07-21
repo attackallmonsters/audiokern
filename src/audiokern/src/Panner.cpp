@@ -22,7 +22,7 @@ void Panner::initialize()
 void Panner::setPanning(double value)
 {
     // Clamp between 0.0 and 1.0
-    pan = std::clamp(value, 0.0, 1.0);
+    pan = clamp(value, 0.0, 1.0);
     slew.setTarget(pan);
 }
 

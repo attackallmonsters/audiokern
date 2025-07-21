@@ -35,7 +35,7 @@ void CombDelay::setTime(dsp_float timeMS)
 
 void CombDelay::setFeedback(dsp_float fb)
 {
-    feedback = std::clamp(fb, 0.0, 0.999);
+    feedback = clamp(fb, 0.0, 0.999);
 }
 
 void CombDelay::setDamping(dsp_float freqHz)
