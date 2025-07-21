@@ -309,9 +309,7 @@ void WavetableOscillator::acquireSharedWavetable()
             baseFrequencies = entry.baseFrequencies;
             tableSizes = entry.tableSizes;
             wavetableSampleBuffers = entry.buffers;
-#if DEBUG
-            DSP::log("Using cached wavetable for %s", waveformName.c_str());
-#endif
+            
             return;
         }
     }

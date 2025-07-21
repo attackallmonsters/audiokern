@@ -57,7 +57,7 @@ std::string getRandomSynthQuote()
 
 JPSynth &JPSynth::instance()
 {
-    static JPSynth instance; // Wird beim ersten Aufruf erstellt
+    static JPSynth instance;
     return instance;
 }
 
@@ -69,7 +69,7 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
         throw("DSP not initialized. Do DSP::initializeAudio first.");
     }
 
-    DSP::log("=====> Initializing jpvoice...");
+    DSP::log("=====> Initializing JPSYNTH...");
 
     voiceThreads.initialize(cpu_count() / 2);
     carrierTuning.initialize();
