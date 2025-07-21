@@ -2,5 +2,4 @@
 
 clear
 make clean
-clear
 make debug

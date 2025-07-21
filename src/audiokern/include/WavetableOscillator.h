@@ -15,6 +15,12 @@
 #include <limits.h>
 #include <cstdlib>
 
+struct SharedWavetableSet {
+    std::string name;
+    std::vector<host_float> baseFrequencies;
+    std::vector<size_t> tableSizes;
+    std::vector<DSPSampleBuffer*> buffers;
+};
 
 // Internal voice struct used for detuned oscillators
 struct WavetableVoice
@@ -61,6 +67,12 @@ public:
     // Resets the internal oscillator phase to 0.0.
     void resetPhase();
 
+    // Next sample block generation one voice
+    void processBlockVoice();
+
+    // Next sample block generation multiple voices
+    void processBlockVoices();
+
     // Buffer for modulation
     DSPSampleBuffer modulationBufferL;
     DSPSampleBuffer modulationBufferR;
@@ -83,8 +95,11 @@ protected:
     std::vector<size_t> tableSizes;   
 
 private:
-    // Next sample block generation
-    static void processBlock(DSPObject *dsp);
+    // Next sample block generation one voice
+    static void processBlockVoice(DSPObject *dsp);
+
+    // Next sample block generation multiple voices
+    static void processBlockVoices(DSPObject *dsp);
 
     // Loads a wavetable
     bool load();
@@ -130,4 +145,8 @@ private:
     dsp_float currentPhase;        // Current phase of the oscillator in radians [0, 2π]
     bool wrapped = false;          // True when phase wrapped
     dsp_float voiceGain;           // The gain of a single voice
+
+
+    static std::vector<SharedWavetableSet> sharedWavetables;
+    void acquireSharedWavetable();
 };

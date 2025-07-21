@@ -1,12 +1,11 @@
 #include "WavetableOscillator.h"
 
+std::vector<SharedWavetableSet> WavetableOscillator::sharedWavetables;
+
 // Ctor: expects an unique name for the waveform
 // This name is used for managiong wavetable files
 WavetableOscillator::WavetableOscillator(const std::string formName)
 {
-    // to avoid vtable lookup in DSPObject
-    registerBlockProcessor(&WavetableOscillator::processBlock);
-
     // set the waveform name
     waveformName = formName;
 
@@ -27,6 +26,7 @@ WavetableOscillator::WavetableOscillator(const std::string formName)
 WavetableOscillator::~WavetableOscillator()
 {
     wavetableCalcBuffers.clear();
+    wavetableSampleBuffers.clear();
 }
 
 void WavetableOscillator::initialize()
@@ -45,37 +45,8 @@ void WavetableOscillator::initialize()
     resetPhase();
 
     lastFrequency = -1.0;
-
-    DSP::log("Loading wavetable for %s", waveformName.c_str());
-
-    if (!load())
-    {
-        DSP::log("Wavetable for %s does not exist: generating...", waveformName.c_str());
-
-        for (size_t i = 0; i < tableSizes.size(); ++i)
-        {
-            size_t size = tableSizes[i];
-            dsp_float freq = baseFrequencies[i];
-
-            // Create a new DSPBuffer instance and resize it to the desired table size
-            DSPBuffer *buffer = new DSPBuffer();
-            buffer->create(size);
-
-            // Let the subclass generate the actual waveform data
-            createWavetable(*buffer, freq);
-
-            // Store the buffer for later use
-            wavetableCalcBuffers.push_back(buffer);
-        }
-
-        DSP::log("Wavetable for %s generated: saving...", waveformName.c_str());
-        save();
-        DSP::log("Wavetable for %s generated saved, loading...", waveformName.c_str());
-
-        // load and clear
-        load();
-        wavetableSampleBuffers.clear();
-    }
+    
+    acquireSharedWavetable();
 }
 
 // Gets the current frequency
@@ -106,6 +77,12 @@ void WavetableOscillator::setNumVoices(int count)
     // Clamp to [1, 9] and resize
     numVoices = clamp(count, 1, 9);
     voices.resize(numVoices);
+
+    // to avoid vtable lookup in DSPObject
+    if (count == 1)
+        registerBlockProcessor(&WavetableOscillator::processBlockVoice);
+    else
+        registerBlockProcessor(&WavetableOscillator::processBlockVoices);
 
     for (int i = 0; i < numVoices; ++i)
     {
@@ -182,105 +159,119 @@ void WavetableOscillator::resetPhase()
     wrapped = false;
 }
 
-// Next sample block generation
-void WavetableOscillator::processBlock(DSPObject *dsp)
+// Next sample block generation one voice
+void WavetableOscillator::processBlockVoice()
 {
-    WavetableOscillator *osc = static_cast<WavetableOscillator *>(dsp);
-
-    dsp_float phase = osc->currentPhase;
-    bool wrappedFlag = false;
-
     // Select wavetable once per sample block
-    if (osc->frequency != osc->lastFrequency)
+    if (frequency != lastFrequency)
     {
-        osc->selectTable(osc->frequency);
-        osc->lastFrequency = osc->frequency;
+        selectTable(frequency);
+        lastFrequency = frequency;
     }
-
-    const DSPSampleBuffer &waveTable = *(osc->selectedWaveTable);
-    size_t waveTableSize = osc->selectedWaveTableSize;
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        dsp_float modLeft = osc->modulationBufferL[i];
-        dsp_float modRight = osc->modulationBufferR[i];
+        dsp_float modLeft = modulationBufferL[i];
+        dsp_float modRight = modulationBufferR[i];
 
-        if (osc->numVoices > 1)
+        currentPhase += phaseIncrement;
+
+        if (currentPhase >= 1.0)
         {
-            dsp_float sumL = 0.0;
-            dsp_float sumR = 0.0;
-
-            for (auto &v : osc->voices)
-            {
-                dsp_float voiceFreq = osc->frequency * (1.0 + v.detune_ratio);
-
-                // Modulation
-                dsp_float modSignal = (v.gainL > v.gainR) ? modLeft : modRight;
-
-                // Phase modulation
-                dsp_float modulatedPhase = v.phase + osc->modulationIndex * modSignal;
-                modulatedPhase -= std::floor(modulatedPhase); // Wrap to [0, 1)
-
-                dsp_float index = modulatedPhase * waveTableSize;
-                size_t i0 = static_cast<size_t>(index);
-                size_t i1 = (i0 + 1) % waveTableSize;
-                dsp_float frac = index - i0;
-
-                // Interpolation
-                dsp_float sample = (1.0 - frac) * waveTable[i0] + frac * waveTable[i1];
-
-                // Sum weighted
-                sumL += sample * v.amp_ratio * v.gainL;
-                sumR += sample * v.amp_ratio * v.gainR;
-
-                // Advance phase
-                dsp_float inc = voiceFreq / DSP::sampleRate;
-                v.phase += inc;
-
-                if (v.phase >= 1.0)
-                {
-                    v.phase -= 1.0;
-                    wrappedFlag = true;
-                }
-            }
-
-            osc->outputBufferL[i] = sumL * osc->voiceGain;
-            osc->outputBufferR[i] = sumR * osc->voiceGain;
+            currentPhase -= 1.0;
+            wrapped = true;
         }
-        else
-        {
-            phase += osc->phaseIncrement;
 
-            if (phase >= 1.0)
-            {
-                phase -= 1.0;
-                wrappedFlag = true;
-            }
+        dsp_float modPhaseL = currentPhase + modulationIndex * modLeft;
+        dsp_float modPhaseR = currentPhase + modulationIndex * modRight;
 
-            dsp_float modPhaseL = phase + osc->modulationIndex * modLeft;
-            dsp_float modPhaseR = phase + osc->modulationIndex * modRight;
+        modPhaseL -= std::floor(modPhaseL);
+        modPhaseR -= std::floor(modPhaseR);
 
-            modPhaseL -= std::floor(modPhaseL);
-            modPhaseR -= std::floor(modPhaseR);
+        dsp_float indexL = modPhaseL * selectedWaveTableSize;
+        dsp_float indexR = modPhaseR * selectedWaveTableSize;
 
-            dsp_float indexL = modPhaseL * osc->selectedWaveTableSize;
-            dsp_float indexR = modPhaseR * osc->selectedWaveTableSize;
+        size_t i0L = static_cast<size_t>(indexL);
+        size_t i1L = (i0L + 1) % selectedWaveTableSize;
+        dsp_float fracL = indexL - i0L;
 
-            size_t i0L = static_cast<size_t>(indexL);
-            size_t i1L = (i0L + 1) % osc->selectedWaveTableSize;
-            dsp_float fracL = indexL - i0L;
+        size_t i0R = static_cast<size_t>(indexR);
+        size_t i1R = (i0R + 1) % selectedWaveTableSize;
+        dsp_float fracR = indexR - i0R;
 
-            size_t i0R = static_cast<size_t>(indexR);
-            size_t i1R = (i0R + 1) % osc->selectedWaveTableSize;
-            dsp_float fracR = indexR - i0R;
+        outputBufferL[i] = (1.0 - fracL) * (*selectedWaveTable)[i0L] + fracL * (*selectedWaveTable)[i1L];
+        outputBufferR[i] = (1.0 - fracR) * (*selectedWaveTable)[i0R] + fracR * (*selectedWaveTable)[i1R];
+    }
+}
 
-            osc->outputBufferL[i] = (1.0 - fracL) * (*osc->selectedWaveTable)[i0L] + fracL * (*osc->selectedWaveTable)[i1L];
-            osc->outputBufferR[i] = (1.0 - fracR) * (*osc->selectedWaveTable)[i0R] + fracR * (*osc->selectedWaveTable)[i1R];
-        }
+void WavetableOscillator::processBlockVoices()
+{
+    // Select wavetable once per sample block
+    if (frequency != lastFrequency)
+    {
+        selectTable(frequency);
+        lastFrequency = frequency;
     }
 
-    osc->currentPhase = phase;
-    osc->wrapped = wrappedFlag;
+    for (size_t i = 0; i < DSP::blockSize; ++i)
+    {
+        dsp_float modLeft = modulationBufferL[i];
+        dsp_float modRight = modulationBufferR[i];
+
+        dsp_float sumL = 0.0;
+        dsp_float sumR = 0.0;
+
+        for (auto &v : voices)
+        {
+            dsp_float voiceFreq = frequency * (1.0 + v.detune_ratio);
+
+            // Modulation
+            dsp_float modSignal = (v.gainL > v.gainR) ? modLeft : modRight;
+
+            // Phase modulation
+            dsp_float modulatedPhase = v.phase + modulationIndex * modSignal;
+            modulatedPhase -= std::floor(modulatedPhase); // Wrap to [0, 1)
+
+            dsp_float index = modulatedPhase * selectedWaveTableSize;
+            size_t i0 = static_cast<size_t>(index);
+            size_t i1 = (i0 + 1) % selectedWaveTableSize;
+            dsp_float frac = index - i0;
+
+            // Interpolation
+            dsp_float sample = (1.0 - frac) * (*selectedWaveTable)[i0] + frac * (*selectedWaveTable)[i1];
+
+            // Sum weighted
+            sumL += sample * v.amp_ratio * v.gainL;
+            sumR += sample * v.amp_ratio * v.gainR;
+
+            // Advance phase
+            dsp_float inc = voiceFreq / DSP::sampleRate;
+            v.phase += inc;
+
+            if (v.phase >= 1.0)
+            {
+                v.phase -= 1.0;
+                wrapped = true;
+            }
+        }
+
+        outputBufferL[i] = sumL * voiceGain;
+        outputBufferR[i] = sumR * voiceGain;
+    }
+}
+
+// Next sample block generation one voice
+void WavetableOscillator::processBlockVoice(DSPObject *dsp)
+{
+    WavetableOscillator *self = static_cast<WavetableOscillator *>(dsp);
+    self->processBlockVoice();
+}
+
+// Next sample block generation multiple voices
+void WavetableOscillator::processBlockVoices(DSPObject *dsp)
+{
+    WavetableOscillator *self = static_cast<WavetableOscillator *>(dsp);
+    self->processBlockVoices();
 }
 
 static void createDir()
@@ -306,17 +297,90 @@ static std::string absolutePath(const std::string &relativePath)
     }
 }
 
+void WavetableOscillator::acquireSharedWavetable()
+{
+    DSP::log("Loading wavetable for %s", waveformName.c_str());
+    
+    // Step 1: Already in cache?
+    for (const auto& entry : sharedWavetables)
+    {
+        if (entry.name == waveformName)
+        {
+            baseFrequencies = entry.baseFrequencies;
+            tableSizes = entry.tableSizes;
+            wavetableSampleBuffers = entry.buffers;
+#if DEBUG
+            DSP::log("Using cached wavetable for %s", waveformName.c_str());
+#endif
+            return;
+        }
+    }
+
+    // Step 2: Try to load
+    if (!load())
+    {
+#if DEBUG
+        DSP::log("Wavetable for %s does not exist: generating...", waveformName.c_str());
+#endif
+
+        wavetableCalcBuffers.clear();
+
+        // Prepare base frequencies and table sizes
+        baseFrequencies = {20.0, 40.0, 160.0, 640.0, 2560.0};
+        tableSizes = {1024, 2048, 4096, 8192, 16384};
+
+        for (size_t i = 0; i < tableSizes.size(); ++i)
+        {
+            size_t size = tableSizes[i];
+            dsp_float freq = baseFrequencies[i];
+
+            DSPBuffer* buffer = new DSPBuffer();
+            buffer->create(size);
+            createWavetable(*buffer, freq);
+            wavetableCalcBuffers.push_back(buffer);
+        }
+
+#if DEBUG
+        DSP::log("Wavetable for %s generated: saving...", waveformName.c_str());
+#endif
+        save();
+    }
+
+    // Step 3: Load final result
+    if (!load())
+    {
+        DSP::log("Failed to load wavetable for %s after creation", waveformName.c_str());
+        return;
+    }
+
+    // Step 4: Register in shared set
+    SharedWavetableSet newEntry;
+    newEntry.name = waveformName;
+    newEntry.baseFrequencies = baseFrequencies;
+    newEntry.tableSizes = tableSizes;
+    newEntry.buffers = wavetableSampleBuffers;
+
+    sharedWavetables.push_back(newEntry);
+#if DEBUG
+    DSP::log("Wavetable for %s cached globally", waveformName.c_str());
+#endif
+}
+
+
 bool WavetableOscillator::load()
 {
     std::string fileName = "tables/" + waveformName + "_" + std::to_string(static_cast<int>(DSP::sampleRate)) + ".wave";
-
+#if DEBUG
     DSP::log("Try loading wavetable %s", absolutePath(fileName).c_str());
+#endif
 
     std::ifstream inFile(fileName.c_str());
     if (!inFile.is_open())
         return false;
 
+#if DEBUG
     DSP::log("Found wavetable %s", absolutePath(fileName).c_str());
+#endif
 
     wavetableSampleBuffers.clear();
     baseFrequencies.clear();
@@ -343,7 +407,7 @@ bool WavetableOscillator::load()
             size_t size = static_cast<size_t>(std::stoul(item));
 
             DSPSampleBuffer *buffer = new DSPSampleBuffer();
-            
+
             buffer->create(size);
 
             // Read data
@@ -375,8 +439,9 @@ bool WavetableOscillator::load()
             return false;
         }
     }
-
+#if DEBUG
     DSP::log("Wavetable %s loaded", absolutePath(fileName).c_str());
+#endif
 
     return !wavetableSampleBuffers.empty();
 }
@@ -421,7 +486,7 @@ void WavetableOscillator::save() const
 
 dsp_float WavetableOscillator::getVocieGain(int numVoices)
 {
-    //Empirically determined values
+    // Empirically determined values
     switch (numVoices)
     {
     case 1:

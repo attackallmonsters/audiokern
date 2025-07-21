@@ -26,5 +26,4 @@ if [ "$RUN_DEPS" = "true" ]; then
 fi
 
 make clean
-clear
 make debug
