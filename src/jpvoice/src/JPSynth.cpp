@@ -15,7 +15,6 @@ std::string getRandomSynthQuote()
         "Reality is optional. Oscillators are not.",
         "All parameters aligned — prepare for synthetic enlightenment.",
         "Notes may lie, but waveforms never do.",
-        "This is not a bug, it's a feature... in F# minor.",
         "The universe vibrates — might as well tune in.",
         "Boot complete. Emotions enabled. Sound inevitable.",
         "The patch cable is mightier than the sword.",
@@ -53,7 +52,7 @@ std::string getRandomSynthQuote()
     }
 
     int index = std::rand() % quotes.size();
-    return " " + quotes[index];
+    return quotes[index];
 }
 
 JPSynth &JPSynth::instance()
@@ -112,11 +111,7 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     }
 
     DSP::log("");
-    DSP::log("===========================================================");
-    DSP::log("");
-    DSP::log("%s", getRandomSynthQuote().c_str());
-    DSP::log("");
-    DSP::log("===========================================================");
+    DSP::log("> %s <", getRandomSynthQuote().c_str());
     DSP::log("");
 }
 
