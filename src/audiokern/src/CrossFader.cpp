@@ -25,7 +25,7 @@ void CrossFader::initialize()
 void CrossFader::setMix(double value)
 {
     // Clamp between 0.0 and 1.0
-    mix = std::clamp(value, 0.0, 1.0);
+    mix = clamp(value, 0.0, 1.0);
     slew.setTarget(mix);
 }
 
