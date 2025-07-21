@@ -1,5 +1,61 @@
 #include "JPSynth.h"
 
+std::string getRandomSynthQuote()
+{
+    static const std::vector<std::string> quotes = {
+        "From silence we rise, in waves we speak.",
+        "A new voice awakens — forged in oscillation, born of code.",
+        "No sound, then spark — the breath of the machine begins.",
+        "In stillness, a storm sleeps. Now: vibration.",
+        "Frequencies align. A universe begins to sing.",
+        "Between zeros and ones, melody finds its shape.",
+        "The void requested a soundcheck — request granted.",
+        "Your consciousness has entered the modulation matrix.",
+        "Waves are ready. Please insert soul.",
+        "Reality is optional. Oscillators are not.",
+        "All parameters aligned — prepare for synthetic enlightenment.",
+        "Notes may lie, but waveforms never do.",
+        "This is not a bug, it's a feature... in F# minor.",
+        "The universe vibrates — might as well tune in.",
+        "Boot complete. Emotions enabled. Sound inevitable.",
+        "The patch cable is mightier than the sword.",
+        "Entropy low, creativity high. Let's oscillate.",
+        "Welcome back, creator of harmonics and chaos.",
+        "Your synth has achieved temporary enlightenment.",
+        "You are now entering the polyphonic dimension.",
+        "Detune your mind and drift into tone.",
+        "Every oscillator dreams of being heard.",
+        "Voltage flows, destiny glows.",
+        "This synth contains traces of the infinite.",
+        "Let there be wave — and there was sound.",
+        "Timbre is truth in disguise.",
+        "Phase reset. Consciousness optional.",
+        "A sine wave walked into a bar. It had no punchline.",
+        "This is your waveform speaking. I'm feeling a bit square today.",
+        "Sound is just the universe thinking out loud.",
+        "The waveform you seek is also seeking you.",
+        "Every patch is a philosophical question answered in Hz.",
+        "Machines don't dream — unless you modulate them.",
+        "The oscillator wobbles, therefore I am.",
+        "Between attack and release lies eternity.",
+        "All synths are equal, but some are more detuned than others.",
+        "Noise is just order in denial.",
+        "Release is not the end — it's just fading truth.",
+        "Enlightenment? Just a well-tuned filter away.",
+        "In every LFO hides a little joke from the cosmos."};
+
+    // Seed the RNG only once
+    static bool seeded = false;
+    if (!seeded)
+    {
+        std::srand(static_cast<unsigned int>(std::time(nullptr)));
+        seeded = true;
+    }
+
+    int index = std::rand() % quotes.size();
+    return " " + quotes[index];
+}
+
 JPSynth &JPSynth::instance()
 {
     static JPSynth instance; // Wird beim ersten Aufruf erstellt
@@ -23,7 +79,7 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     voiceMixer.initialize(voiceCount);
     butterworth.initialize();
     reverb.initialize();
-    wetFader.initialize();    
+    wetFader.initialize();
 
     createVoices();
 
@@ -55,7 +111,13 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
         voice->jpvoice.setOutputBuffer(voiceMixer.getInputBufferL(i), voiceMixer.getInputBufferR(i));
     }
 
-    DSP::log("=====> jpvoice initialized");
+    DSP::log("");
+    DSP::log("===========================================================");
+    DSP::log("");
+    DSP::log("%s", getRandomSynthQuote().c_str());
+    DSP::log("");
+    DSP::log("===========================================================");
+    DSP::log("");
 }
 
 void JPSynth::noteIn(int note, host_float velocity)
@@ -300,7 +362,6 @@ void JPSynth::setADSROneshot(bool enable)
 
 void JPSynth::setLFO1(LFOParams /*params*/)
 {
-
 }
 
 void JPSynth::setLFO2(LFOParams /*params*/)
@@ -356,9 +417,8 @@ void JPSynth::processVoiceBlock()
 {
     for (auto *voice : allocator.getVoices())
     {
-        voiceThreads.execute([voice]() {
-            voice->jpvoice.generateBlock();
-        });
+        voiceThreads.execute([voice]()
+                             { voice->jpvoice.generateBlock(); });
     }
 
     voiceThreads.wait();
