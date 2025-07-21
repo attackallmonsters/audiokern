@@ -194,7 +194,7 @@ void Oscillator::generateSample(Oscillator *,
                                 const host_float & /*modLeft*/,
                                 const host_float & /*modRight*/)
 {
-    left = right = std::sin(phase * 2.0 * M_PI); // Sine generator
+    left = right = std::sin(phase * 2.0 * dsp_math::DSP_PI); // Sine generator
 }
 
 // Next sample block generation

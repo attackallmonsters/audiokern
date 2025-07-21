@@ -90,7 +90,7 @@ void KorgonFilter::processBlock()
             reso_scale = (cutoff <= 2500.0) ? 1.0 : clamp(1.0 - (cutoff - 2500.0) / 7500.0, 0.0, 1.0);
 
             // Calculate coefficient based on cutoff
-            wc = 2.0 * M_PI * cutoff;
+            wc = 2.0 * dsp_math::DSP_PI * cutoff;
 
             alpha = clamp(wc * T / (1.0 + wc * T), 0.0, 1.0); // Bilinear transform approximation
 
@@ -135,7 +135,7 @@ void KorgonFilter::processBlock()
                 continue;
             }
 
-            wc = 2.0 * M_PI * cutoff;
+            wc = 2.0 * dsp_math::DSP_PI * cutoff;
 
             alpha = clamp(wc * T / (1.0 + wc * T), 0.0, 1.0);
 

@@ -35,7 +35,7 @@ void CrossFader::processBlock()
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        dsp_math::get_sin_cos(slew.process() * 0.5 * M_PI, &gainB, &gainA);
+        dsp_math::get_sin_cos(slew.process() * 0.5 * dsp_math::DSP_PI, &gainB, &gainA);
 
         outputBufferL[i] = inputBufferAL[i] * gainA + inputBufferBL[i] * gainB;
         outputBufferR[i] = inputBufferAR[i] * gainA + inputBufferBR[i] * gainB;

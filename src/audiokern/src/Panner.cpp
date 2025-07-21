@@ -34,7 +34,7 @@ void Panner::processBlock(DSPObject *dsp)
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        dsp_math::get_sin_cos(self->slew.process() * 0.5 * M_PI, &gainR, &gainL);
+        dsp_math::get_sin_cos(self->slew.process() * 0.5 * dsp_math::DSP_PI, &gainR, &gainL);
 
         self->outputBufferL[i] = self->inputBufferL[i] * gainL;
         self->outputBufferR[i] = self->inputBufferR[i] * gainR;

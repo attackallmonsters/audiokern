@@ -8,6 +8,6 @@ void SineWavetable::createWavetable(DSPBuffer &buffer, dsp_float /*frequency*/)
     for (size_t i = 0; i < size; ++i)
     {
         double phase = static_cast<double>(i) / static_cast<double>(size);
-        buffer[i] = std::sin(2.0 * M_PI * phase);
+        buffer[i] = std::sin(2.0 * dsp_math::DSP_PI * phase);
     }
 }

@@ -45,7 +45,7 @@ void LFO::setSmooth(host_float f)
 
 inline host_float LFO::lfoSine()
 {
-    return std::sin(phase * 2.0 * M_PI);
+    return std::sin(phase * 2.0 * dsp_math::DSP_PI);
 }
 
 inline host_float LFO::lfoRampUp()

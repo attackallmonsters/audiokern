@@ -414,10 +414,10 @@ void JPVoice::processBlock()
         noise.generateBlock();
     }
 
-    amp_carrier = std::cos(oscmix * 0.5 * M_PI);
-    amp_modulator = std::sin(oscmix * 0.5 * M_PI);
-    amp_osc_noise = std::cos(noisemix * 0.5 * M_PI);
-    amp_noise = std::sin(noisemix * 0.5 * M_PI);
+    amp_carrier = std::cos(oscmix * 0.5 * dsp_math::DSP_PI);
+    amp_modulator = std::sin(oscmix * 0.5 * dsp_math::DSP_PI);
+    amp_osc_noise = std::cos(noisemix * 0.5 * dsp_math::DSP_PI);
+    amp_noise = std::sin(noisemix * 0.5 * dsp_math::DSP_PI);
 
     resoBuffer.fill(filterResonance);
 

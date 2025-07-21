@@ -4,6 +4,7 @@
 #include "RingBlockBuffer.h"
 #include "DSPSampleBuffer.h"
 #include "ParamFader.h"
+#include "dsp_math.h"
 #include <vector>
 
 class CombDelay : public DSPObject

@@ -15,5 +15,5 @@ void SineOscillator::generateSample(
     const host_float & /*modLeft*/,
     const host_float & /*modRight*/)
 {
-    left = right = std::sin(phase * 2.0 * M_PI);
+    left = right = std::sin(phase * 2.0 * dsp_math::DSP_PI);
 }

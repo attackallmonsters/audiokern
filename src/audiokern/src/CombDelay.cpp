@@ -42,7 +42,7 @@ void CombDelay::setDamping(dsp_float freqHz)
 {
     dsp_float f = clamp(freqHz, 0.0, 20000.0);
 
-    dampingCoeff = std::exp(-2.0 * M_PI * f / DSP::sampleRate);
+    dampingCoeff = std::exp(-2.0 * dsp_math::DSP_PI * f / DSP::sampleRate);
 }
 
 void CombDelay::processBlock()

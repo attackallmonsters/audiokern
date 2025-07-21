@@ -1,7 +1,7 @@
 #include "ButterworthFilter.h"
 
 // Constant for 2π
-static constexpr host_float TWO_PI = 2.0 * M_PI;
+static constexpr host_float TWO_PI = 2.0 * dsp_math::DSP_PI;
 
 // Constructor
 ButterworthFilter::ButterworthFilter()
@@ -38,12 +38,12 @@ void ButterworthFilter::setFilterMode(FilterMode mode)
 void ButterworthFilter::processBlock()
 {
     const host_float fc = clamp(cutoffFrequency, 5.0, DSP::sampleRate * 0.49);
-    const host_float omega = dsp_math::M_2PI * fc / DSP::sampleRate;
+    const host_float omega = dsp_math::DSP_2PI * fc / DSP::sampleRate;
 
     dsp_float sin_omega, cos_omega;
     dsp_math::get_sin_cos(omega, &sin_omega, &cos_omega);
 
-    const host_float alpha = sin_omega / (2.0 * dsp_math::M_1D_SQRT2); // Q = 1/√2
+    const host_float alpha = sin_omega / (2.0 * dsp_math::DSP_1D_SQRT2); // Q = 1/√2
 
     // Biquad coefficients
     host_float b0, b1, b2, a0, a1, a2;
