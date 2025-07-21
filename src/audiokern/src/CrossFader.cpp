@@ -29,17 +29,21 @@ void CrossFader::setMix(double value)
     slew.setTarget(mix);
 }
 
-void CrossFader::processBlock(DSPObject *dsp)
+void CrossFader::processBlock()
 {
-    CrossFader *self = static_cast<CrossFader *>(dsp);
-
     dsp_float gainA, gainB;
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        dsp_math::get_sin_cos(self->slew.process() * 0.5 * M_PI, &gainB, &gainA);
+        dsp_math::get_sin_cos(slew.process() * 0.5 * M_PI, &gainB, &gainA);
 
-        self->outputBufferL[i] = self->inputBufferAL[i] * gainA + self->inputBufferBL[i] * gainB;
-        self->outputBufferR[i] = self->inputBufferAR[i] * gainA + self->inputBufferBR[i] * gainB;
+        outputBufferL[i] = inputBufferAL[i] * gainA + inputBufferBL[i] * gainB;
+        outputBufferR[i] = inputBufferAR[i] * gainA + inputBufferBR[i] * gainB;
     }
+}
+
+void CrossFader::processBlock(DSPObject *dsp)
+{
+    CrossFader *self = static_cast<CrossFader *>(dsp);
+    self->processBlock();
 }

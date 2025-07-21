@@ -658,6 +658,40 @@ void jpvoice_tilde_revdense(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom * ar
     synth.setReverbDensity(density);
 }
 
+void jpvoice_tilde_revvol(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom * argv)
+{
+    if (!testDSP())
+    {
+        return;
+    }
+
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: revvol (revvol 0.0 - 1,0)");
+        return;
+    }
+
+    host_float v = atom_getfloat(argv);
+    synth.setReverbVolume(v);
+}
+
+void jpvoice_tilde_wet(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom * argv)
+{
+    if (!testDSP())
+    {
+        return;
+    }
+
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: wet (wet 0.0 - 1,0)");
+        return;
+    }
+
+    host_float w = atom_getfloat(argv);
+    synth.setWet(w);
+}
+
 // DSP perform function
 t_int *jpvoice_tilde_perform(t_int *w)
 {
@@ -756,4 +790,7 @@ extern "C" void jpvoice_tilde_setup(void)
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revspace, gensym("revspace"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revdamp, gensym("revdamp"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revdense, gensym("revdense"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revvol, gensym("revvol"), A_GIMME, 0);
+
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_wet, gensym("wet"), A_GIMME, 0);
 }

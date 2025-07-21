@@ -6,7 +6,7 @@
 #include <cstring>
 #include <cmath>
 
-// This is a buffer that manages buffers used by the host.
+// This is a buffer that manages samples that are compatioble to the audio host (host_float).
 // Set preprocessor/compiole flag HOST_USE_DOUBLE to use double
 class DSPSampleBuffer {
 public:

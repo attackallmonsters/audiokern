@@ -11,6 +11,7 @@
 #include "dsp_runtime.h"
 #include "NebularReverb.h"
 #include "ButterworthFilter.h"
+#include "CrossFader.h"
 
 struct SynthVoice
 {
@@ -130,6 +131,12 @@ public:
     // Sets the reverb density
     void setReverbDensity(host_float density);
 
+    // Sets the reverb volume
+    void setReverbVolume(host_float vol);
+
+    // Sets the wetness amount of the effect chain
+    void setWet(host_float wet);
+
     // Computes the samples of all voices
     void processBlock();
 
@@ -149,8 +156,11 @@ private:
     // Thread pool for voices
     DSPThreadPool voiceThreads;
 
-    // Mixer
+    // Voice mixer
     Mixer voiceMixer;
+
+    // Cross fade dry<>wet
+    CrossFader wetFader;
 
     // LFO 1
     LFO lfo1;

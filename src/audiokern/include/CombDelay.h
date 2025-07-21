@@ -1,7 +1,7 @@
 #pragma once
 
 #include "DSPObject.h"
-#include "DelayBlockBuffer.h"
+#include "RingBlockBuffer.h"
 #include "DSPSampleBuffer.h"
 #include "ParamFader.h"
 #include <vector>
@@ -28,7 +28,7 @@ public:
     void processBlock();
 
     // Internal delay buffers
-    DelayBlockBuffer delayBuffer;
+    RingBlockBuffer delayBuffer;
 
     // Output buffers for left and right channel
     DSPSampleBuffer outputBufferL;

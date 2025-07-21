@@ -23,6 +23,7 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     voiceMixer.initialize(voiceCount);
     butterworth.initialize();
     reverb.initialize();
+    wetFader.initialize();    
 
     createVoices();
 
@@ -34,11 +35,18 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
 
     reverb.inputBufferL = butterworth.processBufferL;
     reverb.inputBufferR = butterworth.processBufferR;
-    reverb.outputBufferL = outL;
-    reverb.outputBufferR = outR;
+
+    wetFader.inputBufferAL = voiceMixer.outputBufferL;
+    wetFader.inputBufferAR = voiceMixer.outputBufferR;
+    wetFader.inputBufferBL = reverb.outputBufferL;
+    wetFader.inputBufferBR = reverb.outputBufferR;
+    wetFader.outputBufferL = outL;
+    wetFader.outputBufferR = outR;
 
     reverb.setSpace(0.1);
     reverb.setRoomSize(0.95);
+
+    wetFader.setMix(1.0);
 
     for (size_t i = 0; i < voiceCount; ++i)
     {
@@ -319,6 +327,16 @@ void JPSynth::setReverbDensity(host_float density)
     reverb.setDensity(density);
 }
 
+void JPSynth::setReverbVolume(host_float vol)
+{
+    reverb.setVolume(vol);
+}
+
+void JPSynth::setWet(host_float wet)
+{
+    wetFader.setMix(wet);
+}
+
 void JPSynth::processBlock()
 {
     DSP::nextBlock();
@@ -330,6 +348,8 @@ void JPSynth::processBlock()
     butterworth.generateBlock();
 
     reverb.generateBlock();
+
+    wetFader.generateBlock();
 }
 
 void JPSynth::processVoiceBlock()

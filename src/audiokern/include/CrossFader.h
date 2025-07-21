@@ -19,6 +19,9 @@ public:
     // Sets mix amount: 0.0 = only input A, 1.0 = only input B
     void setMix(double value);
 
+    // Proceses the current block
+    void processBlock();
+
     // Input buffers channel A
     DSPSampleBuffer inputBufferAL;
     DSPSampleBuffer inputBufferAR;

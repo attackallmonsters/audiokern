@@ -6,10 +6,10 @@
 
 // Simple and efficient ring buffer based on DSP blocks 
 // with size defined via time in ms (converted into whole blocks)
-class DelayBlockBuffer
+class RingBlockBuffer
 {
 public:
-    DelayBlockBuffer();
+    RingBlockBuffer();
 
     // Set desired buffer duration in milliseconds 
     void setTime(dsp_float timeMS);
