@@ -60,10 +60,10 @@ private:
     static constexpr int maxDelays = 8;
 
     // Active number of delay lines (determined by density setting)
-    int density = 4;
+    int density, prevDensity;
 
     // Base delay time in milliseconds (spread across delay lines)
-    host_float delayTime = 40.0;
+    host_float delayTime, prevDelayTime;
 
     // Controls the output volume of the reverb
     host_float volume;

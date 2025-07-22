@@ -23,31 +23,41 @@ void RingBlockBuffer::initialize()
     std::fill(bufferL.begin(), bufferL.end(), 0.0);
     std::fill(bufferR.begin(), bufferR.end(), 0.0);
 
-    writeIndex = 0;
-    setTime(1);
+    writeIndexL = writeIndexR = 0;
+    setTime(1.0, 1.0);
 }
 
 // Set target buffer length in milliseconds (no allocation yet)
-void RingBlockBuffer::setTime(dsp_float timeMS)
+void RingBlockBuffer::setTime(dsp_float timeMSL, dsp_float timeMSR)
 {
-    delayTimeMs = timeMS;
+    delayTimeMsL = timeMSL;
+    delayTimeMsR = timeMSR;
 
-    size_t rawSize = static_cast<size_t>((delayTimeMs / 1000.0) * DSP::sampleRate);
+    size_t rawSizeL = static_cast<size_t>((delayTimeMsL / 1000.0) * DSP::sampleRate);
+    size_t rawSizeR = static_cast<size_t>((delayTimeMsR / 1000.0) * DSP::sampleRate);
 
-    if (rawSize < DSP::blockSize)
-        rawSize = DSP::blockSize;
+    if (rawSizeL < DSP::blockSize)
+        rawSizeL = DSP::blockSize;
 
-    bufferSize = ((rawSize + DSP::blockSize - 1) / DSP::blockSize) * DSP::blockSize;
+    if (rawSizeR < DSP::blockSize)
+        rawSizeR = DSP::blockSize;
 
-    if (bufferL.size() == bufferSize)
-        return;
+    bufferSizeL = ((rawSizeL + DSP::blockSize - 1) / DSP::blockSize) * DSP::blockSize;
+    bufferSizeR = ((rawSizeR + DSP::blockSize - 1) / DSP::blockSize) * DSP::blockSize;
 
-    bufferL.resize(bufferSize);
-    bufferR.resize(bufferSize);
+    if (bufferL.size() != bufferSizeL)
+    {
+        bufferL.resize(bufferSizeL);
+        blockCountL = bufferSizeL / DSP::blockSize;
+        writeIndexL = 0;
+    }
 
-    blockCount = bufferSize / DSP::blockSize;
-
-    writeIndex = 0;
+    if (bufferR.size() != bufferSizeR)
+    {
+        bufferR.resize(bufferSizeR);
+        blockCountR = bufferSizeR / DSP::blockSize;
+        writeIndexR = 0;
+    }
 }
 
 #include <stdexcept>
@@ -56,24 +66,24 @@ void RingBlockBuffer::push(const DSPSampleBuffer &blockL, const DSPSampleBuffer 
 {
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        bufferL[writeIndex + i] = blockL[i] + feedbackBufferL[i];
-        bufferR[writeIndex + i] = blockR[i] + feedbackBufferR[i];
+        bufferL[writeIndexL + i] = blockL[i] + feedbackBufferL[i];
+        bufferR[writeIndexR + i] = blockR[i] + feedbackBufferR[i];
     }
 
     // Next write index is the oldest block in buffer
-    writeIndex += DSP::blockSize;
+    writeIndexL += DSP::blockSize;
+    writeIndexR += DSP::blockSize;
 
-    if (writeIndex >= bufferSize)
+    if (writeIndexL >= bufferSizeL)
     {
-        writeIndex = 0;
+        writeIndexL = 0;
     }
 
-    outputBufferL.copy(&bufferL[writeIndex]);
-    outputBufferR.copy(&bufferR[writeIndex]);
-}
+    if (writeIndexR >= bufferSizeR)
+    {
+        writeIndexR = 0;
+    }
 
-// Return current buffer blocks
-size_t RingBlockBuffer::size() const
-{
-    return blockCount;
+    outputBufferL.copy(&bufferL[writeIndexL]);
+    outputBufferR.copy(&bufferR[writeIndexR]);
 }

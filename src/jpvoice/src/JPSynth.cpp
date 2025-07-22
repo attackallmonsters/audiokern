@@ -78,6 +78,7 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     voiceMixer.initialize(voiceCount);
     butterworth.initialize();
     reverb.initialize();
+    delay.initialize();
     wetFader.initialize();
 
     createVoices();
@@ -88,8 +89,11 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     butterworth.setFilterMode(FilterMode::HP);
     butterworth.setCutoffFrequency(200.0);
 
-    reverb.inputBufferL = butterworth.processBufferL;
-    reverb.inputBufferR = butterworth.processBufferR;
+    delay.inputBufferL = butterworth.processBufferL;
+    delay.inputBufferR = butterworth.processBufferR;
+
+    reverb.inputBufferL = delay.outputBufferL;
+    reverb.inputBufferR = delay.outputBufferR;
 
     wetFader.inputBufferAL = voiceMixer.outputBufferL;
     wetFader.inputBufferAR = voiceMixer.outputBufferR;
@@ -100,6 +104,9 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
 
     reverb.setSpace(0.1);
     reverb.setRoomSize(0.95);
+
+    delay.setFeedback(0.0, 0.0);
+    delay.setTime(0.0, 0.0);
 
     wetFader.setMix(1.0);
 
@@ -402,6 +409,8 @@ void JPSynth::processBlock()
     voiceMixer.generateBlock();
 
     butterworth.generateBlock();
+
+    delay.generateBlock();
 
     reverb.generateBlock();
 

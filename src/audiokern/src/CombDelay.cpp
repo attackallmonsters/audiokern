@@ -8,7 +8,7 @@ CombDelay::CombDelay()
 void CombDelay::initialize()
 {
     delayBuffer.initialize();
-    delayBuffer.setTime(0);
+    delayBuffer.setTime(0.0, 0.0);
 
     outputBufferL.create(DSP::blockSize);
     outputBufferR.create(DSP::blockSize);
@@ -29,7 +29,7 @@ void CombDelay::setTime(dsp_float timeMS)
      paramFader.change(
         [=]()
         {
-            delayBuffer.setTime(t);
+            delayBuffer.setTime(t, t);
         });
 }
 
@@ -47,6 +47,14 @@ void CombDelay::setDamping(dsp_float freqHz)
 
 void CombDelay::processBlock()
 {
+    if (feedback == 0.0)
+    {
+        outputBufferL.copy(delayBuffer.outputBufferL);
+        outputBufferR.copy(delayBuffer.outputBufferR);
+
+        return;
+    }
+
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
         // Read output (delayed samples) of ring buffer

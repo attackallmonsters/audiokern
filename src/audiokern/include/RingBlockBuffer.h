@@ -12,16 +12,13 @@ public:
     RingBlockBuffer();
 
     // Set desired buffer duration in milliseconds 
-    void setTime(dsp_float timeMS);
+    void setTime(dsp_float timeMSL, dsp_float timeMSR);
 
     // Allocate and clear the buffer according to time and DSP::sampleRate
     void initialize();
 
     // Pushes a sample buffer into the buffer and the delayed buffer to the outbut buffer
     void push(const DSPSampleBuffer &blockL, const DSPSampleBuffer &blockR);
-
-    // Return the current buffer size in blocks
-    size_t size() const;
 
     // Output buffers 
     DSPSampleBuffer outputBufferL;
@@ -35,8 +32,8 @@ private:
     std::vector<host_float> bufferL;
     std::vector<host_float> bufferR;
 
-    size_t writeIndex;
-    size_t bufferSize;
-    size_t blockCount;
-    dsp_float delayTimeMs;
+    size_t writeIndexL, writeIndexR;
+    size_t bufferSizeL, bufferSizeR;
+    size_t blockCountL, blockCountR;
+    dsp_float delayTimeMsL, delayTimeMsR;
 };

@@ -12,6 +12,7 @@
 #include "NebularReverb.h"
 #include "ButterworthFilter.h"
 #include "CrossFader.h"
+#include "Delay.h"
 
 struct SynthVoice
 {
@@ -134,6 +135,12 @@ public:
     // Sets the reverb volume
     void setReverbVolume(host_float vol);
 
+    // Sets the delay time left/right
+    void setDelayTime(host_float timeL, host_float timeR);
+
+    // Sets the delay feedback amount left/right
+    void setDelayFeedback(host_float timeL, host_float timeR);
+
     // Sets the wetness amount of the effect chain
     void setWet(host_float wet);
 
@@ -171,8 +178,11 @@ private:
     // Butterworth fixed high pass 80 Hz
     ButterworthFilter butterworth;
 
-    // Reverb
+    // The reverb
     NebularReverb reverb;
+
+    // The delay
+    Delay delay;
 
     // Tuning system carrier
     TuningSystem carrierTuning;

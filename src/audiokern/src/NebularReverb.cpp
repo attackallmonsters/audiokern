@@ -39,6 +39,7 @@ void NebularReverb::setDensity(host_float dense)
 void NebularReverb::setSpace(host_float size)
 {
     delayTime = clamp(size, 0.04, 1.0) * 200;
+    prevDelayTime = delayTime;
     updateDelays();
 }
 
@@ -52,6 +53,20 @@ void NebularReverb::setRoomSize(host_float size)
 {
     for (auto &delay : delays)
         delay.setFeedback(size);
+
+    if (size == 0.0)
+    {
+        prevDelayTime = delayTime;
+        prevDensity = density;
+        
+        setSpace(0.0);
+        setDensity(0.0);
+    }
+    else
+    {
+        setSpace(prevDelayTime);
+        setDensity(prevDensity);
+    }
 }
 
 void NebularReverb::updateDelays()
