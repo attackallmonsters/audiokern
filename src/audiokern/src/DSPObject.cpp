@@ -49,7 +49,11 @@ void DSPObject::setUsage()
     case DSPObjectUsage::Modulation:
         modulationBuffer.create(DSP::blockSize);
         break;
+    case DSPObjectUsage::None:
+        return;
+        break;
     default:
+        throw std::runtime_error("DSPObject::audioInputFrom unknown option");
         break;
     }
 
@@ -58,34 +62,43 @@ void DSPObject::setUsage()
 
 void DSPObject::audioInputFrom(DSPObject &dspObject)
 {
-    DSPSampleBuffer *sourceBufL = nullptr;
-    DSPSampleBuffer *sourceBufR = nullptr;
-
     switch (dspObject.usage)
     {
     case DSPObjectUsage::Audio:
     case DSPObjectUsage::OutputOnly:
-        sourceBufL = &dspObject.outputBufferL;
-        sourceBufR = &dspObject.outputBufferR;
+    case DSPObjectUsage::FM:
+        if (usage == DSPObjectUsage::Process)
+        {
+            processBufferL = dspObject.outputBufferL;
+            processBufferR = dspObject.outputBufferR;
+        }
+        else
+        {
+            inputBufferL = dspObject.outputBufferL;
+            inputBufferR = dspObject.outputBufferR;
+        }
         break;
     case DSPObjectUsage::Process:
-        sourceBufL = &dspObject.processBufferL;
-        sourceBufR = &dspObject.processBufferR;
+        if (usage == DSPObjectUsage::Process)
+        {
+            processBufferL = dspObject.processBufferL;
+            processBufferR = dspObject.processBufferR;
+        }
+        else
+        {
+            inputBufferL = dspObject.processBufferL;
+            inputBufferR = dspObject.processBufferR;
+        }
         break;
     case DSPObjectUsage::Modulation:
-        throw std::runtime_error("Cannot use modulation source as audio input");
+        throw std::runtime_error("Cannot use modulation source as input");
         break;
     case DSPObjectUsage::None:
-        throw std::runtime_error("Cannot use undefined source (DSPObjectUsage::None) as audio input");
+        throw std::runtime_error("Cannot use undefined source (DSPObjectUsage::None) as input");
         break;
     default:
-        return;
-    }
-
-    if (sourceBufL && sourceBufR)
-    {
-        inputBufferL = *sourceBufL;
-        inputBufferR = *sourceBufR;
+        throw std::runtime_error("DSPObject::audioInputFrom unknown option");
+        break;
     }
 }
 
