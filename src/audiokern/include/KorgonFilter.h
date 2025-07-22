@@ -14,35 +14,29 @@ public:
     // Constructor with sample rate
     explicit KorgonFilter();
 
-    // Initializes the filter
-    void initialize() override;
-
     // Sets the filter drive
     void setDrive(host_float value);
 
     // Sets the filter mode (LP, HP)
     void setFilterMode(FilterMode mode);
 
+    // Sets the filters resonance
+    void setResonance(host_float reso);
+
     // Processes the next block of samples
     void processBlock();
-
-    // The samples to be filtered
-    DSPSampleBuffer processBufferL;
-    DSPSampleBuffer processBufferR;
-
-    // Buffer for cutoff calculation
-    DSPSampleBuffer cutoffBuffer;
-
-    // Buffer for resonance
-    DSPSampleBuffer resoBuffer;
 
     // Reset internal filter state
     void reset();
 
+protected:
+    // Initializes the filter
+    DSPObjectUsage initializeComponent() override;
+
 private:
     // Static DSP callback used for processing audio blocks
     static void processBlock(DSPObject *dsp);
-    
+
     // Filter state variables:
     host_float y1L;   // Output of first integrator left
     host_float y2L;   // Output of second integrator (filter output) left
@@ -53,12 +47,9 @@ private:
 
     static host_float nonlinearFeedback(host_float s); // Nonlinear feedback (simulates diode behavior)
 
-    // Control buffer for cutoff
-    DSPSampleBuffer cutoffInitBuffer;
-
-    // Control buffer for resonance    
-    DSPSampleBuffer resoInitBuffer;
-
     // Filtermode, Korgon supports LP and HP
     FilterMode filterMode;
+
+    // Filter resonance
+    host_float resonance;
 };

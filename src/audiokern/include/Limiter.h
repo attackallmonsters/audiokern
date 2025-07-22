@@ -14,9 +14,6 @@ public:
     // Ctor
     Limiter();
 
-    // Initializes the instance
-    void initialize();
-
     // Sets the amplitude threshold in dBFS (-100 - 0)
     void setThreshold(dsp_float thres);
 
@@ -29,15 +26,16 @@ public:
     // Resets the limiter
     void reset();
 
-    // Output samples left
-    DSPSampleBuffer outputBufferL;
-
-    // Output samples right
-    DSPSampleBuffer outputBufferR;
+protected:
+    // Initializes the instance
+    DSPObjectUsage initializeComponent() override;
 
 private:
     // Processes data in bufferL, buffer R
     static void processBlock(DSPObject *dsp);
+
+    // Same same
+    void processBlock();
 
     std::vector<std::pair<host_float, host_float>> lookaheadBuffer; // Circular buffer for lookahead
 

@@ -8,24 +8,15 @@ KorgonFilter::KorgonFilter()
 }
 
 // Initializes the filter
-void KorgonFilter::initialize()
+DSPObjectUsage KorgonFilter::initializeComponent()
 {
-    DSPObject::initialize();
-
-    cutoffInitBuffer.create(DSP::blockSize);
-    resoInitBuffer.create(DSP::blockSize);
-
-    cutoffInitBuffer.fill(20000.0);
-    resoInitBuffer.fill(0.0);
-
-    cutoffBuffer = cutoffInitBuffer;
-    resoBuffer = resoInitBuffer;
-
     setDrive(0.0);
     reset();
 
     T = 1.0 / DSP::sampleRate;
     drive = 1.0;
+
+    return DSPObjectUsage::Process;
 }
 
 void KorgonFilter::setFilterMode(FilterMode mode)
@@ -46,6 +37,11 @@ void KorgonFilter::setFilterMode(FilterMode mode)
     reset();
 }
 
+void KorgonFilter::setResonance(host_float reso)
+{
+    resonance = clamp(reso, 0.0, 100.0);
+}
+
 // Sets the filter drive
 void KorgonFilter::setDrive(host_float value)
 {
@@ -56,7 +52,7 @@ void KorgonFilter::processBlock()
 {
     size_t blocksize = DSP::blockSize;
     host_float left, right;
-    host_float cutoff, reso;
+    host_float cutoff;
     host_float wc, alpha;
     host_float fbL, fbR;
     host_float xL, xR;
@@ -77,8 +73,7 @@ void KorgonFilter::processBlock()
         {
             left = (processBufferL)[i];
             right = (processBufferR)[i];
-            cutoff = (cutoffBuffer)[i];
-            reso = (resoBuffer)[i];
+            cutoff = (modulationBuffer)[i];
 
             if (cutoff > 15000.0)
             {
@@ -95,8 +90,8 @@ void KorgonFilter::processBlock()
             alpha = clamp(wc * T / (1.0 + wc * T), 0.0, 1.0); // Bilinear transform approximation
 
             // feedback calculation
-            fbL = clamp(reso * reso_scale * (y2L - left), -15.0, 15.0);
-            fbR = clamp(reso * reso_scale * (y2R - right), -15.0, 15.0);
+            fbL = clamp(resonance * reso_scale * (y2L - left), -15.0, 15.0);
+            fbR = clamp(resonance * reso_scale * (y2R - right), -15.0, 15.0);
 
             // First integrator (emulating Sallen-Key stage)
             xL = left - fbL;
@@ -126,7 +121,7 @@ void KorgonFilter::processBlock()
         {
             left = (processBufferL)[i];
             right = (processBufferR)[i];
-            cutoff = (cutoffBuffer)[i];
+            cutoff = (modulationBuffer)[i];
 
             if (cutoff > 15000.0)
             {

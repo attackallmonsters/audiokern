@@ -4,10 +4,10 @@ FastTan::FastTan()
 {
     registerBlockProcessor(&FastTan::processBlock);
 }
-void FastTan::initialize()
+
+DSPObjectUsage FastTan::initializeComponent()
 {
-    outputBufferL.initialize(DSP::blockSize);
-    outputBufferR.initialize(DSP::blockSize);
+    return DSPObjectUsage::Process;
 }
 
 void FastTan::processBlock(DSPObject *dsp)
@@ -16,7 +16,7 @@ void FastTan::processBlock(DSPObject *dsp)
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        (ft->outputBufferL)[i] = dsp_math::fast_tanh((ft->outputBufferL)[i]);
-        (ft->outputBufferR)[i] = dsp_math::fast_tanh((ft->outputBufferR)[i]);
+        (ft->processBufferL)[i] = dsp_math::fast_tanh((ft->processBufferL)[i]);
+        (ft->processBufferR)[i] = dsp_math::fast_tanh((ft->processBufferR)[i]);
     }
 }

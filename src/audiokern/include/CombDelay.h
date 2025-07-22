@@ -15,7 +15,7 @@ public:
     explicit CombDelay();
 
     // Prepare buffers and internal state
-    void initialize() override;
+    DSPObjectUsage initializeComponent() override;
 
     // Set delay time in milliseconds
     void setTime(dsp_float timeMS);
@@ -32,13 +32,12 @@ public:
     // Internal delay buffers
     RingBlockBuffer delayBuffer;
 
-    // Output buffers for left and right channel
-    DSPSampleBuffer outputBufferL;
-    DSPSampleBuffer outputBufferR;
+protected:
+    void onBuffersCreated() override;
 
 private:
     // DSP callback
-    static void processBlock(DSPObject* dsp);
+    static void processBlock(DSPObject *dsp);
 
     size_t writeIndex = 0;
     size_t delaySamples = 0;

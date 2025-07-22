@@ -2,7 +2,7 @@
 
 #include "ParamFader.h"
 #include "VoiceOptions.h"
-#include "NoiseGenerator.h"
+#include "NoiseOscillator.h"
 #include "SineWavetable.h"
 #include "SawWavetable.h"
 #include "TriangleWavetable.h"
@@ -44,9 +44,6 @@ public:
 
     // Destructor: deletes both oscillator instances
     ~JPVoice();
-
-    // Initializes the DSP object
-    void initialize() override;
 
     // Start ADSRs
     void playNote();
@@ -127,9 +124,12 @@ public:
     // Next sample block generation
     void processBlock();
 
-    // Output buffers 
-    DSPSampleBuffer outputBufferL; // Mixing buffer left channel
-    DSPSampleBuffer outputBufferR; // Mixing buffer right channel
+protected:
+    // Initializes the DSP object
+    DSPObjectUsage initializeComponent() override;
+
+    // Called when buffers ready
+    void onBuffersCreated() override;
 
 private:
     // Next sample block generation
@@ -147,15 +147,15 @@ private:
 
     host_float oscmix = 0.0;   // Mix carrier <=> modulator
     host_float noisemix = 0.0; // Mix oscillators <=> noise
-    bool syncEnabled = false; // True if Sync is active
+    bool syncEnabled = false;  // True if Sync is active
 
     host_float filterResonance; // filter reso
 
-    host_float detune = 0.0;       // Detune factor supersaw oszillator
+    host_float detune = 0.0;     // Detune factor supersaw oszillator
     host_float pulseWidth = 0.5; // Pulse width square oscillator
-    
+
     // Oscillators
-    NoiseGenerator noise;
+    NoiseOscillator noise;
     SineWavetable sineCarrier;
     SineWavetable sineModulator;
     SawWavetable sawCarrier;
@@ -174,10 +174,17 @@ private:
     ModuloWavetable moduloModulator;
     BitWavetable bitModulator;
 
+    // Audio buffers
+    DSPSampleBuffer carrierL;
+    DSPSampleBuffer carrierR;
+    DSPSampleBuffer modulatorL;
+    DSPSampleBuffer modulatorR;
+    DSPSampleBuffer noiseL;
+    DSPSampleBuffer noiseR;
+    
+
     // Multi mode filter
     KorgonFilter filter;
-    // Buffer for filter resonance, cutoff is controlled by filterAdsr
-    DSPSampleBuffer resoBuffer;
 
     // Modulation objects
     ADSR filterAdsr;

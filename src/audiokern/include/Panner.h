@@ -7,29 +7,46 @@
 #include "clamp.h"
 #include <cmath>
 
+// Enum to define the panning behavior for stereo signal processing
+enum class PanningMode
+{
+    Gain,       // Basic gain-based panning:
+                // Each channel is scaled individually using sin/cos for equal-power,
+                // but no signal is mixed between channels (no crossfeed).
+                // Left stays left, right stays right — just louder or quieter.
+
+    Blend,      // Stereo field crossfade panning /not phase save):
+                // Both left and right input signals are mixed into both output channels,
+                // using equal-power sin/cos gains.
+                // Preserves stereo image while enabling smooth pan transitions with crossfeed.
+
+    BlendMono   // Mono and phase save blend with equal-power panning:
+                // Left and right inputs are summed to a mono signal,
+                // then panned using sin/cos gains to both output channels.
+                // Useful when the input should be centered and panned as a single source.
+};
+
 class Panner : public DSPObject
 {
 public:
     // Contructor
     Panner();
 
-    // Initializes the insatnce
-    void initialize() override;
-
     // Sets panning amount: 0.0 = only left, 1.0 = only right
     void setPanning(double value);
 
-    // Input buffers channel A
-    DSPSampleBuffer inputBufferL;
-    DSPSampleBuffer inputBufferR;
+    // Select simple gain mode or sample blending with equal power
+    void setMode(PanningMode mode);
 
-    // Output buffers
-    DSPSampleBuffer outputBufferL;
-    DSPSampleBuffer outputBufferR;
+protected:
+    // Initializes the insatnce
+    DSPObjectUsage initializeComponent() override;
 
 private:
     // Block processing
-    static void processBlock(DSPObject *dsp);
+    static void processBlockGain(DSPObject *dsp);
+    static void processBlockBlend(DSPObject *dsp);
+    static void processBlockBlendMono(DSPObject *dsp);
 
     // Audio artifact prevention
     SlewLimiter slew;

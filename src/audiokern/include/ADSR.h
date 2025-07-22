@@ -20,9 +20,6 @@ class ADSR : public DSPObject
 {
 public:
     ADSR();
-    
-    // Initializes the ADSR
-    virtual void initialize() override;
 
     void setAttack(dsp_float ms);
     void setDecay(dsp_float ms);
@@ -40,8 +37,9 @@ public:
     // Does a *= calulation on the samples
     void multiply(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR);
 
-    // Buffer that contains the envelope
-    DSPSampleBuffer outputBuffer;
+protected:
+    // Initializes the ADSR
+    virtual DSPObjectUsage initializeComponent() override;
 
 private:
     // Next sample block generation
@@ -77,7 +75,7 @@ private:
 
     dsp_float sampleRateMS;
     ADSRPhase phase;
-    int currentSample;    
+    int currentSample;
 
     static constexpr dsp_float MAX_TIME = std::numeric_limits<dsp_float>::max();
 };

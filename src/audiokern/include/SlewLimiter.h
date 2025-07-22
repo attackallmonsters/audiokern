@@ -10,9 +10,6 @@ public:
     // Constructor: slewTimeMs in milliseconds
     SlewLimiter();
 
-    // Initializes the slew limiter
-    void initialize() override;
-
     // Set new target (starts smoothing)
     void setTarget(dsp_float newTarget);
 
@@ -30,6 +27,10 @@ public:
 
     // Gets the current slew status
     double get() const { return current; }
+
+protected:
+    // Initializes the slew limiter
+    DSPObjectUsage initializeComponent() override;
 
 private:
     // Calculates the samples for current samplerate

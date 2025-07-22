@@ -5,7 +5,7 @@ CrossFader::CrossFader()
     registerBlockProcessor(&CrossFader::processBlock);
 }
 
-void CrossFader::initialize()
+DSPObjectUsage CrossFader::initializeComponent()
 {
     slew.initialize();
     slew.setSlewTime(1.0);
@@ -16,10 +16,25 @@ void CrossFader::initialize()
     inputBufferBL.create(DSP::blockSize);
     inputBufferBR.create(DSP::blockSize);
 
-    outputBufferL.create(DSP::blockSize);
-    outputBufferR.create(DSP::blockSize);
-
     setMix(0.5);
+
+    return DSPObjectUsage::OutputOnly;
+}
+
+void CrossFader::audioInputForA(DSPObject &dspObject)
+{
+    DSPBus bus = dspObject.getOutputBus();
+
+    inputBufferAL = *bus.left;
+    inputBufferAR = *bus.right;
+}
+
+void CrossFader::audioInputForB(DSPObject &dspObject)
+{
+    DSPBus bus = dspObject.getOutputBus();
+
+    inputBufferBL = *bus.left;
+    inputBufferBR = *bus.right;
 }
 
 void CrossFader::setMix(double value)

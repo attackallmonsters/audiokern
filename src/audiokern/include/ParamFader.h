@@ -11,7 +11,7 @@ class ParamFader : public DSPObject
 {
 public:
     ParamFader();
-    
+
     using ParamChange = std::function<void()>;
 
     // Queue a parameter change: paramFader.change([=]() { carrier->setDetune(detune); });
@@ -20,13 +20,14 @@ public:
     // Apply all queued changes
     void processBlock();
 
-    DSPSampleBuffer outputBufferL;
-    DSPSampleBuffer outputBufferR;
+protected:
+    // Initializes the instance
+    DSPObjectUsage initializeComponent() override;
 
 private:
     // DSP callback
-    static void processBlock(DSPObject* dsp);
-    
+    static void processBlock(DSPObject *dsp);
+
     std::queue<ParamChange> changes;
     int fadeCounter = 0;           // Amplitude for param change
     const int fadeLength = 16;     // Fade in/out samples for param change

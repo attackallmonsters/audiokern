@@ -5,24 +5,22 @@ NebularReverb::NebularReverb()
     registerBlockProcessor(&NebularReverb::processBlock);
 }
 
-void NebularReverb::initialize()
+DSPObjectUsage NebularReverb::initializeComponent()
 {
-    inputBufferL.initialize(DSP::blockSize);
-    inputBufferR.initialize(DSP::blockSize);
-
-    outputBufferL.create(DSP::blockSize);
-    outputBufferR.create(DSP::blockSize);
-
     for (int i = 0; i < maxDelays; ++i)
     {
         delays[i].initialize();
-    }
+        DSPBus bus = delays[i].getOutputBus();
+        delayBusses.push_back(bus);
+    }   
 
     setDensity(0.5);
     setSpace(0.0);
     setRoomSize(0.5);
     setDamping(5000.0);
     setVolume(1.0);
+
+    return DSPObjectUsage::Audio;
 }
 
 void NebularReverb::setDensity(host_float dense)
@@ -108,8 +106,8 @@ void NebularReverb::processBlock()
 
         for (int j = 0; j < density; ++j)
         {
-            sumL += delays[j].outputBufferL[i];
-            sumR += delays[j].outputBufferR[i];
+            sumL += (*delayBusses[j].left)[i];
+            sumR += (*delayBusses[j].right)[i];
         }
 
         outputBufferL[i] = sumL / density * volume;

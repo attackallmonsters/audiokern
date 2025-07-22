@@ -39,9 +39,6 @@ public:
     // Destructor releases memory for wavetables
     ~WavetableOscillator();
     
-    // Initializes all wavetable buffers for multiple frequency ranges
-    void initialize() override;
-
     // Sets the number of voices
     void setNumVoices(int count);
 
@@ -73,15 +70,10 @@ public:
     // Next sample block generation multiple voices
     void processBlockVoices();
 
-    // Buffer for modulation
-    DSPSampleBuffer modulationBufferL;
-    DSPSampleBuffer modulationBufferR;
-
-    // Sample buffer for output
-    DSPSampleBuffer outputBufferL;
-    DSPSampleBuffer outputBufferR;
-
 protected:
+    // Initializes all wavetable buffers for multiple frequency ranges
+    DSPObjectUsage initializeComponent() override;
+
     // Ctor: expects an unique name for the waveform
     WavetableOscillator(const std::string formName);
 

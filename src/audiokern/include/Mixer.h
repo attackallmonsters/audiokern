@@ -10,9 +10,6 @@ class Mixer : public DSPObject
 public:
     Mixer();
 
-    // Initializes the mixer with a number of buffers
-    void initialize(size_t count);
-
     // Returns a reference to a buffer for direct input from sound generators
     DSPSampleBuffer &getInputBufferL(size_t index);
     DSPSampleBuffer &getInputBufferR(size_t index);
@@ -20,8 +17,9 @@ public:
     // Processes the next block of samples
     void processBlock();
 
-    DSPSampleBuffer outputBufferL;
-    DSPSampleBuffer outputBufferR;
+protected:
+    // Initializes the mixer with a number of buffers
+    DSPObjectUsage initializeComponent(size_t count) override;
 
 private:
     // Static DSP callback used for processing audio blocks

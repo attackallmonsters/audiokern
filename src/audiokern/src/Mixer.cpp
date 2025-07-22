@@ -5,12 +5,9 @@ Mixer::Mixer()
     registerBlockProcessor(&Mixer::processBlock);
 }
 
-void Mixer::initialize(size_t count)
+DSPObjectUsage Mixer::initializeComponent(size_t count)
 {
     bufferCount = count;
-
-    outputBufferL.create(DSP::blockSize);
-    outputBufferR.create(DSP::blockSize);
 
     buffersL.clear();
     buffersL.resize(bufferCount);
@@ -23,6 +20,8 @@ void Mixer::initialize(size_t count)
         buffersL[i].create(DSP::blockSize);
         buffersR[i].create(DSP::blockSize);
     }
+
+    return DSPObjectUsage::OutputOnly;
 }
 
 DSPSampleBuffer &Mixer::getInputBufferL(size_t index)

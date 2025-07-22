@@ -38,15 +38,8 @@ Oscillator::~Oscillator()
 }
 
 // Initializes the oscillator
-void Oscillator::initialize()
+DSPObjectUsage Oscillator::initializeComponent()
 {
-    DSPObject::initialize();
-
-    outputBufferL.create(DSP::blockSize);
-    outputBufferR.create(DSP::blockSize);
-    modulationBufferL.create(DSP::blockSize);
-    modulationBufferR.create(DSP::blockSize);
-
     setFrequency(0.0);
     setFineTune(0);
     setPitchOffset(0);
@@ -55,6 +48,8 @@ void Oscillator::initialize()
     setFMType(FMType::ThroughZero);
     setModIndex(0.0);
     unWrap();
+
+    return DSPObjectUsage::FM;
 }
 
 // Derived classes registers sample generator
@@ -217,8 +212,8 @@ void Oscillator::processBlock(DSPObject *dsp)
     {
         for (size_t i = 0; i < blocksize; ++i)
         {
-            host_float modLeft = osc->modulationBufferL[i];
-            host_float modRight = osc->modulationBufferR[i];
+            host_float modLeft = osc->fmBufferL[i];
+            host_float modRight = osc->fmBufferR[i];
 
             host_float mod = 0.5 * (modLeft + modLeft);
             host_float freq = osc->fmFunc(baseFreq, mod, index);
@@ -246,9 +241,6 @@ void Oscillator::processBlock(DSPObject *dsp)
     {
         for (size_t i = 0; i < blocksize; ++i)
         {
-            host_float modLeft = osc->modulationBufferL[i];
-            host_float modRight = osc->modulationBufferR[i];
-
             // TODO: sometimes becomes huge
             phase += phaseIncrement;
 
@@ -258,7 +250,7 @@ void Oscillator::processBlock(DSPObject *dsp)
                 wrappedFlag = true;
             }
 
-            osc->generateSampleFunc(osc, baseFreq, phase, left, right, modLeft, modRight);
+            osc->generateSampleFunc(osc, baseFreq, phase, left, right, 0.0, 0.0);
             osc->outputBufferL[i] = left;
             osc->outputBufferR[i] = right;
         }

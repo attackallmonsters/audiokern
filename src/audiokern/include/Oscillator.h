@@ -26,9 +26,6 @@ public:
     // Virtual destructor to allow proper cleanup in derived classes
     virtual ~Oscillator();
 
-    // Initializes the oscillator
-    void initialize() override;
-
     // Sets the detune factor
     virtual void setDetune(host_float /*value*/){};
 
@@ -77,36 +74,31 @@ public:
     // Resets the wrap status
     void unWrap();
 
-    // Buffer for modulation
-    DSPSampleBuffer modulationBufferL;
-    DSPSampleBuffer modulationBufferR;
-
-    // Sample buffer for output
-    DSPSampleBuffer outputBufferL;
-    DSPSampleBuffer outputBufferR;
-
 protected:
+    // Initializes the oscillator
+    DSPObjectUsage initializeComponent() override;
+
     bool syncEnabled;                    // Enables or disable block wise phase synchronization
     bool negativeWrappingEnabled = true; // Indicates if negative phase wrapping is enabled
-    host_float frequency;                 // The desired oscillator frequency in Hertz
-    host_float calculatedFrequency;       // The calculated FM frequency in Hertz
+    host_float frequency;                // The desired oscillator frequency in Hertz
+    host_float calculatedFrequency;      // The calculated FM frequency in Hertz
     int pitchOffset;                     // offset in half tones
-    host_float fineTune;                  // fine tune in cent
-    host_float phaseIncrement;            // Increment based on frquency and sample rate
-    host_float currentPhase;              // Current phase of the oscillator in radians [0, 2π]
+    host_float fineTune;                 // fine tune in cent
+    host_float phaseIncrement;           // Increment based on frquency and sample rate
+    host_float currentPhase;             // Current phase of the oscillator in radians [0, 2π]
     bool wrapped = false;                // True when phase wrapped
 
     FMType fmType = FMType::ThroughZero; // The FM operation mode
-    host_float modulationIndex = 0;       // FM depth: how much modulator modulates carrier
+    host_float modulationIndex = 0;      // FM depth: how much modulator modulates carrier
 
     // Avoid vtable lookup for sample calculation
     using SampleGenerator = void (*)(
-        Oscillator * /*osc*/, 
-        const host_float & /*frequency*/, 
-        const host_float & /*phase*/, 
-        host_float & /*left*/, 
-        host_float & /*right*/, 
-        const host_float & /*modLeft*/, 
+        Oscillator * /*osc*/,
+        const host_float & /*frequency*/,
+        const host_float & /*phase*/,
+        host_float & /*left*/,
+        host_float & /*right*/,
+        const host_float & /*modLeft*/,
         const host_float & /*modRight*/);
 
     // Derived classes registers sample generator
@@ -120,11 +112,11 @@ private:
     static void processBlock(DSPObject *dsp);
 
     // Dummy ComputeSampleFunc for setSamples
-    static void generateSample(Oscillator * /*osc*/, 
-        const host_float & /*frequency*/, 
-        const host_float & /*phase*/, 
-        host_float & /*left*/, 
-        host_float & /*right*/, 
-        const host_float & /*modLeft*/, 
-        const host_float & /*modRight*/);
+    static void generateSample(Oscillator * /*osc*/,
+                               const host_float & /*frequency*/,
+                               const host_float & /*phase*/,
+                               host_float & /*left*/,
+                               host_float & /*right*/,
+                               const host_float & /*modLeft*/,
+                               const host_float & /*modRight*/);
 };

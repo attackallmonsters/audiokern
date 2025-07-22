@@ -4,11 +4,12 @@
 #include "CombDelay.h"
 #include "clamp.h"
 #include <array>
+#include <vector>
 
 // A stereo reverberation effect using multiple parallel comb filters.
 // Parameters control density, delay times ("space"), damping and feedback amount.
 // This reverb has a more metallic sound, not unlike a Karplus algorithm or plate.
-// Because it works with direct and relatively short feedback times. 
+// Because it works with direct and relatively short feedback times.
 // However, you can vary the feedback times so that the metallic sound is better
 // dampened by the reverb cloud.
 // For the best sound configuration, the feedback (room size) should be very finely
@@ -19,9 +20,6 @@ class NebularReverb : public DSPObject
 public:
     // Default constructor
     NebularReverb();
-
-    // Called on each DSP activation to (re)initialize internal buffers and state
-    void initialize() override;
 
     // Sets the number of parallel delay lines (2 to 8)
     void setDensity(host_float dense);
@@ -41,13 +39,9 @@ public:
     // Processes the next block of samples
     void processBlock();
 
-    // Output buffers
-    DSPSampleBuffer inputBufferL;
-    DSPSampleBuffer inputBufferR;
-
-    // Output buffers
-    DSPSampleBuffer outputBufferL;
-    DSPSampleBuffer outputBufferR;
+protected:
+    // Component initialization on DSP activation
+    DSPObjectUsage initializeComponent() override;
 
 private:
     // Static DSP callback used for processing audio blocks
@@ -70,6 +64,9 @@ private:
 
     // Stereo comb delay lines
     std::array<CombDelay, maxDelays> delays;
+
+    // Delays output buffers
+    std::vector<DSPBus> delayBusses;
 
     // Updates all delay line parameters based on current settings
     void updateDelays();

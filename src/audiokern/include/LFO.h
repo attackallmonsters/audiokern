@@ -9,7 +9,8 @@
 #include <cstdlib>
 #include <functional>
 
-enum class LFOType {
+enum class LFOType
+{
     Sine,
     RampUp,
     RampDown,
@@ -29,8 +30,6 @@ class LFO : public DSPObject
 public:
     LFO();
 
-    virtual void initialize() override;
-
     void setFreq(host_float f);
     void setType(LFOType type);
     void setOffset(host_float f);
@@ -46,24 +45,23 @@ public:
     // Called on phase wrap
     std::function<void()> onPhaseWrap = nullptr;
 
-    // Called for first buffer element each block 
+    // Called for first buffer element each block
     std::function<void(host_float)> processLFOValue = nullptr;
-
-    // Output biffer
-    DSPSampleBuffer outputBuffer;
 
     // FM modulation buffer
     DSPSampleBuffer modulationBuffer;
 
+protected:
+    DSPObjectUsage initializeComponent() override;
+
 private:
-    static void processBlockBuffer(DSPObject* dsp);
-    static void processBlockValue(DSPObject* dsp);
+    static void processBlockBuffer(DSPObject *dsp);
+    static void processBlockValue(DSPObject *dsp);
 
     // Current sample rate derived values
     host_float phase;
     host_float freq;
     host_float phaseInc;
-    host_float samplerate;
     host_float offset;
     host_float depth;
     host_float shape;

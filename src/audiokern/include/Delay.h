@@ -14,9 +14,6 @@ public:
     // Constructor
     explicit Delay();
 
-    // Prepare buffers and internal state
-    void initialize() override;
-
     // Set delay time in milliseconds
     void setTime(dsp_float timeMSL, dsp_float timeMSR);
 
@@ -29,18 +26,17 @@ public:
     // Internal delay buffers
     RingBlockBuffer delayBuffer;
 
-    // Output buffers for left and right channel
-    DSPSampleBuffer inputBufferL;
-    DSPSampleBuffer inputBufferR;
+protected:
+    // Prepare buffers and internal state
+    DSPObjectUsage initializeComponent() override;
 
-    // Output buffers for left and right channel
-    DSPSampleBuffer outputBufferL;
-    DSPSampleBuffer outputBufferR;
+    // Called when buffers have been created
+    void onBuffersCreated() override;
 
 private:
     // DSP callback
-    static void processBlock(DSPObject* dsp);
-    
+    static void processBlock(DSPObject *dsp);
+
     host_float feedbackL, feedbackR;
 
     ParamFader paramFader;

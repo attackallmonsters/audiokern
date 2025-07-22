@@ -29,15 +29,8 @@ WavetableOscillator::~WavetableOscillator()
     wavetableSampleBuffers.clear();
 }
 
-void WavetableOscillator::initialize()
+DSPObjectUsage WavetableOscillator::initializeComponent()
 {
-    DSPObject::initialize();
-
-    outputBufferL.create(DSP::blockSize);
-    outputBufferR.create(DSP::blockSize);
-    modulationBufferL.create(DSP::blockSize);
-    modulationBufferR.create(DSP::blockSize);
-
     setFrequency(0.0);
     setModIndex(0);
     setNumVoices(1);
@@ -47,6 +40,8 @@ void WavetableOscillator::initialize()
     lastFrequency = -1.0;
     
     acquireSharedWavetable();
+
+    return DSPObjectUsage::FM;
 }
 
 // Gets the current frequency
@@ -171,8 +166,8 @@ void WavetableOscillator::processBlockVoice()
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        dsp_float modLeft = modulationBufferL[i];
-        dsp_float modRight = modulationBufferR[i];
+        dsp_float modLeft = fmBufferL[i];
+        dsp_float modRight = fmBufferR[i];
 
         currentPhase += phaseIncrement;
 
@@ -215,8 +210,8 @@ void WavetableOscillator::processBlockVoices()
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        dsp_float modLeft = modulationBufferL[i];
-        dsp_float modRight = modulationBufferR[i];
+        dsp_float modLeft = fmBufferL[i];
+        dsp_float modRight = fmBufferR[i];
 
         dsp_float sumL = 0.0;
         dsp_float sumR = 0.0;

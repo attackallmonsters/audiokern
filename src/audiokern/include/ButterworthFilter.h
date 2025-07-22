@@ -8,15 +8,11 @@
 #include "clamp.h"
 #include <cmath>
 
-
 class ButterworthFilter : public DSPObject
 {
 public:
     // Constructor
     explicit ButterworthFilter();
-
-    // Initialize filter
-    void initialize() override;
 
     // Sets the cutoff frequency
     void setCutoffFrequency(dsp_float freq);
@@ -30,9 +26,9 @@ public:
     // Processes the filter
     void processBlock();
 
-    // Output buffers for left and right channel
-    DSPSampleBuffer processBufferL;
-    DSPSampleBuffer processBufferR;
+protected:
+    // Initialize filter
+    DSPObjectUsage initializeComponent() override;
 
 private:
     // Cutoff frequency

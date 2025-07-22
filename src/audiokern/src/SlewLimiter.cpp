@@ -6,12 +6,12 @@ SlewLimiter::SlewLimiter()
 }
 
 // Initializes the slew limiter
-void SlewLimiter::initialize()
+DSPObjectUsage SlewLimiter::initializeComponent()
 {
-    DSPObject::initialize();
-    
     setTarget(0.0);
     setSlewTime(0.0);
+
+    return DSPObjectUsage::None;
 }
 
 // Set new target (starts smoothing)

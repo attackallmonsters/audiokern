@@ -10,11 +10,11 @@ ButterworthFilter::ButterworthFilter()
 }
 
 // Initialize buffers and reset state
-void ButterworthFilter::initialize()
+DSPObjectUsage ButterworthFilter::initializeComponent()
 {
-    processBufferL.create(DSP::blockSize);
-    processBufferR.create(DSP::blockSize);
     reset();
+
+    return DSPObjectUsage::Process;
 }
 
 void ButterworthFilter::setCutoffFrequency(dsp_float freq)

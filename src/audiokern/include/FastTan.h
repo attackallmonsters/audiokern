@@ -11,12 +11,9 @@ public:
     // Ctor
     FastTan();
 
+protected:
     // Initializes the instance
-    void initialize() override;
-
-    // The samples to be filtered
-    DSPSampleBuffer outputBufferL;
-    DSPSampleBuffer outputBufferR;
+    DSPObjectUsage initializeComponent() override;
 
 private:
     // Processes data in bufferL, buffer R

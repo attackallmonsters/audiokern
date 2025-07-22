@@ -2,7 +2,6 @@
 
 DSPSampleBuffer::DSPSampleBuffer()
 {
-    
 }
 
 DSPSampleBuffer::~DSPSampleBuffer()
@@ -101,4 +100,10 @@ host_float DSPSampleBuffer::getPeakValue() const
             peak = absVal;
     }
     return peak;
+}
+
+void DSPSampleBuffer::free()
+{
+    if (ownsBuffer && buffer)
+        delete[] buffer;
 }

@@ -7,12 +7,14 @@ Limiter::Limiter()
 }
 
 // Initializes the instance
-void Limiter::initialize()
+DSPObjectUsage Limiter::initializeComponent()
 {
     setThreshold(-3.0);
     setReleaseTime(20.0);
     setLookaheadTime(20.0);
     reset();
+
+    return DSPObjectUsage::Process;
 }
 
 // Sets the amplitude threshold
@@ -34,7 +36,6 @@ void Limiter::setLookaheadTime(dsp_float ms)
     lookaheadSamples = static_cast<int>((DSP::sampleRate / 1000.0) * ms);
     lookaheadBuffer.assign(lookaheadSamples + 1, std::make_pair(0.0, 0.0));
     lookaheadSamples++;
-
 }
 
 // Resets the status
@@ -46,37 +47,41 @@ void Limiter::reset()
     gain = 1.0;
 }
 
+void Limiter::processBlock()
+{
+    for (size_t i = 0; i < DSP::blockSize; ++i)
+    {
+        // Read current input sample (assuming input is written to outputBuffer)
+        host_float inputL = processBufferL[i];
+        host_float inputR = processBufferR[i];
+
+        // Combine channels to get peak (for shared gain)
+        host_float peak = std::max(std::fabs(inputL), std::fabs(inputR));
+        host_float targetGain = (peak > threshold) ? threshold / peak : 1.0;
+
+        // Fast attack / smooth release
+        if (targetGain < gain)
+            gain = targetGain;
+        else
+            gain += (1.0 - releaseCoeff) * (targetGain - gain);
+
+        // Write to ring buffer and apply delayed gain
+        lookaheadBuffer[bufferIndex] = {inputL, inputR};
+
+        size_t readIndex = (bufferIndex + 1 + DSP::blockSize) % lookaheadSamples;
+        bufferIndex = (bufferIndex + 1) % lookaheadSamples;
+
+        auto &delayed = lookaheadBuffer[readIndex];
+
+        processBufferL[i] = delayed.first * gain;
+        processBufferR[i] = delayed.second * gain;
+    }
+}
+
 // Processes the sample buffers
 void Limiter::processBlock(DSPObject *dsp)
 {
     // Cast to actual Limiter object
-    Limiter *limiter = static_cast<Limiter *>(dsp);
-
-    for (size_t i = 0; i < DSP::blockSize; ++i)
-    {
-        // Read current input sample (assuming input is written to outputBuffer)
-        host_float inputL = limiter->outputBufferL[i];
-        host_float  inputR = limiter->outputBufferR[i];
-
-        // Combine channels to get peak (for shared gain)
-        host_float peak = std::max(std::fabs(inputL), std::fabs(inputR));
-        host_float targetGain = (peak > limiter->threshold) ? limiter->threshold / peak : 1.0;
-
-        // Fast attack / smooth release
-        if (targetGain < limiter->gain)
-            limiter->gain = targetGain;
-        else
-            limiter->gain += (1.0 - limiter->releaseCoeff) * (targetGain - limiter->gain);
-
-        // Write to ring buffer and apply delayed gain
-        limiter->lookaheadBuffer[limiter->bufferIndex] = {inputL, inputR};
-
-        size_t readIndex = (limiter->bufferIndex + 1) % limiter->lookaheadSamples;
-        limiter->bufferIndex = (limiter->bufferIndex + 1) % limiter->lookaheadSamples;
-
-        auto& delayed = limiter->lookaheadBuffer[readIndex];
-
-        limiter->outputBufferL[i] = delayed.first * limiter->gain;
-        limiter->outputBufferR[i] = delayed.second * limiter->gain;
-    }
+    Limiter *self = static_cast<Limiter *>(dsp);
+    self->processBlock();
 }

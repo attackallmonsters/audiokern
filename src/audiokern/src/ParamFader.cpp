@@ -5,6 +5,11 @@ ParamFader::ParamFader()
     registerBlockProcessor(processBlock);
 }
 
+DSPObjectUsage ParamFader::initializeComponent()
+{
+    return DSPObjectUsage::Process;
+}
+
 // Queue a parameter change
 void ParamFader::change(ParamChange fn)
 {
@@ -45,8 +50,8 @@ void ParamFader::processBlock()
         // Apply fade to entire output buffer
         for (size_t i = 0; i < DSP::blockSize; ++i)
         {
-            outputBufferL[i] *= fadeValue;
-            outputBufferR[i] *= fadeValue;
+            processBufferL[i] *= fadeValue;
+            processBufferR[i] *= fadeValue;
         }
     }
 }

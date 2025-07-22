@@ -6,11 +6,8 @@ LFO::LFO()
     initialize();
 }
 
-void LFO::initialize()
+DSPObjectUsage LFO::initializeComponent()
 {
-    samplerate = DSP::sampleRate;
-    outputBuffer.initialize(DSP::blockSize);
-
     smoothVal = 0.0;
     phase = 0.0;
     phaseInc = 0.0;
@@ -25,6 +22,8 @@ void LFO::initialize()
     setType(LFOType::Sine);
     setFreq(1.0);
     isUnipolar(false);
+
+    return DSPObjectUsage::Modulation;
 }
 
 inline host_float LFO::shapedRamp(host_float x)
@@ -83,11 +82,11 @@ void LFO::setFreq(host_float f)
 
     if (lfoMode == LFOMode::Value)
     {
-        phaseInc = freq / samplerate * DSP::blockSize;
+        phaseInc = freq / DSP::sampleRate * DSP::blockSize;
     }
     else
     {
-        phaseInc = freq / samplerate;
+        phaseInc = freq / DSP::sampleRate;
     }
 }
 
@@ -194,7 +193,7 @@ void LFO::processBlockBuffer(DSPObject *dsp)
 
         for (size_t i = 0; i < DSP::blockSize; ++i)
         {
-            lfo->outputBuffer[i] = lfo->idleSignal;
+            lfo->modulationBuffer[i] = lfo->idleSignal;
         }
 
         return;
@@ -208,7 +207,7 @@ void LFO::processBlockBuffer(DSPObject *dsp)
             val = 0.5 * (val + 1.0);
 
         lfo->smoothVal += lfo->smoothCoeff * (val - lfo->smoothVal);
-        lfo->outputBuffer[i] = lfo->smoothVal * lfo->depth + lfo->offset;
+        lfo->modulationBuffer[i] = lfo->smoothVal * lfo->depth + lfo->offset;
 
         if (lfo->phase >= 1.0)
         {
@@ -223,7 +222,7 @@ void LFO::processBlockBuffer(DSPObject *dsp)
 
     if (lfo->processLFOValue)
     {
-        lfo->processLFOValue(lfo->outputBuffer[0]);
+        lfo->processLFOValue(lfo->modulationBuffer[0]);
     }
 }
 

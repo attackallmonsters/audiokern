@@ -5,15 +5,17 @@ Delay::Delay()
     registerBlockProcessor(processBlock);
 }
 
-void Delay::initialize()
+DSPObjectUsage Delay::initializeComponent()
 {
     delayBuffer.initialize();
+    paramFader.initialize();
 
-    outputBufferL.create(DSP::blockSize);
-    outputBufferR.create(DSP::blockSize);
+    return DSPObjectUsage::Audio;
+}
 
-    paramFader.outputBufferL = outputBufferL;
-    paramFader.outputBufferR = outputBufferR;
+void Delay::onBuffersCreated()
+{
+    paramFader.audioInputFrom(*this);
 }
 
 void Delay::setTime(dsp_float timeMSL, dsp_float timeMSR)
@@ -21,7 +23,7 @@ void Delay::setTime(dsp_float timeMSL, dsp_float timeMSR)
     dsp_float tL = clampmin(timeMSL, 0.0);
     dsp_float tR = clampmin(timeMSR, 0.0);
 
-     paramFader.change(
+    paramFader.change(
         [=]()
         {
             delayBuffer.setTime(tL, tR);
@@ -37,7 +39,7 @@ void Delay::setFeedback(dsp_float fbL, host_float fbR)
 void Delay::processBlock()
 {
     delayBuffer.push(inputBufferL, inputBufferR);
-    
+
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
         // Read output (delayed samples) of ring buffer

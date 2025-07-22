@@ -6,13 +6,12 @@ ADSR::ADSR()
     initialize();
 }
 
-void ADSR::initialize()
+DSPObjectUsage ADSR::initializeComponent()
 {
     sampleRateMS = DSP::sampleRate / 1000.0;
     gain = 1.0;
     currentEnv = 0.0;
     oneShot = false;
-    outputBuffer.create(DSP::blockSize);
 
     setAttack(10);
     setDecay(100);
@@ -25,6 +24,8 @@ void ADSR::initialize()
     startupSamples = std::max(1, static_cast<int>(startupTimeMS * sampleRateMS));
 
     enterPhase(ADSRPhase::Idle);
+
+    return DSPObjectUsage::Modulation;
 }
 
 dsp_float ADSR::shapeToExponent(dsp_float f)
@@ -203,7 +204,7 @@ void ADSR::processBlock(DSPObject *dsp)
     for (size_t i = 0; i < blocksize; ++i)
     {
         (adsr->*adsr->phaseFunc)();
-        adsr->outputBuffer[i] = adsr->currentEnv * adsr->gain;
+        adsr->modulationBuffer[i] = adsr->currentEnv * adsr->gain;
     }
 }
 
@@ -211,7 +212,7 @@ void ADSR::multiply(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR)
 {
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        bufL[i] *= outputBuffer[i];
-        bufR[i] *= outputBuffer[i];
+        bufL[i] *= modulationBuffer[i];
+        bufR[i] *= modulationBuffer[i];
     }
 }

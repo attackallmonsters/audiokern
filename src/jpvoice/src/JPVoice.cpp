@@ -16,10 +16,8 @@ JPVoice::~JPVoice()
 {
 }
 
-void JPVoice::initialize()
+DSPObjectUsage JPVoice::initializeComponent()
 {
-    DSPObject::initialize();
-
     modulationIndex = 0;
     oscmix = 0.0;
     noisemix = 0.0;
@@ -52,21 +50,15 @@ void JPVoice::initialize()
     filterAdsr.initialize();
     ampAdsr.initialize();
 
+    paramFader.initialize();
+
     filterAdsr.setGain(15000.0);
     ampAdsr.setGain(1.0);
-
-    resoBuffer.create(DSP::blockSize);
-    resoBuffer.fill(0.0);
-
-    // Real buffers will be set to consumers output buffers
-    outputBufferL.initialize(DSP::blockSize);
-    outputBufferR.initialize(DSP::blockSize);
 
     setCarrierOscillatorType(CarrierOscillatiorType::Saw);
     setModulatorOscillatorType(ModulatorOscillatorType::Sine);
 
-    carrier->modulationBufferL = modulator->outputBufferL;
-    carrier->modulationBufferR = modulator->outputBufferR;
+    carrier->fmInputFrom(*modulator);
 
     linkADSR(true);
 
@@ -87,6 +79,24 @@ void JPVoice::initialize()
     setSyncEnabled(false);
     setNumVoices(1);
     setModIndex(0.0);
+
+    return DSPObjectUsage::OutputOnly;
+}
+
+void JPVoice::onBuffersCreated()
+{
+    DSPBus carrierBus = carrier->getOutputBus();
+    DSPBus modulatorBus = modulator->getOutputBus();
+    DSPBus noiseBus = noise.getOutputBus();
+
+    carrierL = *carrierBus.left;
+    carrierR = *carrierBus.right;
+
+    modulatorL = *modulatorBus.left;
+    modulatorR = *modulatorBus.right;
+
+    noiseL = *noiseBus.left;
+    noiseR = *noiseBus.right;
 }
 
 // Start ADSRs
@@ -213,8 +223,11 @@ void JPVoice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
         [=]()
         {
             carrier = carrierTmp;
-            carrier->modulationBufferL = modulator->outputBufferL;
-            carrier->modulationBufferR = modulator->outputBufferR;
+            carrier->fmInputFrom(*modulator);
+
+            DSPBus carrierBus = carrier->getOutputBus();
+            carrierL = *carrierBus.left;
+            carrierR = *carrierBus.right;
 
             filter.reset();
         });
@@ -268,8 +281,11 @@ void JPVoice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
         [=]()
         {
             modulator = modulatorTmp;
-            carrier->modulationBufferL = modulator->outputBufferL;
-            carrier->modulationBufferR = modulator->outputBufferR;
+            carrier->fmInputFrom(*modulator);
+
+            DSPBus modulatorBus = modulator->getOutputBus();
+            modulatorL = *modulatorBus.left;
+            modulatorR = *modulatorBus.right;
 
             filter.reset();
         });
@@ -387,13 +403,10 @@ void JPVoice::setOutputBuffer(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR)
     outputBufferL = bufL;
     outputBufferR = bufR;
 
-    paramFader.outputBufferL = outputBufferL;
-    paramFader.outputBufferR = outputBufferR;
+    paramFader.audioInputFrom(*this);
 
-    filter.processBufferL = outputBufferL;
-    filter.processBufferR = outputBufferR;
-    filter.cutoffBuffer = filterAdsr.outputBuffer;
-    filter.resoBuffer = resoBuffer;
+    filter.audioInputFrom(*this);
+    filter.modulationInputFrom(filterAdsr);
 }
 
 // Next sample block generation
@@ -419,14 +432,12 @@ void JPVoice::processBlock()
     amp_osc_noise = std::cos(noisemix * 0.5 * dsp_math::DSP_PI);
     amp_noise = std::sin(noisemix * 0.5 * dsp_math::DSP_PI);
 
-    resoBuffer.fill(filterResonance);
-
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        carrierLeft = carrier->outputBufferL[i] + lastSampleCarrierLeft * feedbackAmountCarrier;
-        carrierRight = carrier->outputBufferR[i] + lastSampleCarrierRight * feedbackAmountCarrier;
-        modLeft = modulator->outputBufferL[i] + lastSampleModulatorLeft * feedbackAmountModulator;
-        modRight = modulator->outputBufferR[i] + lastSampleModulatorRight * feedbackAmountModulator;
+        carrierLeft = carrierL[i] + lastSampleCarrierLeft * feedbackAmountCarrier;
+        carrierRight = carrierR[i] + lastSampleCarrierRight * feedbackAmountCarrier;
+        modLeft = modulatorL[i] + lastSampleModulatorLeft * feedbackAmountModulator;
+        modRight = modulatorR[i] + lastSampleModulatorRight * feedbackAmountModulator;
 
         mixL = amp_carrier * carrierLeft + amp_modulator * modLeft;
         mixR = amp_carrier * carrierRight + amp_modulator * modRight;
@@ -445,8 +456,8 @@ void JPVoice::processBlock()
 
         if (noisemix > 0)
         {
-            mixL = amp_osc_noise * mixL + amp_noise * noise.outputBufferL[i];
-            mixR = amp_osc_noise * mixR + amp_noise * noise.outputBufferR[i];
+            mixL = amp_osc_noise * mixL + amp_noise * noiseL[i];
+            mixR = amp_osc_noise * mixR + amp_noise * noiseR[i];
         }
 
         outputBufferL[i] = mixL;
@@ -468,7 +479,7 @@ void JPVoice::processBlock()
 // Next sample block generation
 void JPVoice::processBlock(DSPObject *dsp)
 {
-    JPVoice* self = static_cast<JPVoice *>(dsp);
+    JPVoice *self = static_cast<JPVoice *>(dsp);
 
     self->processBlock();
 }
