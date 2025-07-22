@@ -34,14 +34,14 @@ public:
     void setRoomSize(host_float size);
 
     // Sets the output volume
-    void setVolume(host_float vol);
+    void setWet(host_float vol);
 
     // Processes the next block of samples
     void processBlock();
 
 protected:
     // Component initialization on DSP activation
-    DSPObjectUsage initializeComponent() override;
+    DSPUsage initializeObject() override;
 
 private:
     // Static DSP callback used for processing audio blocks
@@ -54,13 +54,13 @@ private:
     static constexpr int maxDelays = 8;
 
     // Active number of delay lines (determined by density setting)
-    int density, prevDensity;
+    int density;
 
     // Base delay time in milliseconds (spread across delay lines)
-    host_float delayTime, prevDelayTime;
+    host_float delayTime;
 
     // Controls the output volume of the reverb
-    host_float volume;
+    host_float wet;
 
     // Stereo comb delay lines
     std::array<CombDelay, maxDelays> delays;

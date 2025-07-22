@@ -8,7 +8,7 @@ KorgonFilter::KorgonFilter()
 }
 
 // Initializes the filter
-DSPObjectUsage KorgonFilter::initializeComponent()
+DSPUsage KorgonFilter::initializeObject()
 {
     setDrive(0.0);
     reset();
@@ -16,7 +16,7 @@ DSPObjectUsage KorgonFilter::initializeComponent()
     T = 1.0 / DSP::sampleRate;
     drive = 1.0;
 
-    return DSPObjectUsage::Process;
+    return DSPUsage::Process;
 }
 
 void KorgonFilter::setFilterMode(FilterMode mode)

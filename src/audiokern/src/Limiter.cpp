@@ -7,14 +7,14 @@ Limiter::Limiter()
 }
 
 // Initializes the instance
-DSPObjectUsage Limiter::initializeComponent()
+DSPUsage Limiter::initializeObject()
 {
     setThreshold(-3.0);
     setReleaseTime(20.0);
     setLookaheadTime(20.0);
     reset();
 
-    return DSPObjectUsage::Process;
+    return DSPUsage::Process;
 }
 
 // Sets the amplitude threshold

@@ -6,7 +6,7 @@ ADSR::ADSR()
     initialize();
 }
 
-DSPObjectUsage ADSR::initializeComponent()
+DSPUsage ADSR::initializeObject()
 {
     sampleRateMS = DSP::sampleRate / 1000.0;
     gain = 1.0;
@@ -25,7 +25,7 @@ DSPObjectUsage ADSR::initializeComponent()
 
     enterPhase(ADSRPhase::Idle);
 
-    return DSPObjectUsage::Modulation;
+    return DSPUsage::Modulation;
 }
 
 dsp_float ADSR::shapeToExponent(dsp_float f)

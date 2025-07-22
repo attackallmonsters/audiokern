@@ -20,7 +20,7 @@ public:
 
 protected:
     // Initializes the oscillator
-    DSPObjectUsage initializeComponent() override;
+    DSPUsage initializeObject() override;
 
 private:
     // Next sample block generation one voice

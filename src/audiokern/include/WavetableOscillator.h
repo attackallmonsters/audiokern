@@ -72,7 +72,7 @@ public:
 
 protected:
     // Initializes all wavetable buffers for multiple frequency ranges
-    DSPObjectUsage initializeComponent() override;
+    DSPUsage initializeObject() override;
 
     // Ctor: expects an unique name for the waveform
     WavetableOscillator(const std::string formName);

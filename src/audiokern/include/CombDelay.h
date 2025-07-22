@@ -14,8 +14,8 @@ public:
     // Constructor
     explicit CombDelay();
 
-    // Prepare buffers and internal state
-    DSPObjectUsage initializeComponent() override;
+    // Set delay maximum time in milliseconds
+    void setMaxTime(dsp_float timeMS);
 
     // Set delay time in milliseconds
     void setTime(dsp_float timeMS);
@@ -33,14 +33,13 @@ public:
     RingBlockBuffer delayBuffer;
 
 protected:
+    // Prepare buffers and internal state
+    DSPUsage initializeObject() override;
     void onBuffersCreated() override;
 
 private:
     // DSP callback
     static void processBlock(DSPObject *dsp);
-
-    size_t writeIndex = 0;
-    size_t delaySamples = 0;
 
     dsp_float feedback = 0.7;
     dsp_float dampingCoeff = 0.5;

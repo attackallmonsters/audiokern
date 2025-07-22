@@ -5,17 +5,25 @@ Delay::Delay()
     registerBlockProcessor(processBlock);
 }
 
-DSPObjectUsage Delay::initializeComponent()
+DSPUsage Delay::initializeObject()
 {
     delayBuffer.initialize();
     paramFader.initialize();
 
-    return DSPObjectUsage::Audio;
+    return DSPUsage::Effect;
 }
 
 void Delay::onBuffersCreated()
 {
     paramFader.audioInputFrom(*this);
+}
+
+// Sets the maximum delay time
+void Delay::setMaxTime(dsp_float timeMS)
+{
+    dsp_float t = clampmin(timeMS, 0.0);
+
+    delayBuffer.setMaxTime(t);
 }
 
 void Delay::setTime(dsp_float timeMSL, dsp_float timeMSR)

@@ -30,7 +30,7 @@ public:
 
 protected:
     // Initializes the slew limiter
-    DSPObjectUsage initializeComponent() override;
+    DSPUsage initializeObject() override;
 
 private:
     // Calculates the samples for current samplerate

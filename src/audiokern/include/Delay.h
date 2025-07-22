@@ -14,6 +14,9 @@ public:
     // Constructor
     explicit Delay();
 
+    // Sets the maximum delay time
+    void setMaxTime(dsp_float timeMS);
+
     // Set delay time in milliseconds
     void setTime(dsp_float timeMSL, dsp_float timeMSR);
 
@@ -28,9 +31,7 @@ public:
 
 protected:
     // Prepare buffers and internal state
-    DSPObjectUsage initializeComponent() override;
-
-    // Called when buffers have been created
+    DSPUsage initializeObject() override;
     void onBuffersCreated() override;
 
 private:

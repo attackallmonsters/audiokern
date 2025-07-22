@@ -5,14 +5,14 @@ Panner::Panner()
     registerBlockProcessor(&Panner::processBlockGain);
 }
 
-DSPObjectUsage Panner::initializeComponent()
+DSPUsage Panner::initializeObject()
 {
     slew.initialize();
     slew.setSlewTime(1.0);
 
     setPanning(0.5);
 
-    return DSPObjectUsage::Process;
+    return DSPUsage::Process;
 }
 
 void Panner::setMode(PanningMode mode)

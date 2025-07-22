@@ -126,7 +126,7 @@ public:
 
 protected:
     // Initializes the DSP object
-    DSPObjectUsage initializeComponent() override;
+    DSPUsage initializeObject() override;
 
     // Called when buffers ready
     void onBuffersCreated() override;

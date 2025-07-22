@@ -28,7 +28,7 @@ public:
 
 protected:
     // Initialize filter
-    DSPObjectUsage initializeComponent() override;
+    DSPUsage initializeObject() override;
 
 private:
     // Cutoff frequency

@@ -76,7 +76,7 @@ public:
 
 protected:
     // Initializes the oscillator
-    DSPObjectUsage initializeComponent() override;
+    DSPUsage initializeObject() override;
 
     bool syncEnabled;                    // Enables or disable block wise phase synchronization
     bool negativeWrappingEnabled = true; // Indicates if negative phase wrapping is enabled

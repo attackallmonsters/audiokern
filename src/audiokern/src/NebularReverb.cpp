@@ -5,11 +5,12 @@ NebularReverb::NebularReverb()
     registerBlockProcessor(&NebularReverb::processBlock);
 }
 
-DSPObjectUsage NebularReverb::initializeComponent()
+DSPUsage NebularReverb::initializeObject()
 {
     for (int i = 0; i < maxDelays; ++i)
     {
         delays[i].initialize();
+        delays[i].setMaxTime(1000.0);
         DSPBus bus = delays[i].getOutputBus();
         delayBusses.push_back(bus);
     }   
@@ -18,9 +19,9 @@ DSPObjectUsage NebularReverb::initializeComponent()
     setSpace(0.0);
     setRoomSize(0.5);
     setDamping(5000.0);
-    setVolume(1.0);
+    setWet(1.0);
 
-    return DSPObjectUsage::Audio;
+    return DSPUsage::Effect;
 }
 
 void NebularReverb::setDensity(host_float dense)
@@ -37,7 +38,6 @@ void NebularReverb::setDensity(host_float dense)
 void NebularReverb::setSpace(host_float size)
 {
     delayTime = clamp(size, 0.04, 1.0) * 200;
-    prevDelayTime = delayTime;
     updateDelays();
 }
 
@@ -51,20 +51,6 @@ void NebularReverb::setRoomSize(host_float size)
 {
     for (auto &delay : delays)
         delay.setFeedback(size);
-
-    if (size == 0.0)
-    {
-        prevDelayTime = delayTime;
-        prevDensity = density;
-        
-        setSpace(0.0);
-        setDensity(0.0);
-    }
-    else
-    {
-        setSpace(prevDelayTime);
-        setDensity(prevDensity);
-    }
 }
 
 void NebularReverb::updateDelays()
@@ -77,9 +63,9 @@ void NebularReverb::updateDelays()
     }
 }
 
-void NebularReverb::setVolume(host_float vol)
+void NebularReverb::setWet(host_float vol)
 {
-    volume = clamp(vol, 0.0, 1.0) * 2.0;
+    wet = clamp(vol, 0.0, 1.0) * 2.0;
 }
 
 void NebularReverb::push()
@@ -110,8 +96,8 @@ void NebularReverb::processBlock()
             sumR += (*delayBusses[j].right)[i];
         }
 
-        outputBufferL[i] = sumL / density * volume;
-        outputBufferR[i] = sumR / density * volume;
+        outputBufferL[i] = sumL / density * wet;
+        outputBufferR[i] = sumR / density * wet;
     }
 }
 

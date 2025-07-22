@@ -29,7 +29,7 @@ WavetableOscillator::~WavetableOscillator()
     wavetableSampleBuffers.clear();
 }
 
-DSPObjectUsage WavetableOscillator::initializeComponent()
+DSPUsage WavetableOscillator::initializeObject()
 {
     setFrequency(0.0);
     setModIndex(0);
@@ -41,7 +41,7 @@ DSPObjectUsage WavetableOscillator::initializeComponent()
     
     acquireSharedWavetable();
 
-    return DSPObjectUsage::FM;
+    return DSPUsage::FM;
 }
 
 // Gets the current frequency

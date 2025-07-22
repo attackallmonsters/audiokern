@@ -5,9 +5,9 @@ FastTan::FastTan()
     registerBlockProcessor(&FastTan::processBlock);
 }
 
-DSPObjectUsage FastTan::initializeComponent()
+DSPUsage FastTan::initializeObject()
 {
-    return DSPObjectUsage::Process;
+    return DSPUsage::Process;
 }
 
 void FastTan::processBlock(DSPObject *dsp)

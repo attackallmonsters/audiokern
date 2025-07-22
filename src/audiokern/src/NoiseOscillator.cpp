@@ -8,7 +8,7 @@ NoiseOscillator::NoiseOscillator()
     registerBlockProcessor(&NoiseOscillator::processBlockWhite);
 }
 
-DSPObjectUsage NoiseOscillator::initializeComponent()
+DSPUsage NoiseOscillator::initializeObject()
 {
     setType(NoiseType::White);
 
@@ -16,7 +16,7 @@ DSPObjectUsage NoiseOscillator::initializeComponent()
     rng.seed(static_cast<unsigned int>(
         std::chrono::high_resolution_clock::now().time_since_epoch().count()));
 
-    return DSPObjectUsage::OutputOnly;
+    return DSPUsage::OutputOnly;
 }
 
 // Allows dynamic switching between white and pink noise

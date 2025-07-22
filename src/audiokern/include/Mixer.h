@@ -19,7 +19,7 @@ public:
 
 protected:
     // Initializes the mixer with a number of buffers
-    DSPObjectUsage initializeComponent(size_t count) override;
+    DSPUsage initializeObject(size_t count) override;
 
 private:
     // Static DSP callback used for processing audio blocks

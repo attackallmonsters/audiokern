@@ -38,7 +38,7 @@ Oscillator::~Oscillator()
 }
 
 // Initializes the oscillator
-DSPObjectUsage Oscillator::initializeComponent()
+DSPUsage Oscillator::initializeObject()
 {
     setFrequency(0.0);
     setFineTune(0);
@@ -49,7 +49,7 @@ DSPObjectUsage Oscillator::initializeComponent()
     setModIndex(0.0);
     unWrap();
 
-    return DSPObjectUsage::FM;
+    return DSPUsage::FM;
 }
 
 // Derived classes registers sample generator

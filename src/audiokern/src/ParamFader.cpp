@@ -5,9 +5,9 @@ ParamFader::ParamFader()
     registerBlockProcessor(processBlock);
 }
 
-DSPObjectUsage ParamFader::initializeComponent()
+DSPUsage ParamFader::initializeObject()
 {
-    return DSPObjectUsage::Process;
+    return DSPUsage::Process;
 }
 
 // Queue a parameter change

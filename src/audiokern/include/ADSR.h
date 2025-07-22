@@ -39,7 +39,7 @@ public:
 
 protected:
     // Initializes the ADSR
-    virtual DSPObjectUsage initializeComponent() override;
+    virtual DSPUsage initializeObject() override;
 
 private:
     // Next sample block generation

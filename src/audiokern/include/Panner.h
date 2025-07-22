@@ -40,7 +40,7 @@ public:
 
 protected:
     // Initializes the insatnce
-    DSPObjectUsage initializeComponent() override;
+    DSPUsage initializeObject() override;
 
 private:
     // Block processing

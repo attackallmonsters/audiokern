@@ -16,7 +16,7 @@ JPVoice::~JPVoice()
 {
 }
 
-DSPObjectUsage JPVoice::initializeComponent()
+DSPUsage JPVoice::initializeObject()
 {
     modulationIndex = 0;
     oscmix = 0.0;
@@ -80,7 +80,7 @@ DSPObjectUsage JPVoice::initializeComponent()
     setNumVoices(1);
     setModIndex(0.0);
 
-    return DSPObjectUsage::OutputOnly;
+    return DSPUsage::OutputOnly;
 }
 
 void JPVoice::onBuffersCreated()

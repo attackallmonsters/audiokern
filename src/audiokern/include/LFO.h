@@ -52,7 +52,7 @@ public:
     DSPSampleBuffer modulationBuffer;
 
 protected:
-    DSPObjectUsage initializeComponent() override;
+    DSPUsage initializeObject() override;
 
 private:
     static void processBlockBuffer(DSPObject *dsp);

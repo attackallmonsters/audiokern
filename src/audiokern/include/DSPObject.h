@@ -15,13 +15,14 @@ struct DSPBus
     DSPBus(DSPSampleBuffer *l, DSPSampleBuffer *r) : left(l), right(r) {};
 };
 
-enum class DSPObjectUsage
+enum class DSPUsage
 {
-    Audio,      // has input L/R and output L/R buffers
-    Process,    // has process L/R and modulation L/R buffers
+    Audio,      // has input L/R, output L/R buffers
+    Process,    // has process L/R, modulation L/R buffers
     Modulation, // has a modulation buffer
     OutputOnly, // has output L/R buffers only
-    FM,         // has output L/R and fm L/R buffers
+    FM,         // has output L/R, fm L/R buffers
+    Effect,     // has input L/R, output L/R, modulation buffer
     None        // no buffers at all
 };
 
@@ -72,10 +73,10 @@ protected:
     void registerBlockProcessor(BlockProcessor f);
 
     // Initializes the component
-    virtual DSPObjectUsage initializeComponent();
+    virtual DSPUsage initializeObject();
 
     // Initializes the component with an amount of internal objects
-    virtual DSPObjectUsage initializeComponent(size_t count);
+    virtual DSPUsage initializeObject(size_t count);
 
     // Called when buffers have been created
     virtual void onBuffersCreated();
@@ -101,7 +102,7 @@ protected:
 
 private:
     // How to connect and use the buffers
-    DSPObjectUsage usage = DSPObjectUsage::None;
+    DSPUsage usage = DSPUsage::None;
 
     // Will clean up buffers after initializing
     void setUsage();

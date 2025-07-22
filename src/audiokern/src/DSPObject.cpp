@@ -11,13 +11,13 @@ DSPObject::~DSPObject()
 
 void DSPObject::initialize()
 {
-    usage = initializeComponent();
+    usage = initializeObject();
     setUsage();
 }
 
 void DSPObject::initialize(size_t count)
 {
-    usage = initializeComponent(count);
+    usage = initializeObject(count);
     setUsage();
 }
 
@@ -25,31 +25,38 @@ void DSPObject::setUsage()
 {
     switch (usage)
     {
-    case DSPObjectUsage::Audio:
+    case DSPUsage::Audio:
         inputBufferL.create(DSP::blockSize);
         inputBufferR.create(DSP::blockSize);
         outputBufferL.create(DSP::blockSize);
         outputBufferR.create(DSP::blockSize);
         break;
-    case DSPObjectUsage::FM:
+    case DSPUsage::Effect:
+        inputBufferL.create(DSP::blockSize);
+        inputBufferR.create(DSP::blockSize);
+        outputBufferL.create(DSP::blockSize);
+        outputBufferR.create(DSP::blockSize);
+        modulationBuffer.create(DSP::blockSize);
+        break;
+    case DSPUsage::FM:
         fmBufferL.create(DSP::blockSize);
         fmBufferR.create(DSP::blockSize);
         outputBufferL.create(DSP::blockSize);
         outputBufferR.create(DSP::blockSize);
         break;
-    case DSPObjectUsage::OutputOnly:
+    case DSPUsage::OutputOnly:
         outputBufferL.create(DSP::blockSize);
         outputBufferR.create(DSP::blockSize);
         break;
-    case DSPObjectUsage::Process:
+    case DSPUsage::Process:
         processBufferL.create(DSP::blockSize);
         processBufferR.create(DSP::blockSize);
         modulationBuffer.create(DSP::blockSize);
         break;
-    case DSPObjectUsage::Modulation:
+    case DSPUsage::Modulation:
         modulationBuffer.create(DSP::blockSize);
         break;
-    case DSPObjectUsage::None:
+    case DSPUsage::None:
         return;
         break;
     default:
@@ -64,10 +71,11 @@ void DSPObject::audioInputFrom(DSPObject &dspObject)
 {
     switch (dspObject.usage)
     {
-    case DSPObjectUsage::Audio:
-    case DSPObjectUsage::OutputOnly:
-    case DSPObjectUsage::FM:
-        if (usage == DSPObjectUsage::Process)
+    case DSPUsage::Audio:
+    case DSPUsage::OutputOnly:
+    case DSPUsage::FM:
+    case DSPUsage::Effect:
+        if (usage == DSPUsage::Process)
         {
             processBufferL = dspObject.outputBufferL;
             processBufferR = dspObject.outputBufferR;
@@ -78,8 +86,8 @@ void DSPObject::audioInputFrom(DSPObject &dspObject)
             inputBufferR = dspObject.outputBufferR;
         }
         break;
-    case DSPObjectUsage::Process:
-        if (usage == DSPObjectUsage::Process)
+    case DSPUsage::Process:
+        if (usage == DSPUsage::Process)
         {
             processBufferL = dspObject.processBufferL;
             processBufferR = dspObject.processBufferR;
@@ -90,11 +98,11 @@ void DSPObject::audioInputFrom(DSPObject &dspObject)
             inputBufferR = dspObject.processBufferR;
         }
         break;
-    case DSPObjectUsage::Modulation:
+    case DSPUsage::Modulation:
         throw std::runtime_error("Cannot use modulation source as input");
         break;
-    case DSPObjectUsage::None:
-        throw std::runtime_error("Cannot use undefined source (DSPObjectUsage::None) as input");
+    case DSPUsage::None:
+        throw std::runtime_error("Cannot use undefined source (DSPUsage::None) as input");
         break;
     default:
         throw std::runtime_error("DSPObject::audioInputFrom unknown option");
@@ -105,26 +113,26 @@ void DSPObject::audioInputFrom(DSPObject &dspObject)
 void DSPObject::fmInputFrom(DSPObject &dspObject)
 {
     // currently uses input buffers for modulation
-    if (dspObject.usage != DSPObjectUsage::Audio &&
-        dspObject.usage != DSPObjectUsage::OutputOnly &&
-        usage != DSPObjectUsage::FM)
+    if ((dspObject.usage == DSPUsage::Audio || dspObject.usage == DSPUsage::OutputOnly || dspObject.usage == DSPUsage::FM) && usage == DSPUsage::FM)
     {
-        throw std::runtime_error("Invalid usage: modulation source must be DSPObjectUsage::Audio or DSPObjectUsage::OutputOnly, this must be DSPObjectUsage::FM");
+        fmBufferL = dspObject.outputBufferL;
+        fmBufferR = dspObject.outputBufferR;
+        return;
     }
 
-    fmBufferL = dspObject.outputBufferL;
-    fmBufferR = dspObject.outputBufferR;
+    throw std::runtime_error("Invalid usage: modulation source must be DSPUsage::Audio or DSPUsage::OutputOnly, this must be DSPUsage::FM");
 }
 
 void DSPObject::modulationInputFrom(DSPObject &dspObject)
 {
     // currently uses input buffers for modulation
-    if (dspObject.usage != DSPObjectUsage::Modulation && usage != DSPObjectUsage::Process)
+    if (dspObject.usage == DSPUsage::Modulation && (usage == DSPUsage::Process || usage == DSPUsage::Effect))
     {
-        throw std::runtime_error("Invalid usage: modulation source must be DSPObjectUsage::Modulation, this must be DSPObjectUsage::Process");
+        modulationBuffer = dspObject.modulationBuffer;
+        return;
     }
 
-    modulationBuffer = dspObject.modulationBuffer;
+    throw std::runtime_error("Invalid usage: modulation source must be DSPUsage::Modulation, this must be DSPUsage::Process");
 }
 
 void DSPObject::hostOutputTo(host_float *outL, host_float *outR)
@@ -148,14 +156,14 @@ DSPBus DSPObject::getProcessBus()
     return DSPBus(&processBufferL, &processBufferR);
 }
 
-DSPObjectUsage DSPObject::initializeComponent()
+DSPUsage DSPObject::initializeObject()
 {
-    return DSPObjectUsage::None;
+    return DSPUsage::None;
 }
 
-DSPObjectUsage DSPObject::initializeComponent(size_t /*count*/)
+DSPUsage DSPObject::initializeObject(size_t /*count*/)
 {
-    return DSPObjectUsage::None;
+    return DSPUsage::None;
 }
 
 void DSPObject::onBuffersCreated()

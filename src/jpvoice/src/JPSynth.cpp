@@ -99,6 +99,7 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     reverb.setSpace(0.1);
     reverb.setRoomSize(0.95);
 
+    delay.setMaxTime(5000.0);
     delay.setFeedback(0.0, 0.0);
     delay.setTime(0.0, 0.0);
 
@@ -386,7 +387,7 @@ void JPSynth::setReverbDensity(host_float density)
 
 void JPSynth::setReverbVolume(host_float vol)
 {
-    reverb.setVolume(vol);
+    reverb.setWet(vol);
 }
 
 void JPSynth::setWet(host_float wet)

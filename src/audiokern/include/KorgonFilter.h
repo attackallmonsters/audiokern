@@ -31,7 +31,7 @@ public:
 
 protected:
     // Initializes the filter
-    DSPObjectUsage initializeComponent() override;
+    DSPUsage initializeObject() override;
 
 private:
     // Static DSP callback used for processing audio blocks

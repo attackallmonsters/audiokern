@@ -22,7 +22,7 @@ public:
 
 protected:
     // Initializes the instance
-    DSPObjectUsage initializeComponent() override;
+    DSPUsage initializeObject() override;
 
 private:
     // DSP callback

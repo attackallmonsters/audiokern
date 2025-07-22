@@ -6,7 +6,7 @@ LFO::LFO()
     initialize();
 }
 
-DSPObjectUsage LFO::initializeComponent()
+DSPUsage LFO::initializeObject()
 {
     smoothVal = 0.0;
     phase = 0.0;
@@ -23,7 +23,7 @@ DSPObjectUsage LFO::initializeComponent()
     setFreq(1.0);
     isUnipolar(false);
 
-    return DSPObjectUsage::Modulation;
+    return DSPUsage::Modulation;
 }
 
 inline host_float LFO::shapedRamp(host_float x)

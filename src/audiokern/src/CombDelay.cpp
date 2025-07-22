@@ -5,18 +5,16 @@ CombDelay::CombDelay()
     registerBlockProcessor(processBlock);
 }
 
-DSPObjectUsage CombDelay::initializeComponent()
+DSPUsage CombDelay::initializeObject()
 {
     delayBuffer.initialize();
-    delayBuffer.setTime(0.0, 0.0);    
+    delayBuffer.setTime(0.0, 0.0);
     paramFader.initialize();
-
-    writeIndex = 0;
 
     dampingStateL = 0.0;
     dampingStateR = 0.0;
 
-    return DSPObjectUsage::OutputOnly;
+    return DSPUsage::OutputOnly;
 }
 
 void CombDelay::onBuffersCreated()
@@ -24,14 +22,22 @@ void CombDelay::onBuffersCreated()
     paramFader.audioInputFrom(*this);
 }
 
+void CombDelay::setMaxTime(dsp_float timeMS)
+{
+    dsp_float t = clampmin(timeMS, 0.0);
+
+    delayBuffer.setMaxTime(t);
+}
+
 void CombDelay::setTime(dsp_float timeMS)
 {
     dsp_float t = clampmin(timeMS, 0.0);
 
-     paramFader.change(
+    paramFader.change(
         [=]()
         {
             delayBuffer.setTime(t, t);
+            delayBuffer.clear();
         });
 }
 
