@@ -3,7 +3,6 @@
 ADSR::ADSR()
 {
     registerBlockProcessor(&ADSR::processBlock);
-    initialize();
 }
 
 DSPUsage ADSR::initializeObject()
@@ -34,11 +33,15 @@ dsp_float ADSR::shapeToExponent(dsp_float f)
     return (shape < 0.0) ? 1.0 + shape * 0.9 : 1.0 + shape * 9.0;
 }
 
-dsp_float ADSR::powerLerp(dsp_float start, dsp_float end, dsp_float p, dsp_float shape)
+dsp_float ADSR::powerLerp(dsp_float start, dsp_float end, dsp_float phaseInc, dsp_float shape)
 {
+    phaseInc = clamp(phaseInc, 0.0, 1.0);
+    
     if (shape == 1.0)
-        return start + (end - start) * p;
-    dsp_float curved = (end < start) ? 1.0 - std::pow(1.0 - p, shape) : std::pow(p, shape);
+        return start + (end - start) * phaseInc;
+
+    dsp_float curved = (end < start) ? 1.0 - std::pow(1.0 - phaseInc, shape) : std::pow(phaseInc, shape);
+
     return start + (end - start) * curved;
 }
 
@@ -192,8 +195,6 @@ void ADSR::phaseRelease()
     if (++currentSample >= releaseSamples)
         enterPhase(ADSRPhase::Idle);
 }
-
-long n = 0;
 
 // Next sample block generation
 void ADSR::processBlock(DSPObject *dsp)

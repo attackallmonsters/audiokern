@@ -129,7 +129,7 @@ protected:
     DSPUsage initializeObject() override;
 
     // Called when buffers ready
-    void onBuffersCreated() override;
+    void onBuffersCompleted() override;
 
 private:
     // Next sample block generation
@@ -213,6 +213,8 @@ private:
 
     // Number of voices
     int numVoices = 1;
+
+    const std::string name = "_JPVoice";
 
     // Parameter change fader
     ParamFader paramFader;

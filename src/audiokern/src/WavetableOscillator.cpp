@@ -38,7 +38,7 @@ DSPUsage WavetableOscillator::initializeObject()
     resetPhase();
 
     lastFrequency = -1.0;
-    
+
     acquireSharedWavetable();
 
     return DSPUsage::FM;
@@ -294,17 +294,19 @@ static std::string absolutePath(const std::string &relativePath)
 
 void WavetableOscillator::acquireSharedWavetable()
 {
+#if DEBUG
     DSP::log("Loading wavetable for %s", waveformName.c_str());
-    
+#endif
+
     // Step 1: Already in cache?
-    for (const auto& entry : sharedWavetables)
+    for (const auto &entry : sharedWavetables)
     {
         if (entry.name == waveformName)
         {
             baseFrequencies = entry.baseFrequencies;
             tableSizes = entry.tableSizes;
             wavetableSampleBuffers = entry.buffers;
-            
+
             return;
         }
     }
@@ -327,7 +329,7 @@ void WavetableOscillator::acquireSharedWavetable()
             size_t size = tableSizes[i];
             dsp_float freq = baseFrequencies[i];
 
-            DSPBuffer* buffer = new DSPBuffer();
+            DSPBuffer *buffer = new DSPBuffer();
             buffer->create(size);
             createWavetable(*buffer, freq);
             wavetableCalcBuffers.push_back(buffer);
@@ -358,7 +360,6 @@ void WavetableOscillator::acquireSharedWavetable()
     DSP::log("Wavetable for %s cached globally", waveformName.c_str());
 #endif
 }
-
 
 bool WavetableOscillator::load()
 {
@@ -401,7 +402,7 @@ bool WavetableOscillator::load()
 
             DSPSampleBuffer *buffer = new DSPSampleBuffer();
 
-            buffer->create(size);
+            buffer->initialize("buffer" + getName(), size);
 
             // Read data
             size_t sampleCount = 0;

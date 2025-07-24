@@ -102,7 +102,7 @@ t_int *lfo_tilde_perform(t_int *w)
 {
     t_lfo_tilde *x = (t_lfo_tilde *)(w[1]);
 
-    x->lfo->generateBlock();
+    x->lfo->process();
 
     return (w + 5);
 }

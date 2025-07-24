@@ -1,45 +1,50 @@
 #pragma once
 
+#include "DSP.h"
 #include "dsp_types.h"
 #include <cstddef>
 #include <algorithm>
+#include <string>
 #include <cstring>
 #include <cmath>
 
+class DSPObject; // Forward declaration
+
 // This is a buffer that manages samples that are compatioble to the audio host (host_float).
 // Set preprocessor/compiole flag HOST_USE_DOUBLE to use double
-class DSPSampleBuffer {
+class DSPSampleBuffer
+{
 public:
     DSPSampleBuffer();
     ~DSPSampleBuffer();
 
-    // Initializes the buffer without allocating memory
-    void initialize(size_t size);
+    // Gets the buffers name
+    const std::string &getName() const { return bufferName; }
 
-    // Allocate internal buffer (no zeroing by default)
-    void create(size_t size);
+    // Initializes the buffer without allocating memory
+    void initialize(const std::string &name, size_t size);
 
     // Use external buffer (shared, not owned)
-    DSPSampleBuffer& operator=(host_float* externalBuffer);
+    DSPSampleBuffer &operator=(host_float *externalBuffer);
 
     // Use buffer from another DSPSampleBuffer (shared pointer)
-    DSPSampleBuffer& operator=(const DSPSampleBuffer& other);
+    DSPSampleBuffer &operator=(const DSPSampleBuffer &other);
 
     // Element access
-    host_float& operator[](size_t index);
-    const host_float& operator[](size_t index) const;
+    host_float &operator[](size_t index);
+    const host_float &operator[](size_t index) const;
 
     // Fill buffer with a constant value
     void fill(host_float value);
 
     // Copy from raw host_float buffer (caller must ensure matching size)
-    void copy(const host_float* source);
+    void copy(const host_float *source);
 
     // Copy from another DSPBuffer (caller must ensure matching size)
-    void copy(const DSPSampleBuffer& other);
+    void copy(const DSPSampleBuffer &other);
 
-    host_float* data();
-    const host_float* data() const;
+    host_float *data();
+    const host_float *data() const;
     size_t size() const;
 
     // Gets the highest value in the buffer
@@ -48,8 +53,15 @@ public:
     // Deletes the buffer
     void free();
 
+    // Evaluate buffer content on errors
+    void isValid();
+
+    // Logs the buffer to the DSP::logger
+    void log();
+
 private:
-    host_float* buffer = nullptr;
+    host_float *buffer = nullptr;
     size_t bufferSize = 0;
     bool ownsBuffer = false;
+    std::string bufferName;
 };

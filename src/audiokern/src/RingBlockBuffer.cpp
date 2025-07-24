@@ -4,19 +4,15 @@ RingBlockBuffer::RingBlockBuffer()
 {
 }
 
-void RingBlockBuffer::initialize()
+void RingBlockBuffer::initialize(std::string name)
 {
-    outputBufferL.create(DSP::blockSize);
-    outputBufferR.create(DSP::blockSize);
+    bufferName = name;
 
-    outputBufferL.fill(0.0);
-    outputBufferR.fill(0.0);
+    outputBufferL.initialize("outputBufferL" + bufferName, DSP::blockSize);
+    outputBufferR.initialize("outputBufferR" + bufferName, DSP::blockSize);
 
-    feedbackBufferL.create(DSP::blockSize);
-    feedbackBufferR.create(DSP::blockSize);
-
-    feedbackBufferL.fill(0.0);
-    feedbackBufferR.fill(0.0);
+    feedbackBufferL.initialize("feedbackBufferL" + bufferName, DSP::blockSize);
+    feedbackBufferR.initialize("feedbackBufferR" + bufferName, DSP::blockSize);
 
     std::fill(bufferL.begin(), bufferL.end(), 0.0);
     std::fill(bufferR.begin(), bufferR.end(), 0.0);

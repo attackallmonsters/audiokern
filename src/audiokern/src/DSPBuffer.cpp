@@ -23,6 +23,8 @@ void DSPBuffer::create(size_t size)
     buffer = new dsp_float[size];
     bufferSize = size;
     ownsBuffer = true;
+
+    fill(0.0);
 }
 
 DSPBuffer &DSPBuffer::operator=(dsp_float *externalBuffer)

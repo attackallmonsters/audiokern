@@ -32,7 +32,7 @@ public:
 protected:
     // Prepare buffers and internal state
     DSPUsage initializeObject() override;
-    void onBuffersCreated() override;
+    void onOutputBuffersAssigned() override;
 
 private:
     // DSP callback

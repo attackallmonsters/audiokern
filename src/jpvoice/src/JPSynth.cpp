@@ -71,40 +71,20 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
 
     DSP::log("=====> Initializing JPSYNTH...");
 
+    // Initialization
     voiceThreads.initialize(cpu_count() / 2);
     carrierTuning.initialize();
     modulatorTuning.initialize();
     midi.initialize();
-    voiceMixer.initialize(voiceCount);
-    butterworth.initialize();
-    reverb.initialize();
-    delay.initialize();
-    wetFader.initialize();
+    voiceMixer.initialize("voiceMixer" + name, voiceCount);
+    butterworth.initialize("butterworth" + name);
+    reverb.initialize("reverb" + name);
+    delay.initialize("delay" + name);
+    wetFader.initialize("wetFader" + name);
 
     createVoices();
 
-    butterworth.audioInputFrom(voiceMixer);
-
-    butterworth.setFilterMode(FilterMode::HP);
-    butterworth.setCutoffFrequency(200.0);
-
-    delay.audioInputFrom(butterworth);
-
-    reverb.audioInputFrom(delay);
-
-    wetFader.audioInputForA(voiceMixer);
-    wetFader.audioInputForB(reverb);
-    wetFader.hostOutputTo(outL, outR);
-
-    reverb.setSpace(0.1);
-    reverb.setRoomSize(0.95);
-
-    delay.setMaxTime(5000.0);
-    delay.setFeedback(0.0, 0.0);
-    delay.setTime(0.0, 0.0);
-
-    wetFader.setMix(1.0);
-
+    //Patching
     for (size_t i = 0; i < voiceCount; ++i)
     {
         SynthVoice *voice = allocator.getVoice(i);
@@ -112,8 +92,22 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
         voice->jpvoice.setOutputBuffer(voiceMixer.getInputBufferL(i), voiceMixer.getInputBufferR(i));
     }
 
+    butterworth.audioInputFrom(voiceMixer);
+    //delay.audioInputFrom(butterworth);
+    reverb.audioInputFrom(butterworth);
+    wetFader.audioInputForA(voiceMixer);
+    wetFader.audioInputForB(reverb);
+    wetFader.audioOutputTo(outL, outR);
+
+    // Finalize initialization
+    DSP::finalizeAudio();
+
+    // Static settings for effect chain audio input
+    butterworth.setFilterMode(FilterMode::HP);
+    butterworth.setCutoffFrequency(200.0);
+
     DSP::log("");
-    DSP::log("> %s <", getRandomSynthQuote().c_str());
+    DSP::log("* %s *", getRandomSynthQuote().c_str());
     DSP::log("");
 }
 
@@ -385,7 +379,7 @@ void JPSynth::setReverbDensity(host_float density)
     reverb.setDensity(density);
 }
 
-void JPSynth::setReverbVolume(host_float vol)
+void JPSynth::setReverbWet(host_float vol)
 {
     reverb.setWet(vol);
 }
@@ -401,23 +395,24 @@ void JPSynth::processBlock()
 
     processVoiceBlock();
 
-    voiceMixer.generateBlock();
+    voiceMixer.process();
 
-    butterworth.generateBlock();
+    butterworth.process();
 
-    delay.generateBlock();
+    delay.process();
 
-    reverb.generateBlock();
+    reverb.process();
 
-    wetFader.generateBlock();
+    wetFader.process();
 }
 
 void JPSynth::processVoiceBlock()
 {
     for (auto *voice : allocator.getVoices())
     {
-        voiceThreads.execute([voice]()
-                             { voice->jpvoice.generateBlock(); });
+        voiceThreads.execute(
+            [voice]()
+            { voice->jpvoice.process(); });
     }
 
     voiceThreads.wait();
@@ -431,7 +426,7 @@ void JPSynth::createVoices()
     {
         std::unique_ptr<SynthVoice> voice = std::make_unique<SynthVoice>();
 
-        voice->jpvoice.initialize();
+        voice->jpvoice.initialize("jpvoice_" + std::to_string(i) + name);
 
         // Transfer ownership to allocator
         allocator.add(std::move(voice));

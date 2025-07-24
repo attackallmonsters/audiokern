@@ -81,7 +81,7 @@ t_int *adsr_perform(t_int *w)
     t_sample *out = (t_sample *)(w[2]);
     int n = (int)(w[3]);
 
-    x->adsr->generateBlock();
+    x->adsr->process();
     
     dsp_float* buf = x->adsr->getBuffer();
 

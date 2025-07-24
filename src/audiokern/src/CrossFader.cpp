@@ -7,34 +7,58 @@ CrossFader::CrossFader()
 
 DSPUsage CrossFader::initializeObject()
 {
-    slew.initialize();
+    slew.initialize("slew" + getName());
     slew.setSlewTime(1.0);
 
-    inputBufferAL.create(DSP::blockSize);
-    inputBufferAR.create(DSP::blockSize);
+    inputBufferAL.initialize("inputBufferAL" + getName(), DSP::blockSize);
+    inputBufferAR.initialize("inputBufferAR" + getName(), DSP::blockSize);
     
-    inputBufferBL.create(DSP::blockSize);
-    inputBufferBR.create(DSP::blockSize);
+    inputBufferBL.initialize("inputBufferBL" + getName(), DSP::blockSize);
+    inputBufferBR.initialize("inputBufferBR" + getName(), DSP::blockSize);
 
-    setMix(0.5);
+    setMix(0.0);
 
     return DSPUsage::OutputOnly;
 }
 
 void CrossFader::audioInputForA(DSPObject &dspObject)
 {
-    DSPBus bus = dspObject.getOutputBus();
+    DSPSignalBus bus = dspObject.outputSignalBus;
 
     inputBufferAL = *bus.left;
     inputBufferAR = *bus.right;
 }
 
+void CrossFader::audioInputForA(DSPSignalBus &signalBus)
+{
+    inputBufferAL = *signalBus.left;
+    inputBufferAR = *signalBus.right;
+}
+
+void CrossFader::audioInputForA(DSPSampleBuffer &bufferL, DSPSampleBuffer &bufferR)
+{
+    inputBufferAL = bufferL;
+    inputBufferAR = bufferR;
+}
+
 void CrossFader::audioInputForB(DSPObject &dspObject)
 {
-    DSPBus bus = dspObject.getOutputBus();
+    DSPSignalBus bus = dspObject.outputSignalBus;
 
     inputBufferBL = *bus.left;
     inputBufferBR = *bus.right;
+}
+
+void CrossFader::audioInputForB(DSPSignalBus &signalBus)
+{
+    inputBufferBL = *signalBus.left;
+    inputBufferBR = *signalBus.right;
+}
+
+void CrossFader::audioInputForB(DSPSampleBuffer &bufferL, DSPSampleBuffer &bufferR)
+{
+    inputBufferBL = bufferL;
+    inputBufferBR = bufferR;
 }
 
 void CrossFader::setMix(double value)

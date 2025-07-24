@@ -7,13 +7,13 @@ Delay::Delay()
 
 DSPUsage Delay::initializeObject()
 {
-    delayBuffer.initialize();
-    paramFader.initialize();
+    delayBuffer.initialize("delayBuffer" + getName());
+    paramFader.initialize("paramFader" + getName());
 
     return DSPUsage::Effect;
 }
 
-void Delay::onBuffersCreated()
+void Delay::onOutputBuffersAssigned()
 {
     paramFader.audioInputFrom(*this);
 }
@@ -63,7 +63,7 @@ void Delay::processBlock()
         outputBufferR[i] = delayedR;
     }
 
-    paramFader.generateBlock();
+    paramFader.process();
 }
 
 void Delay::processBlock(DSPObject *obj)

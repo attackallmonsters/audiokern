@@ -3,6 +3,7 @@
 #include "DSPObject.h"
 #include "CombDelay.h"
 #include "clamp.h"
+#include "CrossFader.h"
 #include <array>
 #include <vector>
 
@@ -43,6 +44,10 @@ protected:
     // Component initialization on DSP activation
     DSPUsage initializeObject() override;
 
+    void onInputBuffersAssigned() override;
+    void onOutputBuffersAssigned() override;
+    void onWetBuffersAssigned() override;
+
 private:
     // Static DSP callback used for processing audio blocks
     static void processBlock(DSPObject *dsp);
@@ -66,8 +71,11 @@ private:
     std::array<CombDelay, maxDelays> delays;
 
     // Delays output buffers
-    std::vector<DSPBus> delayBusses;
+    std::vector<DSPSignalBus> delayBusses;
 
     // Updates all delay line parameters based on current settings
     void updateDelays();
+
+    // Dry/Wet fader
+    CrossFader fader;
 };

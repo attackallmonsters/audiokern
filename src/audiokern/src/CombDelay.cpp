@@ -7,9 +7,9 @@ CombDelay::CombDelay()
 
 DSPUsage CombDelay::initializeObject()
 {
-    delayBuffer.initialize();
+    delayBuffer.initialize("delayBuffer" + getName());
     delayBuffer.setTime(0.0, 0.0);
-    paramFader.initialize();
+    paramFader.initialize("paramFader" + getName());
 
     dampingStateL = 0.0;
     dampingStateR = 0.0;
@@ -17,7 +17,7 @@ DSPUsage CombDelay::initializeObject()
     return DSPUsage::OutputOnly;
 }
 
-void CombDelay::onBuffersCreated()
+void CombDelay::onOutputBuffersAssigned()
 {
     paramFader.audioInputFrom(*this);
 }
@@ -53,6 +53,11 @@ void CombDelay::setDamping(dsp_float freqHz)
     dampingCoeff = std::exp(-2.0 * dsp_math::DSP_PI * f / DSP::sampleRate);
 }
 
+void CombDelay::push(const DSPSampleBuffer &blockL, const DSPSampleBuffer &blockR)
+{
+    delayBuffer.push(blockL, blockR);
+}
+
 void CombDelay::processBlock()
 {
     if (feedback == 0.0)
@@ -82,7 +87,7 @@ void CombDelay::processBlock()
         outputBufferR[i] = delayedR + delayBuffer.feedbackBufferR[i];
     }
 
-    paramFader.generateBlock();
+    paramFader.process();
 }
 
 void CombDelay::processBlock(DSPObject *obj)

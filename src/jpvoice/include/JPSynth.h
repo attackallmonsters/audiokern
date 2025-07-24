@@ -133,7 +133,7 @@ public:
     void setReverbDensity(host_float density);
 
     // Sets the reverb volume
-    void setReverbVolume(host_float vol);
+    void setReverbWet(host_float vol);
 
     // Sets the delay time left/right
     void setDelayTime(host_float timeL, host_float timeR);
@@ -195,4 +195,6 @@ private:
 
     // The number of voices
     const size_t voiceCount = 6;
+
+    const std::string name = "_JPSynth";
 };

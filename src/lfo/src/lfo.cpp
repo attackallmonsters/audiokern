@@ -102,7 +102,7 @@ t_int *lfo_perform(t_int *w)
 {
     t_lfo *x = (t_lfo *)(w[1]);
 
-    x->lfo->generateBlock();
+    x->lfo->process();
 
     return (w + 2);
 }

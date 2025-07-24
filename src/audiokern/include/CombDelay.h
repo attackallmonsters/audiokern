@@ -29,22 +29,27 @@ public:
     // Processes the next block
     void processBlock();
 
-    // Internal delay buffers
-    RingBlockBuffer delayBuffer;
+    // Pushes a sample buffer into the buffer and the delayed buffer to the outbut buffer
+    void push(const DSPSampleBuffer &blockL, const DSPSampleBuffer &blockR);
 
 protected:
     // Prepare buffers and internal state
     DSPUsage initializeObject() override;
-    void onBuffersCreated() override;
+    void onOutputBuffersAssigned() override;
 
 private:
     // DSP callback
     static void processBlock(DSPObject *dsp);
 
-    dsp_float feedback = 0.7;
-    dsp_float dampingCoeff = 0.5;
-    dsp_float dampingStateL = 0.0;
-    dsp_float dampingStateR = 0.0;
+    // Filter settings
+    dsp_float feedback;
+    dsp_float dampingCoeff;
+    dsp_float dampingStateL;
+    dsp_float dampingStateR;
 
+    // Internal delay buffers
+    RingBlockBuffer delayBuffer;
+
+    // Parameter volume fader
     ParamFader paramFader;
 };

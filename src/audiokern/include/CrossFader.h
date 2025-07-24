@@ -13,11 +13,23 @@ public:
     // Contructor
     CrossFader();
 
-    // Audio input channel A
+    // Audio input channel A from DSP object
     void audioInputForA(DSPObject &dspObject);
+
+    // Audio input channel A from signal bus
+    void audioInputForA(DSPSignalBus &signalBus);
+
+    // Audio input channel A from buffers
+    void audioInputForA(DSPSampleBuffer &bufferL, DSPSampleBuffer &bufferR);
 
     // Audio input channel B
     void audioInputForB(DSPObject &dspObject);
+
+    // Audio input channel B from signal bus
+    void audioInputForB(DSPSignalBus &signalBus);
+
+    // Audio input channel B from buffers
+    void audioInputForB(DSPSampleBuffer &bufferL, DSPSampleBuffer &bufferR);
 
     // Sets mix amount: 0.0 = only input A, 1.0 = only input B
     void setMix(double value);

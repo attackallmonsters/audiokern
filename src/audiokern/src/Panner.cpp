@@ -7,7 +7,7 @@ Panner::Panner()
 
 DSPUsage Panner::initializeObject()
 {
-    slew.initialize();
+    slew.initialize("slew" + getName());
     slew.setSlewTime(1.0);
 
     setPanning(0.5);

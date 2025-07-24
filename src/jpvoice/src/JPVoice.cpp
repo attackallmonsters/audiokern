@@ -24,33 +24,33 @@ DSPUsage JPVoice::initializeObject()
     feedbackAmountCarrier = 0.0;
     feedbackAmountModulator = 0.0;
 
-    noise.initialize();
+    noise.initialize("noise" + name);
 
     // Waveform generation
-    sawCarrier.initialize();
-    sawModulator.initialize();
-    sineCarrier.initialize();
-    sineModulator.initialize();
-    squareCarrier.initialize();
-    squareModulator.initialize();
-    trianlgeCarrier.initialize();
-    triangleModulator.initialize();
-    clusterCarrier.initialize();
-    clusterModulator.initialize();
-    fibonacciCarrier.initialize();
-    fibonacciModulator.initialize();
-    mirrorCarrier.initialize();
-    mirrorModulator.initialize();
-    moduloCarrier.initialize();
-    moduloModulator.initialize();
-    bitModulator.initialize();
+    sawCarrier.initialize("sawCarrier" + name);
+    sawModulator.initialize("sawModulator" + name);
+    sineCarrier.initialize("sineCarrier" + name);
+    sineModulator.initialize("sineModulator" + name);
+    squareCarrier.initialize("squareCarrier" + name);
+    squareModulator.initialize("squareModulator" + name);
+    trianlgeCarrier.initialize("trianlgeCarrier" + name);
+    triangleModulator.initialize("triangleModulator" + name);
+    clusterCarrier.initialize("clusterCarrier" + name);
+    clusterModulator.initialize("clusterModulator" + name);
+    fibonacciCarrier.initialize("fibonacciCarrier" + name);
+    fibonacciModulator.initialize("fibonacciModulator" + name);
+    mirrorCarrier.initialize("mirrorCarrier" + name);
+    mirrorModulator.initialize("mirrorModulator" + name);
+    moduloCarrier.initialize("moduloCarrier" + name);
+    moduloModulator.initialize("moduloModulator" + name);
+    bitModulator.initialize("bitModulator" + name);
 
-    filter.initialize();
+    filter.initialize("filter" + name);
 
-    filterAdsr.initialize();
-    ampAdsr.initialize();
+    filterAdsr.initialize("filterAdsr" + name);
+    ampAdsr.initialize("ampAdsr" + name);
 
-    paramFader.initialize();
+    paramFader.initialize("paramFader" + name);
 
     filterAdsr.setGain(15000.0);
     ampAdsr.setGain(1.0);
@@ -83,11 +83,11 @@ DSPUsage JPVoice::initializeObject()
     return DSPUsage::OutputOnly;
 }
 
-void JPVoice::onBuffersCreated()
+void JPVoice::onBuffersCompleted()
 {
-    DSPBus carrierBus = carrier->getOutputBus();
-    DSPBus modulatorBus = modulator->getOutputBus();
-    DSPBus noiseBus = noise.getOutputBus();
+    DSPSignalBus carrierBus = carrier->outputSignalBus;
+    DSPSignalBus modulatorBus = modulator->outputSignalBus;
+    DSPSignalBus noiseBus = noise.outputSignalBus;
 
     carrierL = *carrierBus.left;
     carrierR = *carrierBus.right;
@@ -225,7 +225,7 @@ void JPVoice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
             carrier = carrierTmp;
             carrier->fmInputFrom(*modulator);
 
-            DSPBus carrierBus = carrier->getOutputBus();
+            DSPSignalBus carrierBus = carrier->outputSignalBus;
             carrierL = *carrierBus.left;
             carrierR = *carrierBus.right;
 
@@ -283,7 +283,7 @@ void JPVoice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
             modulator = modulatorTmp;
             carrier->fmInputFrom(*modulator);
 
-            DSPBus modulatorBus = modulator->getOutputBus();
+            DSPSignalBus modulatorBus = modulator->outputSignalBus;
             modulatorL = *modulatorBus.left;
             modulatorR = *modulatorBus.right;
 
@@ -412,9 +412,9 @@ void JPVoice::setOutputBuffer(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR)
 // Next sample block generation
 void JPVoice::processBlock()
 {
-    modulator->generateBlock();
+    modulator->process();
 
-    carrier->generateBlock();
+    carrier->process();
 
     if (syncEnabled && carrier->hasWrapped())
     {
@@ -424,7 +424,7 @@ void JPVoice::processBlock()
 
     if (noisemix > 0)
     {
-        noise.generateBlock();
+        noise.process();
     }
 
     amp_carrier = std::cos(oscmix * 0.5 * dsp_math::DSP_PI);
@@ -465,15 +465,15 @@ void JPVoice::processBlock()
     }
 
     // ADSR shares buffer with filter
-    filterAdsr.generateBlock();
-    filter.generateBlock();
+    filterAdsr.process();
+    filter.process();
 
     // amp envelope
-    ampAdsr.generateBlock();
+    ampAdsr.process();
     ampAdsr.multiply(outputBufferL, outputBufferR);
 
     // Assign changed params
-    paramFader.generateBlock();
+    paramFader.process();
 }
 
 // Next sample block generation

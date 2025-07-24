@@ -9,19 +9,39 @@ DSPUsage NebularReverb::initializeObject()
 {
     for (int i = 0; i < maxDelays; ++i)
     {
-        delays[i].initialize();
+        delays[i].initialize("delays" + std::to_string(i) + getName());
         delays[i].setMaxTime(1000.0);
-        DSPBus bus = delays[i].getOutputBus();
+        DSPSignalBus bus = delays[i].outputSignalBus;
         delayBusses.push_back(bus);
-    }   
+    }
+
+    fader.initialize("fader" + getName());
 
     setDensity(0.5);
-    setSpace(0.0);
-    setRoomSize(0.5);
+    setSpace(0.3);
+    setRoomSize(0.8);
     setDamping(5000.0);
-    setWet(1.0);
+    setWet(0.5);
 
     return DSPUsage::Effect;
+}
+
+void NebularReverb::onInputBuffersAssigned()
+{
+    // Dry signal to fader input A
+    fader.audioInputForA(inputSignalBus);
+}
+
+void NebularReverb::onWetBuffersAssigned()
+{
+    // Wet signal to fader input B
+    fader.audioInputForB(wetSignalBus);
+}
+
+void NebularReverb::onOutputBuffersAssigned()
+{
+    // Use Nebulars outputBuffer for the mix
+    fader.audioOutputTo(outputSignalBus);
 }
 
 void NebularReverb::setDensity(host_float dense)
@@ -66,13 +86,15 @@ void NebularReverb::updateDelays()
 void NebularReverb::setWet(host_float vol)
 {
     wet = clamp(vol, 0.0, 1.0) * 2.0;
+
+    fader.setMix(wet);
 }
 
 void NebularReverb::push()
 {
     for (int i = 0; i < density; ++i)
     {
-        delays[i].delayBuffer.push(inputBufferL, inputBufferR);
+        delays[i].push(inputBufferL, inputBufferR);
     }
 }
 
@@ -96,9 +118,13 @@ void NebularReverb::processBlock()
             sumR += (*delayBusses[j].right)[i];
         }
 
-        outputBufferL[i] = sumL / density * wet;
-        outputBufferR[i] = sumR / density * wet;
+        wetBufferL[i] = sumL / density;
+        wetBufferR[i] = sumR / density;
     }
+
+    fader.process();
+
+    outputBufferL.log();
 }
 
 void NebularReverb::processBlock(DSPObject *dsp)

@@ -3,7 +3,6 @@
 LFO::LFO()
 {
     registerBlockProcessor(&LFO::processBlockBuffer);
-    initialize();
 }
 
 DSPUsage LFO::initializeObject()

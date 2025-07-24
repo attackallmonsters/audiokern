@@ -2,6 +2,7 @@
 
 #include "DSP.h"
 #include "dsp_types.h"
+#include "DSPSampleBuffer.h"
 #include "clamp.h"
 #include <vector>
 
@@ -12,6 +13,9 @@ class RingBlockBuffer
 public:
     RingBlockBuffer();
 
+    // Gets the DSP object name
+    const std::string &getName() const { return bufferName; }
+
     // Sets the maximum buffer time
     void setMaxTime(host_float timeMS);
 
@@ -19,7 +23,7 @@ public:
     void setTime(host_float timeMSL, host_float timeMSR);
 
     // Allocate and clear the buffer according to time and DSP::sampleRate
-    void initialize();
+    void initialize(std::string name);
 
     // Pushes a sample buffer into the buffer and the delayed buffer to the outbut buffer
     void push(const DSPSampleBuffer &blockL, const DSPSampleBuffer &blockR);
@@ -43,4 +47,6 @@ private:
     size_t writeIndexL, writeIndexR;
     size_t blockCountL, blockCountR;
     host_float maxTime, delayTimeMsL, delayTimeMsR;
+
+    std::string bufferName;
 };

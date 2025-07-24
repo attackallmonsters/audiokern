@@ -10,14 +10,7 @@ DSPSampleBuffer::~DSPSampleBuffer()
         delete[] buffer;
 }
 
-void DSPSampleBuffer::initialize(size_t size)
-{
-    buffer = nullptr;
-    bufferSize = size;
-    ownsBuffer = false;
-}
-
-void DSPSampleBuffer::create(size_t size)
+void DSPSampleBuffer::initialize(const std::string &name, size_t size)
 {
     if (ownsBuffer && buffer)
         delete[] buffer;
@@ -25,6 +18,9 @@ void DSPSampleBuffer::create(size_t size)
     buffer = new host_float[size];
     bufferSize = size;
     ownsBuffer = true;
+    bufferName = name;
+
+    fill(0.0);
 }
 
 DSPSampleBuffer &DSPSampleBuffer::operator=(host_float *externalBuffer)
@@ -34,6 +30,7 @@ DSPSampleBuffer &DSPSampleBuffer::operator=(host_float *externalBuffer)
 
     buffer = externalBuffer;
     ownsBuffer = false;
+    bufferName = "_external";
     return *this;
 }
 
@@ -45,6 +42,7 @@ DSPSampleBuffer &DSPSampleBuffer::operator=(const DSPSampleBuffer &other)
     buffer = other.buffer;
     bufferSize = other.bufferSize;
     ownsBuffer = false;
+    bufferName = other.bufferName;
     return *this;
 }
 
@@ -106,4 +104,36 @@ void DSPSampleBuffer::free()
 {
     if (ownsBuffer && buffer)
         delete[] buffer;
+}
+
+void DSPSampleBuffer::isValid()
+{
+    constexpr host_float maxReasonable = 1.0e6;
+
+    for (size_t i = 0; i < size(); ++i)
+    {
+        host_float value = buffer[i];
+        if (std::isnan(value))
+        {
+            log();
+            throw std::runtime_error("-nan in " + bufferName + " at position " + std::to_string(i));
+        }
+
+        if (std::isinf(value))
+        {
+            log();
+            throw std::runtime_error("-inf in " + bufferName + " at position " + std::to_string(i));
+        }
+
+        if (std::fabs(value) > maxReasonable)
+        {
+            log();
+            throw std::runtime_error("Value too large (" + std::to_string(value) + ") in " + bufferName + " at index " + std::to_string(i));
+        }
+    }
+}
+
+void DSPSampleBuffer::log()
+{
+    DSP::logBuffer(bufferName, buffer, bufferSize);
 }

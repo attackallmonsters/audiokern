@@ -17,8 +17,8 @@ DSPUsage Mixer::initializeObject(size_t count)
 
     for (size_t i = 0; i < bufferCount; ++i)
     {
-        buffersL[i].create(DSP::blockSize);
-        buffersR[i].create(DSP::blockSize);
+        buffersL[i].initialize("buffersL_" + std::to_string(i) + getName(), DSP::blockSize);
+        buffersR[i].initialize("buffersR_" + std::to_string(i) + getName(), DSP::blockSize);
     }
 
     return DSPUsage::OutputOnly;

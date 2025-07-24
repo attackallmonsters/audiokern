@@ -7,22 +7,15 @@
 #include <cmath>
 #include "clamp.h"
 #include "DSP.h"
+#include "DSPObject.h"
 #include "dsp_types.h"
-#include"dsp_math.h"
+#include "dsp_math.h"
 
 size_t DSP::blockSize = 64;
 dsp_float DSP::sampleRate = -1.0;
 bool DSP::initialized = false;
 long DSP::elapsedSamples = 0;
 long DSP::processedBlocks = 0;
-
-#if DEBUG
-bool DSP::logFileInitialized = false;
-bool DSP::logIsEnabled = true;
-int DSP::logSampels = 22050;
-int DSP::logSampleCounter = 0;
-bool DSP::resetLogSampleCounter = false;
-#endif
 
 // Dummy logger, does nothing
 static void defaultLogger(const std::string &)
@@ -52,16 +45,6 @@ void DSP::nextBlock()
 {
     elapsedSamples += blockSize;
     processedBlocks++;
-
-#ifdef DEBUG
-    if (resetLogSampleCounter)
-    {
-        logSampleCounter = 0;
-        resetLogSampleCounter = false;
-    }
-
-    logSampleCounter += blockSize;
-#endif
 }
 
 // Initializes the DSP with samplerate and blocksize
@@ -75,21 +58,38 @@ void DSP::initializeAudio(dsp_float rate, size_t size)
 
     DSP::log("DSP audio settings: samplerate is %f", sampleRate);
     DSP::log("DSP audio settings: block size is %i", blockSize);
-#ifdef DEBUG
-    DSP::logTime(300);
-#endif
 
     initialized = true;
+}
+
+void DSP::finalizeAudio()
+{
+    for (DSPObject *obj : getRegistry())
+    {
+        obj->finalize();
+    }
 }
 
 // Log function callback registration
 void DSP::registerLogger(LogFunc func)
 {
     logger = func;
+}
 
-#if DEBUG
-    logFileInitialized = false;
-#endif
+void DSP::registerObject(DSPObject &obj)
+{
+    getMutableRegistry().push_back(&obj);
+}
+
+std::vector<DSPObject *> &DSP::getMutableRegistry()
+{
+    static std::vector<DSPObject *> registry;
+    return registry;
+}
+
+const std::vector<DSPObject*>& DSP::getRegistry()
+{
+    return getMutableRegistry();
 }
 
 // Zeros a value if it is in the range of +/- epsilon
@@ -109,232 +109,21 @@ void DSP::log(const char *fmt, ...)
     logger(std::string(buffer));
 }
 
-#ifdef DEBUG
-void DSP::dspLog(const char *fmt, ...)
+void DSP::logBuffer(const std::string &label, host_float *buffer, size_t size)
 {
-    if (!doLog())
-        return;
-        
-    char buffer[2048];
-    va_list args;
-    va_start(args, fmt);
-    vsnprintf(buffer, sizeof(buffer), fmt, args);
-    va_end(args);
-
-    logger(std::string(buffer));
-}
-
-void DSP::dspLogBuffer(const std::string &label, const DSPSampleBuffer &buffer)
-{
-    if (!doLog())
-        return;
-
-    constexpr size_t MAX_LOG = 32;
-    constexpr size_t BUFLEN = 2048;
-    char buf[BUFLEN];
+    constexpr size_t BUFLEN = 8192;
+    char msg[BUFLEN];
     size_t pos = 0;
 
-    pos += snprintf(buf + pos, BUFLEN - pos, "%s [", label.c_str());
+    pos += snprintf(msg + pos, BUFLEN - pos, "%s (%zu): [", label.c_str(), size);
 
-    for (size_t i = 0; i < std::min(buffer.size(), size_t(MAX_LOG)); ++i)
+    for (size_t i = 0; i < size; ++i)
     {
-        pos += snprintf(buf + pos, BUFLEN - pos, "%.4f%s", buffer[i], (i < MAX_LOG - 1 ? ", " : ""));
-        if (pos >= BUFLEN - 16)
+        int written = snprintf(msg + pos, BUFLEN - pos, "%.5f%s", buffer[i], (i < size - 1) ? ", " : "]");
+        if (written < 0 || static_cast<size_t>(written) >= BUFLEN - pos)
             break;
+        pos += static_cast<size_t>(written);
     }
 
-    if (buffer.size() > MAX_LOG)
-        pos += snprintf(buf + pos, BUFLEN - pos, ", ...");
-
-    snprintf(buf + pos, BUFLEN - pos, "]");
-
-    logger(std::string(buf));
+    logger(std::string(msg));
 }
-
-void DSP::dspLogBuffer(const std::string &label, const DSPBuffer &buffer)
-{
-    if (!doLog())
-        return;
-
-    constexpr size_t MAX_LOG = 32;
-    constexpr size_t BUFLEN = 2048;
-    char buf[BUFLEN];
-    size_t pos = 0;
-
-    pos += snprintf(buf + pos, BUFLEN - pos, "%s [", label.c_str());
-
-    for (size_t i = 0; i < std::min(buffer.size(), size_t(MAX_LOG)); ++i)
-    {
-        pos += snprintf(buf + pos, BUFLEN - pos, "%.4f%s", buffer[i], (i < MAX_LOG - 1 ? ", " : ""));
-        if (pos >= BUFLEN - 16)
-            break;
-    }
-
-    if (buffer.size() > MAX_LOG)
-        pos += snprintf(buf + pos, BUFLEN - pos, ", ...");
-
-    snprintf(buf + pos, BUFLEN - pos, "]");
-
-    logger(std::string(buf));
-}
-
-void DSP::dspLogBuffer(const std::string &label, host_float *buffer)
-{
-    if (!doLog())
-        return;
-
-    size_t MAX_LOG = blockSize;
-    constexpr size_t BUFLEN = 2048;
-    char buf[BUFLEN];
-    size_t pos = 0;
-
-    pos += snprintf(buf + pos, BUFLEN - pos, "%s [", label.c_str());
-
-    for (size_t i = 0; i < std::min(blockSize, size_t(MAX_LOG)); ++i)
-    {
-        pos += snprintf(buf + pos, BUFLEN - pos, "%.4f%s", buffer[i], (i < MAX_LOG - 1 ? ", " : ""));
-        if (pos >= BUFLEN - 16)
-            break;
-    }
-
-    if (blockSize > MAX_LOG)
-        pos += snprintf(buf + pos, BUFLEN - pos, ", ...");
-
-    snprintf(buf + pos, BUFLEN - pos, "]");
-
-    logger(std::string(buf));
-}
-
-void DSP::dspLogBuffer(const std::string &label, std::vector<host_float> *buffer)
-{
-    if (!doLog())
-        return;
-
-    size_t MAX_LOG = blockSize;
-    constexpr size_t BUFLEN = 2048;
-    char buf[BUFLEN];
-    size_t pos = 0;
-
-    pos += snprintf(buf + pos, BUFLEN - pos, "%s [", label.c_str());
-
-    for (size_t i = 0; i < std::min(blockSize, size_t(MAX_LOG)); ++i)
-    {
-        pos += snprintf(buf + pos, BUFLEN - pos, "%.4f%s", (*buffer)[i], (i < MAX_LOG - 1 ? ", " : ""));
-        if (pos >= BUFLEN - 16)
-            break;
-    }
-
-    if (blockSize > MAX_LOG)
-        pos += snprintf(buf + pos, BUFLEN - pos, ", ...");
-
-    snprintf(buf + pos, BUFLEN - pos, "]");
-
-    logger(std::string(buf));
-}
-
-#include <iomanip>
-#include <sstream>
-
-// Logs DSPSampleBuffer content
-void DSP::dspLog2File(const char* label, const DSPSampleBuffer& buffer)
-{
-    std::ostringstream oss;
-    oss << label << " (" << buffer.size() << "): ";
-
-    for (size_t i = 0; i < DSP::blockSize; ++i)
-        oss << std::fixed << std::setprecision(5) << buffer[i] << (i < buffer.size() - 1 ? ", " : "");
-
-    dspLog2File("%s", oss.str().c_str());
-}
-
-// Logs raw float array (with DSP::blockSize entries)
-void DSP::dspLog2File(const char* label, const host_float* buffer)
-{
-    std::ostringstream oss;
-    oss << label << " (" << DSP::blockSize << "): ";
-
-    for (size_t i = 0; i < DSP::blockSize; ++i)
-        oss << std::fixed << std::setprecision(5) << buffer[i] << (i < DSP::blockSize - 1 ? ", " : "");
-
-    dspLog2File("%s", oss.str().c_str());
-}
-
-// Logs std::vector<host_float>* (full content)
-void DSP::dspLog2File(const char* label, const std::vector<host_float>* buffer)
-{
-    std::ostringstream oss;
-    oss << label << " (" << buffer->size() << "): ";
-
-    for (size_t i = 0; i < buffer->size(); ++i)
-        oss << std::fixed << std::setprecision(5) << (*buffer)[i] << (i < buffer->size() - 1 ? ", " : "");
-
-    dspLog2File("%s", oss.str().c_str());
-}
-
-
-// Logging to file "dsp.log"
-void DSP::dspLog2File(const char *fmt, ...)
-{
-    const char *logFileName = "dsp.log";
-
-    const char *mode = logFileInitialized ? "a" : "w";
-    FILE *file = std::fopen(logFileName, mode);
-    if (!file)
-        return;
-
-    logFileInitialized = true;
-
-    // Creates timestamp
-    using namespace std::chrono;
-    auto now = system_clock::now();
-    auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
-    std::time_t t = system_clock::to_time_t(now);
-
-    char timebuf[32];
-    std::tm tm;
-#ifdef _WIN32
-    localtime_s(&tm, &t);
-#else
-    localtime_r(&t, &tm);
-#endif
-    std::strftime(timebuf, sizeof(timebuf), "%H:%M:%S", &tm);
-
-    char timestamp[64];
-    std::snprintf(timestamp, sizeof(timestamp), "[%s.%03d] ", timebuf, static_cast<int>(ms.count()));
-
-    // Formatting
-    char msgbuf[2048];
-    va_list args;
-    va_start(args, fmt);
-    std::vsnprintf(msgbuf, sizeof(msgbuf), fmt, args);
-    va_end(args);
-
-    // Write and close file
-    std::fprintf(file, "%s%s\n", timestamp, msgbuf);
-    std::fclose(file);
-}
-
-void DSP::logTime(int timeMs)
-{
-    int t = clampmin(timeMs, 0.0);
-
-    logSampels = (t != 0) ? sampleRate / 1000 * t : 0;
-}
-
-bool DSP::doLog()
-{
-    if (logSampleCounter > logSampels)
-    {
-        resetLogSampleCounter = true;
-        return true;
-    }
-
-    return false;
-}
-
-// Enables or disables log globally
-void DSP::enableLog(bool isEnabled)
-{
-    logIsEnabled = isEnabled;
-}
-#endif
