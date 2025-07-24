@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DSPObject.h"
+#include "SoundEffect.h"
 #include "RingBlockBuffer.h"
 #include "DSPSampleBuffer.h"
 #include "ParamFader.h"
@@ -8,37 +8,86 @@
 #include "clamp.h"
 #include <vector>
 
-class Delay : public DSPObject
+/**
+ * @brief Stereo delay effect with configurable delay time and feedback.
+ * 
+ * This class implements a standard stereo delay using a ring buffer structure. 
+ * Feedback can be set per channel. Delay time is adjustable up to a defined maximum.
+ * Audio is processed blockwise using the DSP framework. Use setMaxTime first to
+ * initialize the maximum delay time.
+ */
+class Delay : public SoundEffect
 {
 public:
-    // Constructor
+    /**
+     * @brief Constructs a new Delay instance.
+     */
     explicit Delay();
 
-    // Sets the maximum delay time
-    void setMaxTime(dsp_float timeMS);
+    /**
+     * @brief Sets the maximum delay time in milliseconds.
+     * 
+     * Must be called before setting the actual delay time. Allocates buffer capacity.
+     * 
+     * @param timeMS Maximum delay time (in ms)
+     */
+    void setMaxTime(host_float timeMS);
 
-    // Set delay time in milliseconds
-    void setTime(dsp_float timeMSL, dsp_float timeMSR);
+    /**
+     * @brief Sets the actual delay time for each channel (in milliseconds).
+     * 
+     * The delay times will be clamped to the previously set maximum time.
+     * 
+     * @param timeMSL Delay time for left channel (ms)
+     * @param timeMSR Delay time for right channel (ms)
+     */
+    void setTime(host_float timeMSL, host_float timeMSR);
 
-    // Set feedback amount (0.0 – 0.99 typical)
-    void setFeedback(dsp_float fbL, host_float fbR);
+    /**
+     * @brief Sets the feedback amount per channel.
+     * 
+     * Values should typically remain below 1.0 to avoid instability.
+     * 
+     * @param fbL Feedback amount for left channel (0.0 to <1.0)
+     * @param fbR Feedback amount for right channel (0.0 to <1.0)
+     */
+    void setFeedback(host_float fbL, host_float fbR);
 
-    // Processes the next block
-    void processBlock();
-
-    // Internal delay buffers
+    /**
+     * @brief Ring buffer that holds internal delay lines.
+     */
     RingBlockBuffer delayBuffer;
 
 protected:
-    // Prepare buffers and internal state
-    DSPUsage initializeObject() override;
-    void onOutputBuffersAssigned() override;
+    /**
+     * @brief Initializes the delay effect, allocates buffers and resets state.
+     */
+    void initializeEffect() override;
+
+    /**
+     * @brief Called when the output bus is connected.
+     * 
+     * Used to synchronize the delay buffer state with output.
+     */
+    void onOutputBusConnected() override;
 
 private:
-    // DSP callback
+    /**
+     * @brief Static DSP entry point.
+     * 
+     * Routes processing to the instance method.
+     */
     static void processBlock(DSPObject *dsp);
 
-    host_float feedbackL, feedbackR;
+    /**
+     * @brief Processes one audio block: applies delay and feedback.
+     */
+    void processBlock();
 
+    /// Feedback levels for each channel
+    host_float feedbackL = 0.0;
+    host_float feedbackR = 0.0;
+
+    /// Internal parameter fader for smooth transitions
     ParamFader paramFader;
 };

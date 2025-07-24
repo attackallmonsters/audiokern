@@ -1,59 +1,78 @@
 #include "NoiseGenerator.h"
-#include <chrono> // Used to seed the RNG with high-resolution time
 #include "dsp_types.h"
+#include "dsp_math.h"
 
 // Constructor: seeds RNG and sets noise type
 NoiseGenerator::NoiseGenerator()
 {
-    registerSampleGenerator(&NoiseGenerator::generateSample);
+    registerBlockProcessor(&NoiseGenerator::processBlockWhite);
+}
 
-    // WHite noise is default
+void NoiseGenerator::initializeGenerator()
+{
     setType(NoiseType::White);
-
-    // Seed RNG using the system clock to ensure randomness across runs
-    rng.seed(static_cast<unsigned int>(
-        std::chrono::high_resolution_clock::now().time_since_epoch().count()));
 }
 
 // Allows dynamic switching between white and pink noise
 void NoiseGenerator::setType(NoiseType type)
 {
-    noiseType = type;
+    switch (type)
+    {
+    case NoiseType::White:
+        registerBlockProcessor(&NoiseGenerator::processBlockWhite);
+        break;
+    case NoiseType::Pink:
+        registerBlockProcessor(&NoiseGenerator::processBlockPink);
+        break;
+    default:
+        break;
+    }
 }
 
-void NoiseGenerator::generateSample(
-    Oscillator *osc,
-    const host_float & /*frequency*/,
-    const host_float & /*phase*/,
-    host_float &left,
-    host_float &right,
-    const host_float & /*modLeft*/,
-    const host_float & /*modRight*/)
+void NoiseGenerator::processBlockWhite()
 {
-    NoiseGenerator *noise = static_cast<NoiseGenerator *>(osc);
-
-    // Generate white noise sample in range [-1.0, 1.0]
-    host_float white = noise->dist(noise->rng);
-
-    // If white noise is selected, return it directly
-    if (noise->noiseType == NoiseType::White)
+    for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        left = right = white;
-        return;
+        // Generate white noise sample in range [-1.0, 1.0]
+        host_float white = rand.nextRandomSample();
+        outputBus->l[i] = white;
+        outputBus->r[i] = white;
     }
+}
 
-    // --- Paul Kellet's Pink Noise Filter ---
-    // Each term simulates a low-pass filter with different time constants
-    // The coefficients are empirically derived for pink noise behavior
-    noise->b0 = 0.99886 * noise->b0 + white * 0.0555179;
-    noise->b1 = 0.99332 * noise->b1 + white * 0.0750759;
-    noise->b2 = 0.96900 * noise->b2 + white * 0.1538520;
-    noise->b3 = 0.86650 * noise->b3 + white * 0.3104856;
-    noise->b4 = 0.55000 * noise->b4 + white * 0.5329522;
-    noise->b5 = -0.7616 * noise->b5 - white * 0.0168980;
-    host_float pink = noise->b0 + noise->b1 + noise->b2 + noise->b3 + noise->b4 + noise->b5 + noise->b6 + white * 0.5362;
-    noise->b6 = white * 0.115926;
+void NoiseGenerator::processBlockPink()
+{
+    for (size_t i = 0; i < DSP::blockSize; ++i)
+    {
+        // Generate white noise sample in range [-1.0, 1.0]
+        host_float white = rand.nextRandomSample();
 
-    // Scale output to normalize level (empirical factor)
-    left = right = pink * 0.11;
+        // --- Paul Kellet's Pink Noise Filter ---
+        // Each term simulates a low-pass filter with different time constants
+        // The coefficients are empirically derived for pink noise behavior
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        host_float pink = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+        b6 = white * 0.115926;
+
+        // Scale output to normalize level (empirical factor)
+        outputBus->l[i] = pink * 0.11;
+        outputBus->r[i] = pink * 0.11;
+    }
+}
+
+void NoiseGenerator::processBlockWhite(DSPObject *dsp)
+{
+    NoiseGenerator *self = static_cast<NoiseGenerator *>(dsp);
+    self->processBlockWhite();
+}
+
+void NoiseGenerator::processBlockPink(DSPObject *dsp)
+{
+    NoiseGenerator *self = static_cast<NoiseGenerator *>(dsp);
+    self->processBlockPink();
 }

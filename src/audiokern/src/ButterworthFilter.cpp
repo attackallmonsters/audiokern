@@ -10,11 +10,9 @@ ButterworthFilter::ButterworthFilter()
 }
 
 // Initialize buffers and reset state
-DSPUsage ButterworthFilter::initializeObject()
+void ButterworthFilter::initializeProcessor()
 {
     reset();
-
-    return DSPUsage::Process;
 }
 
 void ButterworthFilter::setCutoffFrequency(dsp_float freq)
@@ -40,8 +38,8 @@ void ButterworthFilter::processBlock()
     const host_float fc = clamp(cutoffFrequency, 5.0, DSP::sampleRate * 0.49);
     const host_float omega = dsp_math::DSP_2PI * fc / DSP::sampleRate;
 
-    dsp_float sin_omega, cos_omega;
-    dsp_math::get_sin_cos(omega, &sin_omega, &cos_omega);
+    host_float sin_omega, cos_omega;
+    dsp_math::get_sin_cos(omega, &cos_omega, &sin_omega);
 
     const host_float alpha = sin_omega / (2.0 * dsp_math::DSP_1D_SQRT2); // Q = 1/√2
 
@@ -75,24 +73,24 @@ void ButterworthFilter::processBlock()
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
         // Left channel
-        const host_float inL = processBufferL[i];
+        const host_float inL = processBus->l[i];
         const host_float outL = b0 * inL + b1 * x1L + b2 * x2L - a1 * y1L - a2 * y2L;
 
         x2L = x1L;
         x1L = inL;
         y2L = y1L;
         y1L = outL;
-        processBufferL[i] = outL;
+        processBus->l[i] = outL;
 
         // Right channel
-        const host_float inR = processBufferR[i];
+        const host_float inR = processBus->r[i];
         const host_float outR = b0 * inR + b1 * x1R + b2 * x2R - a1 * y1R - a2 * y2R;
 
         x2R = x1R;
         x1R = inR;
         y2R = y1R;
         y1R = outR;
-        processBufferR[i] = outR;
+        processBus->r[i] = outR;
     }
 }
 

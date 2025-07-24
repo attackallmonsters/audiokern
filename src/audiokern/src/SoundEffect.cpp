@@ -2,44 +2,48 @@
 
 void SoundEffect::initializeObject()
 {
-    // Connect to standard audio buses
-    inputBus = DSPBusManager::getAudioBus(StandardBusses::Input);
-    wetBus   = DSPBusManager::getAudioBus(StandardBusses::Wet);
-
-    // Connect to requested modulation bus
-    modulationBus = DSPBusManager::getModulationBus(getName());
-
-    modulationBusEnabled = modulationBus != nullptr;
-
-    // Subclass-specific logic
-    initializeEffect(pendingModulationName);
+    initializeEffect();
 }
 
 void SoundEffect::initializeObject(size_t count)
 {
-    // Connect to standard audio buses
-    inputBus = DSPBusManager::getAudioBus(StandardBusses::Input);
-    wetBus   = DSPBusManager::getAudioBus(StandardBusses::Wet);
-
-    // Connect to requested modulation bus
-    modulationBus = DSPBusManager::getModulationBus(pendingModulationName);
-    if (!modulationBus)
-    {
-        DSPBusManager::registerModulationChannel(pendingModulationName);
-        modulationBus = DSPBusManager::getModulationBus(pendingModulationName);
-    }
-
-    // Subclass-specific logic
-    initializeEffect(pendingModulationName, count);
+    initializeEffect(count);
 }
 
-void SoundEffect::initializeEffect(const std::string& modulationBusName)
+void SoundEffect::connectToInputBus(const std::string &busName)
 {
-    // Default: no implementation
+    inputBus = DSPBusManager::getAudioBus(busName);
+    onInputBusConnected();
 }
 
-void SoundEffect::initializeEffect(const std::string& modulationBusName, size_t count)
+void SoundEffect::connectToOutputBus(const std::string &busName)
 {
-    // Default fallback to single version
-    initializeEffect(modulationBusName);
+    outputBus = DSPBusManager::getAudioBus(busName);
+    onOutputBusConnected();
+}
+
+void SoundEffect::connectToModulationBus(const std::string &busName)
+{
+    modulationBus = DSPBusManager::getModulationBus(busName);
+    onModulationBusConnected();
+}
+
+void SoundEffect::initializeEffect()
+{
+}
+
+void SoundEffect::initializeEffect(size_t /*count*/)
+{
+}
+
+void SoundEffect::onInputBusConnected()
+{
+}
+
+void SoundEffect::onOutputBusConnected()
+{
+}
+
+void SoundEffect::onModulationBusConnected()
+{
 }

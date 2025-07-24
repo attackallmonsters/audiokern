@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DSPObject.h"
+#include "SoundEffect.h"
 #include "RingBlockBuffer.h"
 #include "DSPSampleBuffer.h"
 #include "ParamFader.h"
@@ -8,48 +8,120 @@
 #include "clamp.h"
 #include <vector>
 
-class CombDelay : public DSPObject
+/**
+ * @brief A stereo comb filter with variable delay, feedback and damping.
+ * 
+ * The CombDelay object applies a delay effect where the input signal is fed back into itself
+ * after a short delay time. Optionally, a damping lowpass filter can be applied to the feedback path.
+ * This is a common building block in reverb and chorus effects.
+ * 
+ * Delay times and feedback amounts are set in milliseconds and normalized units respectively.
+ */
+class CombDelay : public SoundEffect
 {
 public:
-    // Constructor
+    /**
+     * @brief Constructs a new CombDelay instance.
+     * 
+     * Initializes internal parameters and connects to standard I/O busses.
+     */
     explicit CombDelay();
 
-    // Set delay maximum time in milliseconds
+    /**
+     * @brief Sets the maximum allowed delay time in milliseconds.
+     * 
+     * This defines the internal buffer size and must be called before using setTime().
+     * Should be called during initialization only.
+     * 
+     * @param timeMS Maximum delay time in milliseconds.
+     */
     void setMaxTime(dsp_float timeMS);
 
-    // Set delay time in milliseconds
+    /**
+     * @brief Sets the current delay time.
+     * 
+     * The actual applied delay will be clamped to the range defined by setMaxTime().
+     * 
+     * @param timeMS Delay time in milliseconds.
+     */
     void setTime(dsp_float timeMS);
 
-    // Set feedback amount (0.0 – 0.99 typical)
+    /**
+     * @brief Sets the feedback amount.
+     * 
+     * The value defines how much of the delayed signal is re-injected into the input.
+     * Typical values range from 0.0 (no feedback) to 0.99 (strong feedback).
+     * 
+     * @param fb Feedback amount (0.0 – 1.0).
+     */
     void setFeedback(dsp_float fb);
 
-    // Set damping lowpass filter frequency (Hz)
+    /**
+     * @brief Sets the damping filter frequency applied to the feedback signal.
+     * 
+     * Acts as a one-pole lowpass filter to reduce high-frequency buildup in the feedback loop.
+     * 
+     * @param freqHz Damping filter cutoff frequency in Hz.
+     */
     void setDamping(dsp_float freqHz);
 
-    // Processes the next block
-    void processBlock();
-
-    // Pushes a sample buffer into the buffer and the delayed buffer to the outbut buffer
-    void push(const DSPSampleBuffer &blockL, const DSPSampleBuffer &blockR);
+    /**
+     * @brief Pushes a stereo input block into the delay buffer and writes the output to the output bus.
+     * 
+     * This is used internally in the DSP loop. Feedback is applied using the internal feedback gain
+     * and damping is performed per channel before reinjection.
+     */
+    void push();
 
 protected:
-    // Prepare buffers and internal state
-    DSPUsage initializeObject() override;
-    void onOutputBuffersAssigned() override;
+    /**
+     * @brief Initializes the effect.
+     * 
+     * Connects to standard input/output/modulation busses, initializes internal buffers and parameters.
+     */
+    void initializeEffect() override;
+
+    /**
+     * @brief Called when the output bus is successfully connected.
+     * 
+     * Used to initialize or reset internal buffers.
+     */
+    void onOutputBusConnected() override;
 
 private:
-    // DSP callback
+    /**
+     * @brief Static DSP callback wrapper.
+     * 
+     * Called by the DSP system for block-based processing.
+     * 
+     * @param dsp Pointer to the CombDelay instance (cast from DSPObject*).
+     */
     static void processBlock(DSPObject *dsp);
 
-    // Filter settings
-    dsp_float feedback;
-    dsp_float dampingCoeff;
-    dsp_float dampingStateL;
-    dsp_float dampingStateR;
+    /**
+     * @brief Main block processing method.
+     * 
+     * Reads input from the connected input bus, applies comb filtering with feedback and damping,
+     * and writes the result to the output bus.
+     */
+    void processBlock();
 
-    // Internal delay buffers
+    /// Feedback amount [0.0 – 1.0]
+    dsp_float feedback = 0.5;
+
+    /// Damping filter coefficient [0.0 – 1.0]
+    dsp_float dampingCoeff = 0.2;
+
+    /// State for left channel damping filter
+    dsp_float dampingStateL = 0.0;
+
+    /// State for right channel damping filter
+    dsp_float dampingStateR = 0.0;
+
+    /// Internal ring buffer for stereo block-based delay
     RingBlockBuffer delayBuffer;
 
-    // Parameter volume fader
+    /// Parameter fade handler for smooth transitions during time/feedback/damping changes
     ParamFader paramFader;
 };
+

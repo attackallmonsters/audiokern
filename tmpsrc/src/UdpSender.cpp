@@ -15,7 +15,7 @@ void UdpSender::setHost(const std::string& hostname)
     ensureInitialized();
     struct hostent* host = gethostbyname(hostname.c_str());
     if (!host)
-        throw std::runtime_error("Failed to resolve hostname");
+        panic(omfg() << "Failed to resolve hostname");
 
     destAddr.sin_addr = *(struct in_addr*)host->h_addr;
 }
@@ -36,7 +36,7 @@ void UdpSender::ensureInitialized()
 
     socketFd = socket(AF_INET, SOCK_DGRAM, 0);
     if (socketFd < 0)
-        throw std::runtime_error("Failed to create UDP socket");
+        panic(omfg() << "Failed to create UDP socket");
 
     std::memset(&destAddr, 0, sizeof(destAddr));
     destAddr.sin_family = AF_INET;

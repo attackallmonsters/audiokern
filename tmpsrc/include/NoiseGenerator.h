@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DSPObject.h"
+#include "SoundGenerator.h"
 #include "VoiceOptions.h"
 #include "DSP.h"
 #include "DSPObject.h"
@@ -9,29 +9,33 @@
 
 // A subclass of Oscillator that generates noise instead of periodic waveforms.
 // Supports white and pink noise generation.
-class NoiseOscillator : public DSPObject
+class NoiseGenerator : public SoundGenerator
 {
 public:
     // Constructor: always initializes with white noise and distribution [-1, 1]
-    NoiseOscillator();
+    NoiseGenerator();
 
     // Changes the current noise type (white or pink)
     void setType(NoiseType type);
 
 protected:
-    // Initializes the oscillator
-    DSPUsage initializeObject() override;
+    void initializeGenerator() override;
 
 private:
-    // Next sample block generation one voice
-    static void processBlockWhite(DSPObject *dsp);
-    static void processBlockPink(DSPObject *dsp);
+    // Static DSP callback used for processing audio blocks
+    static void processBlock(DSPObject *dsp);
+
+    // Processes the next block of samples
+    void processBlock();
 
     // Random number generator for white noise source
     std::mt19937 rng;
 
     // Uniform distribution for generating white noise values in range [-1.0, 1.0]
     std::uniform_real_distribution<host_float> dist{-1.0, 1.0};
+
+    // Current type of noise being generated
+    NoiseType noiseType;
 
     // State variables for pink noise filter (Paul Kellet method)
     // These variables store previous filter states to create 1/f pink noise characteristics

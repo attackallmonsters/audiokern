@@ -5,18 +5,17 @@ FastTan::FastTan()
     registerBlockProcessor(&FastTan::processBlock);
 }
 
-DSPUsage FastTan::initializeObject()
+void FastTan::processBlock()
 {
-    return DSPUsage::Process;
+    for (size_t i = 0; i < DSP::blockSize; ++i)
+    {
+        processBus->l[i] = dsp_math::fast_tanh(processBus->l[i]);
+        processBus->r[i] = dsp_math::fast_tanh(processBus->r[i]);
+    }
 }
 
 void FastTan::processBlock(DSPObject *dsp)
 {
-    FastTan *ft = static_cast<FastTan *>(dsp);
-
-    for (size_t i = 0; i < DSP::blockSize; ++i)
-    {
-        (ft->processBufferL)[i] = dsp_math::fast_tanh((ft->processBufferL)[i]);
-        (ft->processBufferR)[i] = dsp_math::fast_tanh((ft->processBufferR)[i]);
-    }
+    FastTan *self = static_cast<FastTan *>(dsp);
+    self->processBlock();
 }

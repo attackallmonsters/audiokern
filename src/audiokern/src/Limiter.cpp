@@ -7,14 +7,12 @@ Limiter::Limiter()
 }
 
 // Initializes the instance
-DSPUsage Limiter::initializeObject()
+void Limiter::initializeProcessor()
 {
     setThreshold(-3.0);
     setReleaseTime(20.0);
     setLookaheadTime(20.0);
     reset();
-
-    return DSPUsage::Process;
 }
 
 // Sets the amplitude threshold
@@ -52,8 +50,8 @@ void Limiter::processBlock()
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
         // Read current input sample (assuming input is written to outputBuffer)
-        host_float inputL = processBufferL[i];
-        host_float inputR = processBufferR[i];
+        host_float inputL = processBus->l[i];
+        host_float inputR = processBus->r[i];
 
         // Combine channels to get peak (for shared gain)
         host_float peak = std::max(std::fabs(inputL), std::fabs(inputR));
@@ -73,8 +71,8 @@ void Limiter::processBlock()
 
         auto &delayed = lookaheadBuffer[readIndex];
 
-        processBufferL[i] = delayed.first * gain;
-        processBufferR[i] = delayed.second * gain;
+        processBus->l[i] = delayed.first * gain;
+        processBus->r[i] = delayed.second * gain;
     }
 }
 

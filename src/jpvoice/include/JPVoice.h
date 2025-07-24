@@ -2,13 +2,11 @@
 
 #include "ParamFader.h"
 #include "VoiceOptions.h"
-#include "NoiseOscillator.h"
+#include "NoiseGenerator.h"
 #include "SineWavetable.h"
 #include "SawWavetable.h"
 #include "TriangleWavetable.h"
 #include "SquareWavetable.h"
-#include "TriangleOscillator.h"
-#include "SquareOscillator.h"
 #include "HarmonicClusterWavetable.h"
 #include "FibonacciWavetable.h"
 #include "MirrorWavetable.h"
@@ -16,7 +14,7 @@
 #include "BitWavetable.h"
 #include "KorgonFilter.h"
 #include "DSP.h"
-#include "DSPObject.h"
+#include "SoundGenerator.h"
 #include "dsp_types.h"
 #include "dsp_math.h"
 #include "ADSR.h"
@@ -36,7 +34,7 @@ struct ADSRParams
 
 // The Voice class manages two oscillators and handles interactions like
 // Frequency Modulation (FM) and Oscillator Sync between them.
-class JPVoice : public DSPObject
+class JPVoice : public SoundGenerator
 {
 public:
     // Constructor: requires two Oscillator pointers and the global sample rateSample
@@ -103,9 +101,6 @@ public:
     // Sets the filter drive
     void setFilterDrive(host_float value);
 
-    // Sets the output buffers
-    void setOutputBuffer(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR);
-
     // Filter envelope params
     void setFilterADSR(ADSRParams &params);
 
@@ -126,10 +121,9 @@ public:
 
 protected:
     // Initializes the DSP object
-    DSPUsage initializeObject() override;
+    void initializeGenerator() override;
 
-    // Called when buffers ready
-    void onBuffersCompleted() override;
+    void onOutputBusConnected() override;
 
 private:
     // Next sample block generation
@@ -155,7 +149,7 @@ private:
     host_float pulseWidth = 0.5; // Pulse width square oscillator
 
     // Oscillators
-    NoiseOscillator noise;
+    NoiseGenerator noise;
     SineWavetable sineCarrier;
     SineWavetable sineModulator;
     SawWavetable sawCarrier;
@@ -175,13 +169,17 @@ private:
     BitWavetable bitModulator;
 
     // Audio buffers
-    DSPSampleBuffer carrierL;
-    DSPSampleBuffer carrierR;
-    DSPSampleBuffer modulatorL;
-    DSPSampleBuffer modulatorR;
-    DSPSampleBuffer noiseL;
-    DSPSampleBuffer noiseR;
-    
+    DSPAudioBus *carrierBus;
+    DSPAudioBus *modulatorBus;
+    DSPAudioBus *noiseBus;
+    DSPModulationBus *fltAdsrBus;
+    DSPModulationBus *ampAdsrBus;
+
+    std::string carrierBusName;
+    std::string modulatorBusName;
+    std::string noiseBusName;
+    std::string filterAdsrBusName;
+    std::string ampAdsrBusName;
 
     // Multi mode filter
     KorgonFilter filter;
@@ -200,7 +198,7 @@ private:
     host_float amp_carrier;
     host_float amp_modulator;
     host_float amp_oscmix;
-    host_float amp_osc_noise;
+    host_float amp_oscs;
     host_float amp_noise;
 
     // Feedback
@@ -213,8 +211,6 @@ private:
 
     // Number of voices
     int numVoices = 1;
-
-    const std::string name = "_JPVoice";
 
     // Parameter change fader
     ParamFader paramFader;

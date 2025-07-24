@@ -5,14 +5,12 @@ Panner::Panner()
     registerBlockProcessor(&Panner::processBlockGain);
 }
 
-DSPUsage Panner::initializeObject()
+void Panner::initializeProcessor()
 {
     slew.initialize("slew" + getName());
     slew.setSlewTime(1.0);
 
     setPanning(0.5);
-
-    return DSPUsage::Process;
 }
 
 void Panner::setMode(PanningMode mode)
@@ -40,53 +38,65 @@ void Panner::setPanning(double value)
     slew.setTarget(pan);
 }
 
-void Panner::processBlockGain(DSPObject *dsp)
+void Panner::processBlockGain()
 {
-    Panner *self = static_cast<Panner *>(dsp);
-
-    dsp_float gainL, gainR;
+    host_float gainL, gainR;
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        dsp_math::get_sin_cos(self->slew.process() * 0.5 * dsp_math::DSP_PI, &gainR, &gainL);
+        dsp_math::get_sin_cos(slew.process() * 0.5 * dsp_math::DSP_PI, &gainL, &gainR);
 
-        self->processBufferL[i] = self->processBufferL[i] * gainL;
-        self->processBufferR[i] = self->processBufferR[i] * gainR;
+        processBus->l[i] = processBus->l[i] * gainL;
+        processBus->r[i] = processBus->r[i] * gainR;
     }
+}
+
+void Panner::processBlockBlend()
+{
+    host_float gainL, gainR;
+
+    for (size_t i = 0; i < DSP::blockSize; ++i)
+    {
+        dsp_math::get_sin_cos(slew.process() * 0.5 * dsp_math::DSP_PI, &gainL, &gainR);
+
+        host_float inL = processBus->l[i];
+        host_float inR = processBus->r[i];
+
+        outputBus->l[i] = inL * gainL + inR * (1.0f - gainR);
+        outputBus->r[i] = inR * gainR + inL * (1.0f - gainL);
+    }
+}
+
+void Panner::processBlockBlendMono()
+{
+    host_float gainL, gainR;
+
+    for (size_t i = 0; i < DSP::blockSize; ++i)
+    {
+        dsp_math::get_sin_cos(slew.process() * 0.5 * dsp_math::DSP_PI, &gainL, &gainR);
+
+        host_float inL = processBus->l[i];
+        host_float inR = processBus->r[i];
+
+        outputBus->l[i] = inL * gainL + inR * gainL;
+        outputBus->r[i] = inR * gainR + inL * gainR;
+    }
+}
+
+void Panner::processBlockGain(DSPObject *dsp)
+{
+    Panner *self = static_cast<Panner *>(dsp);
+    self->processBlockGain();
 }
 
 void Panner::processBlockBlend(DSPObject *dsp)
 {
     Panner *self = static_cast<Panner *>(dsp);
-
-    dsp_float gainL, gainR;
-
-    for (size_t i = 0; i < DSP::blockSize; ++i)
-    {
-        dsp_math::get_sin_cos(self->slew.process() * 0.5 * dsp_math::DSP_PI, &gainR, &gainL);
-
-        host_float inL = self->processBufferL[i];
-        host_float inR = self->processBufferR[i];
-
-        self->processBufferL[i] = inL * gainL + inR * (1.0f - gainR);
-        self->processBufferR[i] = inR * gainR + inL * (1.0f - gainL);
-    }
+    self->processBlockBlend();
 }
 
 void Panner::processBlockBlendMono(DSPObject *dsp)
 {
     Panner *self = static_cast<Panner *>(dsp);
-
-    dsp_float gainL, gainR;
-
-    for (size_t i = 0; i < DSP::blockSize; ++i)
-    {
-        dsp_math::get_sin_cos(self->slew.process() * 0.5 * dsp_math::DSP_PI, &gainR, &gainL);
-
-        host_float inL = self->processBufferL[i];
-        host_float inR = self->processBufferR[i];
-
-        self->processBufferL[i] = inL * gainL + inR * gainL;
-        self->processBufferR[i] = inR * gainR + inL * gainR;
-    }
+    self->processBlockBlendMono();
 }

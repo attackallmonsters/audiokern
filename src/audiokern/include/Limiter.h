@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DSPObject.h"
+#include "SoundProcessor.h"
 #include "DSPSampleBuffer.h"
 #include "dsp_types.h"
 #include "clamp.h"
@@ -8,7 +8,7 @@
 #include <cmath>
 #include <algorithm>
 
-class Limiter : public DSPObject
+class Limiter : public SoundProcessor
 {
 public:
     // Ctor
@@ -28,7 +28,7 @@ public:
 
 protected:
     // Initializes the instance
-    DSPUsage initializeObject() override;
+    void initializeProcessor() override;
 
 private:
     // Processes data in bufferL, buffer R
@@ -37,7 +37,8 @@ private:
     // Same same
     void processBlock();
 
-    std::vector<std::pair<host_float, host_float>> lookaheadBuffer; // Circular buffer for lookahead
+    // Circular buffer for lookahead
+    std::vector<std::pair<host_float, host_float>> lookaheadBuffer;
 
     dsp_float threshold;    // Amplitude threshold
     dsp_float releaseCoeff; // Exponential smoothing coefficient for release

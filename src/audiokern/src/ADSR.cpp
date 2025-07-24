@@ -5,7 +5,7 @@ ADSR::ADSR()
     registerBlockProcessor(&ADSR::processBlock);
 }
 
-DSPUsage ADSR::initializeObject()
+void ADSR::initializeModulator()
 {
     sampleRateMS = DSP::sampleRate / 1000.0;
     gain = 1.0;
@@ -23,8 +23,6 @@ DSPUsage ADSR::initializeObject()
     startupSamples = std::max(1, static_cast<int>(startupTimeMS * sampleRateMS));
 
     enterPhase(ADSRPhase::Idle);
-
-    return DSPUsage::Modulation;
 }
 
 dsp_float ADSR::shapeToExponent(dsp_float f)
@@ -205,15 +203,6 @@ void ADSR::processBlock(DSPObject *dsp)
     for (size_t i = 0; i < blocksize; ++i)
     {
         (adsr->*adsr->phaseFunc)();
-        adsr->modulationBuffer[i] = adsr->currentEnv * adsr->gain;
-    }
-}
-
-void ADSR::multiply(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR)
-{
-    for (size_t i = 0; i < DSP::blockSize; ++i)
-    {
-        bufL[i] *= modulationBuffer[i];
-        bufR[i] *= modulationBuffer[i];
+        adsr->modulationBus->m[i] = adsr->currentEnv * adsr->gain;
     }
 }

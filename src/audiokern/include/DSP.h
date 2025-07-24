@@ -10,75 +10,154 @@
 
 class DSPObject; // Forward declaration
 
+/**
+ * @brief Static utility and management class for the DSP system.
+ * 
+ * Provides centralized initialization, logging, and global object registration
+ * for all DSP-related components.
+ */
 class DSP
 {
 public:
-    // Logger function for audio host
-    using LogFunc = void (*)(const std::string &);
+    /// Function pointer type for logging callback
+    using LogFunc = void (*)(const std::string&);
 
-    // Ctor
+    /// Constructs a DSP instance (currently unused in static context)
     DSP();
 
-    // Dtor
+    /// Virtual destructor
     virtual ~DSP();
 
-    // Indicates that the host turned the DSP off
-    void off();
+    /**
+     * @brief Called by the host to signal DSP shutdown.
+     * 
+     * Can be used to stop processing or release audio resources.
+     */
+    static void off();
 
-    // Initializes the DSP with samplerate and blocksize
+    /**
+     * @brief Initializes the DSP system with sampling rate and block size.
+     * 
+     * This must be called before using any DSP objects or processing buffers.
+     * 
+     * @param rate  Sampling rate in Hz (e.g. 44100.0, 48000.0)
+     * @param size  Block size in samples (must be > 0 and <= maxBlockSize)
+     */
     static void initializeAudio(dsp_float rate, size_t size);
 
-    // Must be called when all DSP objects have bin initialized
+    /**
+     * @brief Finalizes DSP setup after all objects have been created and connected to busses.
+     * 
+     * Typically called once at the end of system initialization to prepare
+     * connections, precompute tables, or verify integrity.
+     */
     static void finalizeAudio();
 
-    // Log function callback registration
+    /**
+     * @brief Registers a log callback function for textual DSP output.
+     * 
+     * The callback is invoked via DSP::log(...) and must be thread-safe.
+     * 
+     * @param func A function accepting a std::string log message.
+     */
     static void registerLogger(LogFunc func);
 
-    // Registers an DSP Object
-    static void registerObject(DSPObject &obj);
+    /**
+     * @brief Registers a DSPObject with the global registry.
+     * 
+     * Each DSPObject must have a unique name. Duplicate names will throw.
+     * 
+     * @param obj Reference to the DSP object to register.
+     * @throws std::runtime_error if an object with the same name already exists.
+     */
+    static void registerObject(DSPObject& obj);
 
-    // Returns the registry
+    /**
+     * @brief Returns the list of all registered DSP objects.
+     * 
+     * Used for traversal, debugging, or system-wide messaging.
+     * 
+     * @return Const reference to internal object registry.
+     */
     static const std::vector<DSPObject*>& getRegistry();
 
-    // Zeros a value if it is in the range +/- epsilon
+    /**
+     * @brief Replaces very small values with zero to avoid denormals.
+     * 
+     * This avoids costly floating-point denormal behavior on some CPUs.
+     * 
+     * @param value The sample value to check.
+     * @return Zero if abs(value) < epsilon, otherwise value.
+     */
     static dsp_float zeroSubnormals(dsp_float value);
 
-    // Indicator if the DSP system has been initialized.
-    static bool isInitialized() { return initialized; };
+    /**
+     * @brief Indicates whether the DSP system has been successfully initialized.
+     * 
+     * @return True if initializeAudio(...) has been called.
+     */
+    static bool isInitialized() { return initialized; }
 
-    // For various purposes
+    /**
+     * @brief Advances internal block statistics (e.g., block count).
+     * 
+     * Should be called once per processed audio block.
+     */
     static void nextBlock();
 
-    // The max block size
+    /// Maximum allowed sample block size
     static constexpr size_t maxBlockSize = 2048;
 
-    // The max sample rate
+    /// Maximum supported sampling rate
     static constexpr dsp_float maxSamplerate = 96000.0;
 
-    // Threshold for zeroing
+    /// Threshold for denormal suppression
     static constexpr dsp_float epsilon = 1e-10;
 
-    // The audio systems current sampling rate
+    /// Current system sampling rate in Hz
     static dsp_float sampleRate;
 
-    // The audio systems current sample block size
+    /// Current block size in samples
     static size_t blockSize;
 
-    // Log function
-    static void log(const char *fmt, ...);
+    /**
+     * @brief Formatted log message output (like printf).
+     * 
+     * Uses the registered log function, if available.
+     * 
+     * @param fmt printf-style format string
+     * @param ... optional format arguments
+     */
+    static void log(const char* fmt, ...);
 
-    // Logs function for buffers
-    static void logBuffer(const std::string &label, host_float *buffer, size_t size);
+    /**
+     * @brief Logs the contents of a buffer with label.
+     * 
+     * Outputs each value to the log function in formatted form.
+     * 
+     * @param label Descriptive name or tag for the buffer.
+     * @param buffer Pointer to the buffer to log.
+     * @param size Number of elements in the buffer.
+     */
+    static void logBuffer(const std::string& label, host_float* buffer, size_t size);
 
 private:
-    // Indicator if DSP has been initialized
+    /// Internal flag: true after successful initialization
     static bool initialized;
 
-    // Statistics
+    /// Total number of processed samples (for stats)
     static long elapsedSamples;
+
+    /// Total number of processed blocks (for stats)
     static long processedBlocks;
 
+    /// Current logger callback function
     static LogFunc logger;
 
+    /**
+     * @brief Returns the mutable internal DSP object registry.
+     * 
+     * Used by registerObject(...) to store object pointers.
+     */
     static std::vector<DSPObject*>& getMutableRegistry();
 };

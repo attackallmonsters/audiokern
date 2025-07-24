@@ -116,19 +116,19 @@ void DSPSampleBuffer::isValid()
         if (std::isnan(value))
         {
             log();
-            throw std::runtime_error("-nan in " + bufferName + " at position " + std::to_string(i));
+            panic(omfg() << "-nan in " + bufferName + " at position " + std::to_string(i));
         }
 
         if (std::isinf(value))
         {
             log();
-            throw std::runtime_error("-inf in " + bufferName + " at position " + std::to_string(i));
+            panic(omfg() << "-inf in " + bufferName + " at position " + std::to_string(i));
         }
 
         if (std::fabs(value) > maxReasonable)
         {
             log();
-            throw std::runtime_error("Value too large (" + std::to_string(value) + ") in " + bufferName + " at index " + std::to_string(i));
+            panic(omfg() << "Value too large (" + std::to_string(value) + ") in " + bufferName + " at index " + std::to_string(i));
         }
     }
 }

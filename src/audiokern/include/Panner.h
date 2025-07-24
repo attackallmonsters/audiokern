@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SoundProcessor.h"
 #include "DSPObject.h"
 #include "DSPSampleBuffer.h"
 #include "SlewLimiter.h"
@@ -7,7 +8,9 @@
 #include "clamp.h"
 #include <cmath>
 
-// Enum to define the panning behavior for stereo signal processing
+/**
+ * @brief Enum to define the panning behavior for stereo signal processing
+ */
 enum class PanningMode
 {
     Gain,       // Basic gain-based panning:
@@ -26,7 +29,7 @@ enum class PanningMode
                 // Useful when the input should be centered and panned as a single source.
 };
 
-class Panner : public DSPObject
+class Panner : public SoundProcessor
 {
 public:
     // Contructor
@@ -40,7 +43,7 @@ public:
 
 protected:
     // Initializes the insatnce
-    DSPUsage initializeObject() override;
+    void initializeProcessor() override;
 
 private:
     // Block processing
@@ -48,8 +51,15 @@ private:
     static void processBlockBlend(DSPObject *dsp);
     static void processBlockBlendMono(DSPObject *dsp);
 
+    void processBlockGain();
+    void processBlockBlend();
+    void processBlockBlendMono();
+
     // Audio artifact prevention
     SlewLimiter slew;
 
     double pan; // Raw mix value (0.0 to 1.0)
+
+    DSPAudioBus *inputBus;
+    DSPAudioBus *outputBus;
 };

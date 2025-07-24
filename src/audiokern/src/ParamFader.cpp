@@ -5,11 +5,6 @@ ParamFader::ParamFader()
     registerBlockProcessor(processBlock);
 }
 
-DSPUsage ParamFader::initializeObject()
-{
-    return DSPUsage::Process;
-}
-
 // Queue a parameter change
 void ParamFader::change(ParamChange fn)
 {
@@ -50,8 +45,8 @@ void ParamFader::processBlock()
         // Apply fade to entire output buffer
         for (size_t i = 0; i < DSP::blockSize; ++i)
         {
-            processBufferL[i] *= fadeValue;
-            processBufferR[i] *= fadeValue;
+            processBus->l[i] *= fadeValue;
+            processBus->r[i] *= fadeValue;
         }
     }
 }

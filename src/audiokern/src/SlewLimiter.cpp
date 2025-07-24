@@ -6,12 +6,10 @@ SlewLimiter::SlewLimiter()
 }
 
 // Initializes the slew limiter
-DSPUsage SlewLimiter::initializeObject()
+void SlewLimiter::initializeObject()
 {
     setTarget(0.0);
     setSlewTime(0.0);
-
-    return DSPUsage::None;
 }
 
 // Set new target (starts smoothing)

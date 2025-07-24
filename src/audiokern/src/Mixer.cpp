@@ -5,52 +5,50 @@ Mixer::Mixer()
     registerBlockProcessor(&Mixer::processBlock);
 }
 
-DSPUsage Mixer::initializeObject(size_t count)
+void Mixer::initializeObject(size_t count)
 {
-    bufferCount = count;
+    busCount = count;
 
-    buffersL.clear();
-    buffersL.resize(bufferCount);
+    busNames.clear();
+    busNames.resize(busCount);
 
-    buffersR.clear();
-    buffersR.resize(bufferCount);
+    busses.clear();
+    busses.resize(busCount);
 
-    for (size_t i = 0; i < bufferCount; ++i)
+    for (size_t i = 0; i < busCount; ++i)
     {
-        buffersL[i].initialize("buffersL_" + std::to_string(i) + getName(), DSP::blockSize);
-        buffersR[i].initialize("buffersR_" + std::to_string(i) + getName(), DSP::blockSize);
+        busNames[i] = getName() + std::to_string(i);
+        DSPBusManager::registerAudioChannel(busNames[i]);
+        busses[i] = DSPBusManager::getAudioBus(busNames[i]);
     }
-
-    return DSPUsage::OutputOnly;
 }
 
-DSPSampleBuffer &Mixer::getInputBufferL(size_t index)
+void Mixer::connectToOutputBus(const std::string busName)
 {
-    return buffersL[index];
+    outputBus = DSPBusManager::getAudioBus(busName);
 }
 
-DSPSampleBuffer &Mixer::getInputBufferR(size_t index)
+const std::string Mixer::getInputBusName(size_t index)
 {
-    return buffersR[index];
+    return busNames[index];
 }
 
 void Mixer::processBlock()
 {
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        outputBufferL[i] = 0.0;
-        outputBufferR[i] = 0.0;
+        outputBus->l[i] = 0.0;
+        outputBus->r[i] = 0.0;
     }
 
-    for (size_t i = 0; i < bufferCount; ++i)
+    for (size_t i = 0; i < busCount; ++i)
     {
-        DSPSampleBuffer &bufL = buffersL[i];
-        DSPSampleBuffer &bufR = buffersR[i];
+        DSPAudioBus *inBus = busses[i];
 
         for (size_t l = 0; l < DSP::blockSize; ++l)
         {
-            outputBufferL[l] += bufL[l];
-            outputBufferR[l] += bufR[l];
+            outputBus->l[l] += inBus->l[l];
+            outputBus->r[l] += inBus->r[l];
         }
     }
 }

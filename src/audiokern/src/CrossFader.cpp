@@ -5,60 +5,26 @@ CrossFader::CrossFader()
     registerBlockProcessor(&CrossFader::processBlock);
 }
 
-DSPUsage CrossFader::initializeObject()
+void CrossFader::initializeObject()
 {
     slew.initialize("slew" + getName());
     slew.setSlewTime(1.0);
-
-    inputBufferAL.initialize("inputBufferAL" + getName(), DSP::blockSize);
-    inputBufferAR.initialize("inputBufferAR" + getName(), DSP::blockSize);
-    
-    inputBufferBL.initialize("inputBufferBL" + getName(), DSP::blockSize);
-    inputBufferBR.initialize("inputBufferBR" + getName(), DSP::blockSize);
-
     setMix(0.0);
-
-    return DSPUsage::OutputOnly;
 }
 
-void CrossFader::audioInputForA(DSPObject &dspObject)
+void CrossFader::connectToInputBusForA(const std::string &busName)
 {
-    DSPSignalBus bus = dspObject.outputSignalBus;
-
-    inputBufferAL = *bus.left;
-    inputBufferAR = *bus.right;
+    inputBusA = DSPBusManager::getAudioBus(busName);
 }
 
-void CrossFader::audioInputForA(DSPSignalBus &signalBus)
+void CrossFader::connectToInputBusForB(const std::string &busName)
 {
-    inputBufferAL = *signalBus.left;
-    inputBufferAR = *signalBus.right;
+    inputBusB = DSPBusManager::getAudioBus(busName);
 }
 
-void CrossFader::audioInputForA(DSPSampleBuffer &bufferL, DSPSampleBuffer &bufferR)
+void CrossFader::connectToOutputBus(const std::string &busName)
 {
-    inputBufferAL = bufferL;
-    inputBufferAR = bufferR;
-}
-
-void CrossFader::audioInputForB(DSPObject &dspObject)
-{
-    DSPSignalBus bus = dspObject.outputSignalBus;
-
-    inputBufferBL = *bus.left;
-    inputBufferBR = *bus.right;
-}
-
-void CrossFader::audioInputForB(DSPSignalBus &signalBus)
-{
-    inputBufferBL = *signalBus.left;
-    inputBufferBR = *signalBus.right;
-}
-
-void CrossFader::audioInputForB(DSPSampleBuffer &bufferL, DSPSampleBuffer &bufferR)
-{
-    inputBufferBL = bufferL;
-    inputBufferBR = bufferR;
+    outputBus = DSPBusManager::getAudioBus(busName);
 }
 
 void CrossFader::setMix(double value)
@@ -70,14 +36,14 @@ void CrossFader::setMix(double value)
 
 void CrossFader::processBlock()
 {
-    dsp_float gainA, gainB;
+    host_float gainA, gainB;
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        dsp_math::get_sin_cos(slew.process() * 0.5 * dsp_math::DSP_PI, &gainB, &gainA);
+        dsp_math::get_sin_cos(slew.process() * 0.5 * dsp_math::DSP_PI, &gainA, &gainB);
 
-        outputBufferL[i] = inputBufferAL[i] * gainA + inputBufferBL[i] * gainB;
-        outputBufferR[i] = inputBufferAR[i] * gainA + inputBufferBR[i] * gainB;
+        outputBus->l[i] = inputBusA->l[i] * gainA + inputBusB->l[i] * gainB;
+        outputBus->r[i] = inputBusA->r[i] * gainA + inputBusB->r[i] * gainB;
     }
 }
 

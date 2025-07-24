@@ -1,8 +1,7 @@
 #pragma once
 
 #include "clamp.h"
-#include "DSPObject.h"
-#include "DSPSampleBuffer.h"
+#include "Modulator.h"
 #include <cmath>
 
 // Enumeration for the envelope phase
@@ -16,7 +15,7 @@ enum class ADSRPhase
     Release
 };
 
-class ADSR : public DSPObject
+class ADSR : public Modulator
 {
 public:
     ADSR();
@@ -34,12 +33,9 @@ public:
     void triggerStart();
     void triggerStop();
 
-    // Does a *= calulation on the samples
-    void multiply(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR);
-
 protected:
     // Initializes the ADSR
-    virtual DSPUsage initializeObject() override;
+    virtual void initializeModulator() override;
 
 private:
     // Next sample block generation

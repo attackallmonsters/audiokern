@@ -1,81 +1,118 @@
 #pragma once
 
-#include "DSPObject.h"
+#include "SoundEffect.h"
 #include "CombDelay.h"
 #include "clamp.h"
 #include "CrossFader.h"
 #include <array>
 #include <vector>
 
-// A stereo reverberation effect using multiple parallel comb filters.
-// Parameters control density, delay times ("space"), damping and feedback amount.
-// This reverb has a more metallic sound, not unlike a Karplus algorithm or plate.
-// Because it works with direct and relatively short feedback times.
-// However, you can vary the feedback times so that the metallic sound is better
-// dampened by the reverb cloud.
-// For the best sound configuration, the feedback (room size) should be very finely
-// configurable in the upper range 90 - 100%. The reflections (space) should be finely
-// configurable in the lower range 0 - 10 %.
-class NebularReverb : public DSPObject
+/**
+ * @brief NebularReverb implements a metallic, plate-style reverb using parallel comb filters.
+ *
+ * This stereo reverb effect consists of multiple short feedback-based delay lines,
+ * each acting as a comb filter. Its character is metallic and dense, making it suitable
+ * for synthetic or experimental use. Space and room size affect time distribution and
+ * feedback amount, while damping controls a lowpass filter in the feedback path.
+ *
+ * - Best results are achieved with high feedback (90–100%) and short delays (0–10% space).
+ * - All parameters are real-time controllable.
+ */
+class NebularReverb : public SoundEffect
 {
 public:
-    // Default constructor
+    /**
+     * @brief Default constructor.
+     */
     NebularReverb();
 
-    // Sets the number of parallel delay lines (2 to 8)
+    /**
+     * @brief Sets the number of parallel comb delays.
+     * @param dense Number of lines (clamped between 2 and 8).
+     */
     void setDensity(host_float dense);
 
-    // Sets space amount 0 - 1 (controls the spread of the reverb)
+    /**
+     * @brief Controls spread between delay lines.
+     * @param size Value in [0.0, 1.0], higher means more time offset.
+     */
     void setSpace(host_float size);
 
-    // Sets the damping filter frequency 0 -20000 (typically a lowpass in the feedback path)
+    /**
+     * @brief Sets damping filter frequency.
+     * @param d Frequency in Hz (0 – 20000), used as lowpass cutoff in feedback.
+     */
     void setDamping(host_float d);
 
-    // Sets the room size (or tail length) 0 - 1 (ith a value of 1, the reverb will likely escalate)
+    /**
+     * @brief Controls feedback gain (tail length).
+     * @param size Value in [0.0, 1.0]. Higher values increase decay time.
+     *             Note: 1.0 may result in self-oscillation.
+     */
     void setRoomSize(host_float size);
 
-    // Sets the output volume
+    /**
+     * @brief Sets the output wet signal level.
+     * @param vol Volume factor [0.0, 1.0].
+     */
     void setWet(host_float vol);
 
-    // Processes the next block of samples
-    void processBlock();
-
 protected:
-    // Component initialization on DSP activation
-    DSPUsage initializeObject() override;
+    /**
+     * @brief Called during DSP activation. Prepares all delay lines and faders.
+     */
+    void initializeEffect() override;
 
-    void onInputBuffersAssigned() override;
-    void onOutputBuffersAssigned() override;
-    void onWetBuffersAssigned() override;
+    /**
+     * @brief Called when the input bus is connected. Not used in current implementation.
+     */
+    void onInputBusConnected();
+
+    /**
+     * @brief Called when the output bus is connected. Prepares fader connection.
+     */
+    void onOutputBusConnected();
 
 private:
-    // Static DSP callback used for processing audio blocks
+    /**
+     * @brief Static DSP processing callback.
+     * Dispatches to the instance-level `processBlock()`.
+     */
     static void processBlock(DSPObject *dsp);
 
-    // Pushes samples inputBufferL/R to the ring buffers
-    void push();
+    /**
+     * @brief Processes one audio block.
+     * Mixes the outputs of all active delay lines and applies dry/wet crossfade.
+     */
+    void processBlock();
 
-    // Maximum number of comb delay lines
-    static constexpr int maxDelays = 8;
-
-    // Active number of delay lines (determined by density setting)
-    int density;
-
-    // Base delay time in milliseconds (spread across delay lines)
-    host_float delayTime;
-
-    // Controls the output volume of the reverb
-    host_float wet;
-
-    // Stereo comb delay lines
-    std::array<CombDelay, maxDelays> delays;
-
-    // Delays output buffers
-    std::vector<DSPSignalBus> delayBusses;
-
-    // Updates all delay line parameters based on current settings
+    /**
+     * @brief Updates internal delay lines based on the current parameters.
+     * Called after each parameter change.
+     */
     void updateDelays();
 
-    // Dry/Wet fader
+    // Maximum number of comb delay lines allowed
+    static constexpr int maxDelays = 8;
+
+    // Number of active delay lines, controlled by density
+    int density;
+
+    // Base delay time (spread between lines)
+    host_float delayTime;
+
+    // Output wet level
+    host_float wet;
+
+    // All comb delay instances
+    std::vector<CombDelay *> delays;
+
+    // Unique names for bus registration
+    std::vector<std::string> delayNames;
+
+    // Pointers to output buses of delay lines
+    std::vector<DSPAudioBus *> delayBusses;
+
+    // Crossfader for dry/wet mixing
     CrossFader fader;
 };

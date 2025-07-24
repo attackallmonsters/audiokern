@@ -76,9 +76,21 @@ void DSP::registerLogger(LogFunc func)
     logger = func;
 }
 
-void DSP::registerObject(DSPObject &obj)
+void DSP::registerObject(DSPObject& obj)
 {
-    getMutableRegistry().push_back(&obj);
+    auto& registry = getMutableRegistry();
+
+    // Check for duplicate object name
+    for (const auto* existing : registry)
+    {
+        if (existing->getName() == obj.getName())
+        {
+            panic(omfg() << "DSP::registerObject: object name '" + obj.getName() + "' is already registered");
+        }
+    }
+
+    // Add new object to the registry
+    registry.push_back(&obj);
 }
 
 std::vector<DSPObject *> &DSP::getMutableRegistry()

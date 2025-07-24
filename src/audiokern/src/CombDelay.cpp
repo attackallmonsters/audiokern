@@ -5,7 +5,7 @@ CombDelay::CombDelay()
     registerBlockProcessor(processBlock);
 }
 
-DSPUsage CombDelay::initializeObject()
+void CombDelay::initializeEffect()
 {
     delayBuffer.initialize("delayBuffer" + getName());
     delayBuffer.setTime(0.0, 0.0);
@@ -13,13 +13,11 @@ DSPUsage CombDelay::initializeObject()
 
     dampingStateL = 0.0;
     dampingStateR = 0.0;
-
-    return DSPUsage::OutputOnly;
 }
 
-void CombDelay::onOutputBuffersAssigned()
+void CombDelay::onOutputBusConnected()
 {
-    paramFader.audioInputFrom(*this);
+    paramFader.connectToProcessBuffer(outputBus->busName);
 }
 
 void CombDelay::setMaxTime(dsp_float timeMS)
@@ -53,17 +51,17 @@ void CombDelay::setDamping(dsp_float freqHz)
     dampingCoeff = std::exp(-2.0 * dsp_math::DSP_PI * f / DSP::sampleRate);
 }
 
-void CombDelay::push(const DSPSampleBuffer &blockL, const DSPSampleBuffer &blockR)
+void CombDelay::push()
 {
-    delayBuffer.push(blockL, blockR);
+    delayBuffer.push(inputBus->l, inputBus->r);
 }
 
 void CombDelay::processBlock()
 {
     if (feedback == 0.0)
     {
-        outputBufferL.copy(delayBuffer.outputBufferL);
-        outputBufferR.copy(delayBuffer.outputBufferR);
+        outputBus->l.copy(delayBuffer.outputBufferL);
+        outputBus->r.copy(delayBuffer.outputBufferR);
 
         return;
     }
@@ -83,8 +81,8 @@ void CombDelay::processBlock()
         delayBuffer.feedbackBufferR[i] = dampingStateR * feedback;
 
         // Signal output
-        outputBufferL[i] = delayedL + delayBuffer.feedbackBufferL[i];
-        outputBufferR[i] = delayedR + delayBuffer.feedbackBufferR[i];
+        outputBus->l[i] = delayedL + delayBuffer.feedbackBufferL[i];
+        outputBus->r[i] = delayedR + delayBuffer.feedbackBufferR[i];
     }
 
     paramFader.process();

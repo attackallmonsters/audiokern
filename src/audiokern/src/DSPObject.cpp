@@ -2,11 +2,8 @@
 #include "DSP.h"
 #include "DSPBusManager.h"
 
-#define _BUFNAMES(left, right) ((left).getName() + "/" + (right).getName())
-
 DSPObject::DSPObject()
 {
-    DSP::registerObject(*this);
     processBlockFunc = defaultBlockProcess;
 }
 
@@ -17,8 +14,9 @@ DSPObject::~DSPObject()
 void DSPObject::initialize(const std::string &name)
 {
     objectName = "_" + name;
-    usage = initializeObject();
-    setBufferUsage();
+    initializeObject();
+
+    DSP::registerObject(*this);
 }
 
 void DSPObject::initialize(const std::string &name, size_t count)

@@ -197,4 +197,12 @@ private:
     const size_t voiceCount = 6;
 
     const std::string name = "_JPSynth";
+
+    DSPAudioBus *outputBus;
+    DSPAudioBus *wetBus;
+    DSPAudioBus *voicesOutputBus;
+
+    const std::string outputBusName = "output";
+    const std::string wetBusName = "wet";
+    const std::string voicesOutputBusName = "voices";
 };

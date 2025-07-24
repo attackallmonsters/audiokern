@@ -12,58 +12,68 @@ int DSPBusManager::modulationCount = 0;
 
 // ----------- Register Methods -----------
 
-void DSPBusManager::registerAudioChannel(const std::string& name)
+DSPAudioBus *DSPBusManager::registerAudioChannel(const std::string &name)
 {
+    // Skip registration if channel name already exists
     for (int i = 0; i < audioCount; ++i)
     {
         if (audioNames[i] == name)
-            return;
+            panic(omfg() << "DSPBusManager: audio buffer " << name << " already exists");
     }
 
+    // Register new channel if space allows
     if (audioCount < maxBusses)
     {
         audioNames[audioCount] = name;
+        audioBusses[audioCount].initialize(name, DSP::blockSize);
         ++audioCount;
+
+        return getAudioBus(name);
     }
     else
     {
-        throw std::runtime_error("Maximum number of audio channels exceeded")
+        panic(omfg() << "DSPBusManager: maximum number of audio channels exceeded");
     }
 }
 
-void DSPBusManager::registerModulationChannel(const std::string& name)
+DSPModulationBus *DSPBusManager::registerModulationChannel(const std::string &name)
 {
+    // Skip registration if channel name already exists
     for (int i = 0; i < modulationCount; ++i)
     {
         if (modulationNames[i] == name)
-            return;
+            panic(omfg() << "DSPBusManager: modulation buffer " << name << " already exists");
     }
 
+    // Register new channel if space allows
     if (modulationCount < maxBusses)
     {
         modulationNames[modulationCount] = name;
+        modulationBusses[modulationCount].initialize(name, DSP::blockSize);
         ++modulationCount;
+
+        return getModulationBus(name);
     }
     else
     {
-        throw std::runtime_error("Maximum number of modulation channels exceeded")
+        panic(omfg() << "DSPBusManager: maximum number of modulation channels exceeded");
     }
 }
 
 // ----------- Get Methods -----------
 
-DSPAudioBus* DSPBusManager::getAudioBus(const std::string& name)
+DSPAudioBus *DSPBusManager::getAudioBus(const std::string &name)
 {
     for (int i = 0; i < audioCount; ++i)
     {
         if (audioNames[i] == name)
             return &audioBusses[i];
     }
-    
-    return nullptr;
+
+    panic(omfg() << "invalid audio bus name: " << name);
 }
 
-DSPModulationBus* DSPBusManager::getModulationBus(const std::string& name)
+DSPModulationBus *DSPBusManager::getModulationBus(const std::string &name)
 {
     for (int i = 0; i < modulationCount; ++i)
     {
@@ -71,21 +81,7 @@ DSPModulationBus* DSPBusManager::getModulationBus(const std::string& name)
             return &modulationBusses[i];
     }
 
-    return nullptr;
-}
-
-// ----------- Initialization -----------
-
-void DSPBusManager::initialize(size_t bufferSize)
-{
-    for (int i = 0; i < audioCount; ++i)
-        audioBusses[i].initialize(audioNames[i], bufferSize);
-
-    for (int i = 0; i < modulationCount; ++i)
-        modulationBusses[i].initialize(modulationNames[i], bufferSize);
-
-    for (int i = 0; i < signalCount; ++i)
-        signalBusses[i].initialize(signalNames[i], bufferSize);
+    panic(omfg() << "invalid modulation bus name: " << name);
 }
 
 // ----------- Clear -----------
@@ -94,7 +90,6 @@ void DSPBusManager::clear()
 {
     audioCount = 0;
     modulationCount = 0;
-    signalCount = 0;
 }
 
 void DSPBusManager::validate()
@@ -106,7 +101,7 @@ void DSPBusManager::validate()
             audioBusses[i].l.isValid();
             audioBusses[i].r.isValid();
         }
-        catch (const std::runtime_error& e)
+        catch (const std::runtime_error &e)
         {
             DSP::log("AudioBus '%s' validation failed: %s", audioNames[i].c_str(), e.what());
             throw;
@@ -119,22 +114,9 @@ void DSPBusManager::validate()
         {
             modulationBusses[i].m.isValid();
         }
-        catch (const std::runtime_error& e)
+        catch (const std::runtime_error &e)
         {
             DSP::log("ModulationBus '%s' validation failed: %s", modulationNames[i].c_str(), e.what());
-            throw;
-        }
-    }
-
-    for (int i = 0; i < signalCount; ++i)
-    {
-        try
-        {
-            signalBusses[i].m.isValid();
-        }
-        catch (const std::runtime_error& e)
-        {
-            DSP::log("SignalBus '%s' validation failed: %s", signalNames[i].c_str(), e.what());
             throw;
         }
     }

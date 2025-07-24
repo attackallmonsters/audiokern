@@ -34,7 +34,7 @@ template <typename TVoice>
 TVoice *VoiceAllocator<TVoice>::allocate(int note)
 {
     if (voices.empty())
-        throw std::runtime_error("VoiceAllocator: No voices available");
+        panic(omfg() << "VoiceAllocator: No voices available");
 
     int bestIndex = -1;
     int bestAge = -1;

@@ -2,6 +2,7 @@
 
 #include "DSP.h"
 #include "dsp_types.h"
+#include "omfg.h"
 #include <cstddef>
 #include <algorithm>
 #include <string>

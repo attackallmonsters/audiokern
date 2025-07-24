@@ -1,10 +1,11 @@
 #pragma once
 
-#include "DSPObject.h"
+#include "SoundGenerator.h"
 #include "DSPBuffer.h"
 #include "DSPSampleBuffer.h"
 #include "dsp_math.h"
 #include "clamp.h"
+
 #include <vector>
 #include <cmath>
 #include <memory>
@@ -15,6 +16,11 @@
 #include <limits.h>
 #include <cstdlib>
 
+class DSPObject; // Forward declaration
+
+/**
+ * @brief Struct holding a shared wavetable set for reuse between oscillator instances.
+ */
 struct SharedWavetableSet {
     std::string name;
     std::vector<host_float> baseFrequencies;
@@ -22,7 +28,9 @@ struct SharedWavetableSet {
     std::vector<DSPSampleBuffer*> buffers;
 };
 
-// Internal voice struct used for detuned oscillators
+/**
+ * @brief Internal representation of a single oscillator voice with detune and stereo gain.
+ */
 struct WavetableVoice
 {
     dsp_float phase;
@@ -32,113 +40,166 @@ struct WavetableVoice
     dsp_float gainR;
 };
 
-// Abstract base class for all wavetable-based oscillators
-class WavetableOscillator : public DSPObject
+/**
+ * @brief Abstract base class for all wavetable-based oscillator generators.
+ * 
+ * Each subclass must implement createWavetable(...) to generate its waveform content.
+ * The oscillator supports polyphony via multiple detuned voices.
+ * 
+ * Upon initialization, the object automatically registers its own modulation bus
+ * using its instance name (via getName()), inherited from SoundGenerator.
+ */
+class WavetableOscillator : public SoundGenerator
 {
 public:
-    // Destructor releases memory for wavetables
+    /// Virtual destructor releases all allocated buffers
     ~WavetableOscillator();
-    
-    // Sets the number of voices
+
+    /**
+     * @brief Sets the number of voices used for unison (e.g., for Supersaw).
+     * 
+     * @param count Number of detuned voices (>= 1)
+     */
     void setNumVoices(int count);
 
-    // Sets the detune factor for the voices
+    /**
+     * @brief Sets the detune factor for spreading voices in frequency.
+     * 
+     * @param value Detune ratio (0.0 = no detune)
+     */
     void setDetune(dsp_float value);
 
-    // Sets the oscillation frequency
+    /**
+     * @brief Sets the oscillator's base frequency in Hz.
+     * 
+     * @param value Frequency in Hz
+     */
     void setFrequency(dsp_float value);
 
-    // Gets the current frequency
+    /// Returns the currently set oscillator frequency in Hz
     dsp_float getFrequency();
 
-    // Sets the modulation index for frequency modulation.
-    // This controls the intensity of the frequency modulation effect.
+    /**
+     * @brief Sets the modulation index used for phase modulation (FM).
+     * 
+     * @param index Modulation index (0.0 = no modulation)
+     */
     void setModIndex(dsp_float index);
 
-    // Returns true if the oscillator's phase wrapped during the last getSample() call
+    /// Returns true if the oscillator's phase wrapped during the last sample cycle
     bool hasWrapped();
 
-    // Resets the wrap status
+    /// Resets the wrapped-phase flag (should be called after detection)
     void unWrap();
 
-    // Resets the internal oscillator phase to 0.0.
-    void resetPhase();
-
-    // Next sample block generation one voice
-    void processBlockVoice();
-
-    // Next sample block generation multiple voices
-    void processBlockVoices();
+    /// Resets the internal oscillator phase to 0.0
+    void resetPhase();    
 
 protected:
-    // Initializes all wavetable buffers for multiple frequency ranges
-    DSPUsage initializeObject() override;
+    /**
+     * @brief Called by base class after DSP system is initialized.
+     * 
+     * Connects audio buses and loads or generates required wavetable content.
+     */
+    void initializeGenerator() override;
 
-    // Ctor: expects an unique name for the waveform
+    /**
+     * @brief Protected constructor.
+     * 
+     * Subclasses must specify the waveform's unique name (used for shared caching).
+     * 
+     * @param formName The waveform name for wavetable identification
+     */
     WavetableOscillator(const std::string formName);
 
-    // Each subclass must define how to fill a table
-    virtual void createWavetable(DSPBuffer &buffer, dsp_float frequency) = 0;
+    /**
+     * @brief Pure virtual function to define how the wavetable is generated.
+     * 
+     * Must be implemented by concrete subclasses to fill the buffer with one waveform cycle.
+     * 
+     * @param buffer Output buffer to fill
+     * @param frequency Target base frequency of the waveform
+     */
+    virtual void createWavetable(DSPBuffer& buffer, dsp_float frequency) = 0;
 
-    // Frequency boundaries per LUT (e.g. per octave)
+    /// List of frequency boundaries used to select wavetable variants
     std::vector<host_float> baseFrequencies;
 
-    // Define the corresponding table size for each frequency range
-    std::vector<size_t> tableSizes;   
+    /// Corresponding wavetable size for each frequency band
+    std::vector<size_t> tableSizes;
 
 private:
-    // Next sample block generation one voice
-    static void processBlockVoice(DSPObject *dsp);
+    /// Static block-based wrapper for mono voice processing
+    static void processBlockVoice(DSPObject* dsp);
 
-    // Next sample block generation multiple voices
-    static void processBlockVoices(DSPObject *dsp);
+    /// Static block-based wrapper for polyphonic processing
+    static void processBlockVoices(DSPObject* dsp);
 
-    // Loads a wavetable
+    /// Processes a single block of audio for one voice
+    void processBlockVoice();
+
+    /// Processes a single block of audio for all voices (polyphonic)
+    void processBlockVoices();
+
+    /// Loads an existing wavetable set from file
     bool load();
 
-    // Saves a wavetable
+    /// Saves the generated wavetable set to file
     void save() const;
 
-    // Select appropriate wavetable for the given frequency
+    /// Selects the appropriate wavetable based on current frequency
     void selectTable(double frequency);
 
-    // Update detune on voices
+    /// Recomputes voice detune settings
     void updateDetune();
 
-    // Adjusts the volume to the number of voices
+    /// Computes gain scaling based on number of voices
     dsp_float getVocieGain(int numVoices);
 
-    // The waveform name
+    /// Name used to identify shared wavetables
     std::string waveformName;
 
-    // stores the last wavetable to prevent lookup when frequency did not change
-    const DSPSampleBuffer *selectedWaveTable = nullptr;
+    /// Pointer to last selected wavetable
+    const DSPSampleBuffer* selectedWaveTable = nullptr;
+
+    /// Number of samples in selected table
     size_t selectedWaveTableSize = 0;
+
+    /// Last frequency used for table selection
     dsp_float lastFrequency = -1.0;
 
-    // The number of voices
+    /// Number of voices
     int numVoices = 1;
+
+    /// List of voice state objects
     std::vector<WavetableVoice> voices;
 
-    // High-precision wavetable buffers
+    /// Temporary high-precision buffers for wavetable generation
     std::vector<DSPBuffer*> wavetableCalcBuffers;
 
-    // Wavetable sample buffers
+    /// Final resampled wavetables for runtime use
     std::vector<DSPSampleBuffer*> wavetableSampleBuffers;
 
-    // Voices detune
+    /// Current detune factor
     dsp_float detune = 0.03;
 
-    dsp_float frequency;           // The desired oscillator frequency in Hertz
-    int pitchOffset;               // offset in half tones
-    dsp_float fineTune;            // fine tune in cent
-    dsp_float modulationIndex = 0; // Phase modulation depth: how much modulator modulates phase of carrier
-    dsp_float phaseIncrement;      // Increment based on frquency and sample rate
-    dsp_float currentPhase;        // Current phase of the oscillator in radians [0, 2π]
-    bool wrapped = false;          // True when phase wrapped
-    dsp_float voiceGain;           // The gain of a single voice
+    /// Core frequency, pitch and FM control
+    dsp_float frequency;
+    int pitchOffset;
+    dsp_float fineTune;
+    dsp_float modulationIndex = 0;
 
+    /// Phase tracking
+    dsp_float phaseIncrement;
+    dsp_float currentPhase;
+    bool wrapped = false;
 
+    /// Gain factor per voice
+    dsp_float voiceGain;
+
+    /// Shared wavetable memory across multiple instances
     static std::vector<SharedWavetableSet> sharedWavetables;
+
+    /// Attempts to acquire precomputed wavetable set from shared cache
     void acquireSharedWavetable();
 };

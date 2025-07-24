@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include "clamp.h"
 #include "DSPSampleBuffer.h"
+#include "omfg.h"
 
 class DSP; // Forward declaration
 

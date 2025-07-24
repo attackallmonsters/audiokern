@@ -16,7 +16,7 @@ JPVoice::~JPVoice()
 {
 }
 
-DSPUsage JPVoice::initializeObject()
+void JPVoice::initializeGenerator()
 {
     modulationIndex = 0;
     oscmix = 0.0;
@@ -24,41 +24,56 @@ DSPUsage JPVoice::initializeObject()
     feedbackAmountCarrier = 0.0;
     feedbackAmountModulator = 0.0;
 
-    noise.initialize("noise" + name);
+    // create unique bus names
+    carrierBusName = "carrierBus" + getName();
+    modulatorBusName = "modulatorBus" + getName();
+    noiseBusName = "noiseBus" + getName();
+    filterAdsrBusName = "filterAdsr" + getName();
+    ampAdsrBusName = "ampAdsrBus" + getName();
 
-    // Waveform generation
-    sawCarrier.initialize("sawCarrier" + name);
-    sawModulator.initialize("sawModulator" + name);
-    sineCarrier.initialize("sineCarrier" + name);
-    sineModulator.initialize("sineModulator" + name);
-    squareCarrier.initialize("squareCarrier" + name);
-    squareModulator.initialize("squareModulator" + name);
-    trianlgeCarrier.initialize("trianlgeCarrier" + name);
-    triangleModulator.initialize("triangleModulator" + name);
-    clusterCarrier.initialize("clusterCarrier" + name);
-    clusterModulator.initialize("clusterModulator" + name);
-    fibonacciCarrier.initialize("fibonacciCarrier" + name);
-    fibonacciModulator.initialize("fibonacciModulator" + name);
-    mirrorCarrier.initialize("mirrorCarrier" + name);
-    mirrorModulator.initialize("mirrorModulator" + name);
-    moduloCarrier.initialize("moduloCarrier" + name);
-    moduloModulator.initialize("moduloModulator" + name);
-    bitModulator.initialize("bitModulator" + name);
+    // create voice exclusive audio and modulation busses
+    carrierBus = DSPBusManager::registerAudioChannel(carrierBusName);
+    modulatorBus = DSPBusManager::registerAudioChannel(modulatorBusName);
+    noiseBus = DSPBusManager::registerAudioChannel(noiseBusName);
+    fltAdsrBus = DSPBusManager::registerModulationChannel(filterAdsrBusName);
+    ampAdsrBus = DSPBusManager::registerModulationChannel(ampAdsrBusName);
 
-    filter.initialize("filter" + name);
+    // Waveform oscillators
+    sawCarrier.initialize("sawCarrier" + getName());
+    sawModulator.initialize("sawModulator" + getName());
+    sineCarrier.initialize("sineCarrier" + getName());
+    sineModulator.initialize("sineModulator" + getName());
+    squareCarrier.initialize("squareCarrier" + getName());
+    squareModulator.initialize("squareModulator" + getName());
+    trianlgeCarrier.initialize("trianlgeCarrier" + getName());
+    triangleModulator.initialize("triangleModulator" + getName());
+    clusterCarrier.initialize("clusterCarrier" + getName());
+    clusterModulator.initialize("clusterModulator" + getName());
+    fibonacciCarrier.initialize("fibonacciCarrier" + getName());
+    fibonacciModulator.initialize("fibonacciModulator" + getName());
+    mirrorCarrier.initialize("mirrorCarrier" + getName());
+    mirrorModulator.initialize("mirrorModulator" + getName());
+    moduloCarrier.initialize("moduloCarrier" + getName());
+    moduloModulator.initialize("moduloModulator" + getName());
+    bitModulator.initialize("bitModulator" + getName());
+    filter.initialize("filter" + getName());
+    filterAdsr.initialize("filterAdsr" + getName());
+    ampAdsr.initialize("ampAdsr" + getName());
+    noise.initialize("noise" + getName());
+    paramFader.initialize("paramFader" + getName());
 
-    filterAdsr.initialize("filterAdsr" + name);
-    ampAdsr.initialize("ampAdsr" + name);
-
-    paramFader.initialize("paramFader" + name);
+    // Patching
+    carrier->connectToOutputBus(carrierBusName);      // carrier output
+    carrier->connectToFMBus(modulatorBusName);        // FM from modulator
+    modulator->connectToOutputBus(modulatorBusName);  // modulator output
+    noise.connectToOutputBus(noiseBusName);           // noise output
+    filter.connectToModulationBuffer(ampAdsrBusName); // cutoff from fltAdsr
 
     filterAdsr.setGain(15000.0);
     ampAdsr.setGain(1.0);
 
     setCarrierOscillatorType(CarrierOscillatiorType::Saw);
     setModulatorOscillatorType(ModulatorOscillatorType::Sine);
-
-    carrier->fmInputFrom(*modulator);
 
     linkADSR(true);
 
@@ -79,24 +94,13 @@ DSPUsage JPVoice::initializeObject()
     setSyncEnabled(false);
     setNumVoices(1);
     setModIndex(0.0);
-
-    return DSPUsage::OutputOnly;
 }
 
-void JPVoice::onBuffersCompleted()
+void JPVoice::onOutputBusConnected()
 {
-    DSPSignalBus carrierBus = carrier->outputSignalBus;
-    DSPSignalBus modulatorBus = modulator->outputSignalBus;
-    DSPSignalBus noiseBus = noise.outputSignalBus;
-
-    carrierL = *carrierBus.left;
-    carrierR = *carrierBus.right;
-
-    modulatorL = *modulatorBus.left;
-    modulatorR = *modulatorBus.right;
-
-    noiseL = *noiseBus.left;
-    noiseR = *noiseBus.right;
+    filter.connectToProcessBuffer(outputBus->busName);     // output filtering
+    ampAdsr.connectToProcessBuffer(outputBus->busName);    // output amplification
+    paramFader.connectToProcessBuffer(outputBus->busName); // fade output on parameter change
 }
 
 // Start ADSRs
@@ -223,11 +227,9 @@ void JPVoice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
         [=]()
         {
             carrier = carrierTmp;
-            carrier->fmInputFrom(*modulator);
 
-            DSPSignalBus carrierBus = carrier->outputSignalBus;
-            carrierL = *carrierBus.left;
-            carrierR = *carrierBus.right;
+            carrier->connectToOutputBus(carrierBusName);
+            carrier->connectToFMBus(modulatorBusName);
 
             filter.reset();
         });
@@ -281,11 +283,9 @@ void JPVoice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
         [=]()
         {
             modulator = modulatorTmp;
-            carrier->fmInputFrom(*modulator);
 
-            DSPSignalBus modulatorBus = modulator->outputSignalBus;
-            modulatorL = *modulatorBus.left;
-            modulatorR = *modulatorBus.right;
+            carrier->connectToFMBus(modulatorBusName);
+            modulator->connectToOutputBus(modulatorBusName);
 
             filter.reset();
         });
@@ -397,18 +397,6 @@ void JPVoice::setAmpGain(host_float g)
     ampAdsr.setGain(clampmin(g, 0.0));
 }
 
-// Sets the output buffers
-void JPVoice::setOutputBuffer(DSPSampleBuffer &bufL, DSPSampleBuffer &bufR)
-{
-    outputBufferL = bufL;
-    outputBufferR = bufR;
-
-    paramFader.audioInputFrom(*this);
-
-    filter.audioInputFrom(*this);
-    filter.modulationInputFrom(filterAdsr);
-}
-
 // Next sample block generation
 void JPVoice::processBlock()
 {
@@ -427,17 +415,15 @@ void JPVoice::processBlock()
         noise.process();
     }
 
-    amp_carrier = std::cos(oscmix * 0.5 * dsp_math::DSP_PI);
-    amp_modulator = std::sin(oscmix * 0.5 * dsp_math::DSP_PI);
-    amp_osc_noise = std::cos(noisemix * 0.5 * dsp_math::DSP_PI);
-    amp_noise = std::sin(noisemix * 0.5 * dsp_math::DSP_PI);
+    dsp_math::get_sin_cos(oscmix * 0.5 * dsp_math::DSP_PI, &amp_carrier, &amp_modulator);
+    dsp_math::get_sin_cos(oscmix * 0.5 * dsp_math::DSP_PI, &amp_oscs, &amp_noise);
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        carrierLeft = carrierL[i] + lastSampleCarrierLeft * feedbackAmountCarrier;
-        carrierRight = carrierR[i] + lastSampleCarrierRight * feedbackAmountCarrier;
-        modLeft = modulatorL[i] + lastSampleModulatorLeft * feedbackAmountModulator;
-        modRight = modulatorR[i] + lastSampleModulatorRight * feedbackAmountModulator;
+        carrierLeft = carrierBus->l[i] + lastSampleCarrierLeft * feedbackAmountCarrier;
+        carrierRight = carrierBus->r[i] + lastSampleCarrierRight * feedbackAmountCarrier;
+        modLeft = modulatorBus->l[i] + lastSampleModulatorLeft * feedbackAmountModulator;
+        modRight = modulatorBus->r[i] + lastSampleModulatorRight * feedbackAmountModulator;
 
         mixL = amp_carrier * carrierLeft + amp_modulator * modLeft;
         mixR = amp_carrier * carrierRight + amp_modulator * modRight;
@@ -456,21 +442,20 @@ void JPVoice::processBlock()
 
         if (noisemix > 0)
         {
-            mixL = amp_osc_noise * mixL + amp_noise * noiseL[i];
-            mixR = amp_osc_noise * mixR + amp_noise * noiseR[i];
+            mixL = amp_oscs * mixL + amp_noise * noiseBus->l[i];
+            mixR = amp_oscs * mixR + amp_noise * noiseBus->r[i];
         }
 
-        outputBufferL[i] = mixL;
-        outputBufferR[i] = mixR;
+        outputBus->l[i] = mixL;
+        outputBus->r[i] = mixR;
     }
 
-    // ADSR shares buffer with filter
+    // Filter cutoff calculation
     filterAdsr.process();
     filter.process();
 
-    // amp envelope
-    ampAdsr.process();
-    ampAdsr.multiply(outputBufferL, outputBufferR);
+    // amp envelope processing and calculation of output amplification
+    ampAdsr.multiply();
 
     // Assign changed params
     paramFader.process();

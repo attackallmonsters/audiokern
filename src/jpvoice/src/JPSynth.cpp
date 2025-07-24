@@ -61,7 +61,7 @@ JPSynth &JPSynth::instance()
     return instance;
 }
 
-void JPSynth::initialize(host_float *outL, host_float *outR)
+void JPSynth::initialize(host_float * /*out*/, host_float * /*outR*/)
 {
     if (!DSP::isInitialized())
     {
@@ -70,6 +70,10 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     }
 
     DSP::log("=====> Initializing JPSYNTH...");
+
+    outputBus = DSPBusManager::registerAudioChannel(outputBusName);
+    wetBus = DSPBusManager::registerAudioChannel(wetBusName);
+    voicesOutputBus = DSPBusManager::registerAudioChannel(voicesOutputBusName);
 
     // Initialization
     voiceThreads.initialize(cpu_count() / 2);
@@ -84,20 +88,22 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
 
     createVoices();
 
-    //Patching
+    // Patching
+    // Voice outputs to mixer input
     for (size_t i = 0; i < voiceCount; ++i)
     {
         SynthVoice *voice = allocator.getVoice(i);
-
-        voice->jpvoice.setOutputBuffer(voiceMixer.getInputBufferL(i), voiceMixer.getInputBufferR(i));
+        voice->jpvoice.connectToOutputBus(voiceMixer.getInputBusName(i));
     }
 
-    butterworth.audioInputFrom(voiceMixer);
-    //delay.audioInputFrom(butterworth);
-    reverb.audioInputFrom(butterworth);
-    wetFader.audioInputForA(voiceMixer);
-    wetFader.audioInputForB(reverb);
-    wetFader.audioOutputTo(outL, outR);
+    voiceMixer.connectToOutputBus(voicesOutputBusName); // output buffer for voices
+
+    butterworth.connectToProcessBuffer(outputBusName);
+    // delay.audioInputFrom(butterworth);
+    //  reverb.audioInputFrom(butterworth);
+    //  wetFader.audioInputForA(voiceMixer);
+    //  wetFader.audioInputForB(reverb);
+    //  wetFader.audioOutputTo(outL, outR);
 
     // Finalize initialization
     DSP::finalizeAudio();
