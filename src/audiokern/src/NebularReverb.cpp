@@ -7,6 +7,8 @@ NebularReverb::NebularReverb()
 
 void NebularReverb::initializeEffect()
 {
+    wetBus = DSPBusManager::registerAudioChannel("wetBus" + getName());
+
     delayNames.clear();
     delayNames.resize(maxDelays);
 
@@ -51,6 +53,8 @@ void NebularReverb::onInputBusConnected()
 
 void NebularReverb::onOutputBusConnected()
 {
+    fader.connectToInputBusForA(inputBus->busName);
+    fader.connectToInputBusForB(wetBus->busName);
     fader.connectToOutputBus(outputBus->busName);
 }
 
@@ -123,8 +127,8 @@ void NebularReverb::processBlock()
             sumR += delayBusses[j]->r[i];
         }
 
-        outputBus->l[i] = sumL / density;
-        outputBus->r[i] = sumR / density;
+        wetBus->l[i] = sumL / density;
+        wetBus->r[i] = sumR / density;
     }
 
     fader.process();

@@ -40,22 +40,56 @@ void JPVoice::initializeGenerator()
 
     // Waveform oscillators
     sawCarrier.initialize("sawCarrier" + getName());
+    sawCarrier.setRole(GeneratorRole::Carrier);
+
     sawModulator.initialize("sawModulator" + getName());
+    sawModulator.setRole(GeneratorRole::Normal);
+
     sineCarrier.initialize("sineCarrier" + getName());
+    sineCarrier.setRole(GeneratorRole::Carrier);
+
     sineModulator.initialize("sineModulator" + getName());
+    sineModulator.setRole(GeneratorRole::Normal);
+
     squareCarrier.initialize("squareCarrier" + getName());
+    squareCarrier.setRole(GeneratorRole::Carrier);
+
     squareModulator.initialize("squareModulator" + getName());
+    squareModulator.setRole(GeneratorRole::Normal);
+
     trianlgeCarrier.initialize("trianlgeCarrier" + getName());
+    trianlgeCarrier.setRole(GeneratorRole::Carrier);
+
     triangleModulator.initialize("triangleModulator" + getName());
+    triangleModulator.setRole(GeneratorRole::Normal);
+
     clusterCarrier.initialize("clusterCarrier" + getName());
+    clusterCarrier.setRole(GeneratorRole::Carrier);
+
     clusterModulator.initialize("clusterModulator" + getName());
+    clusterModulator.setRole(GeneratorRole::Normal);
+
     fibonacciCarrier.initialize("fibonacciCarrier" + getName());
+    fibonacciCarrier.setRole(GeneratorRole::Carrier);
+
     fibonacciModulator.initialize("fibonacciModulator" + getName());
+    fibonacciModulator.setRole(GeneratorRole::Normal);
+
     mirrorCarrier.initialize("mirrorCarrier" + getName());
+    mirrorCarrier.setRole(GeneratorRole::Carrier);
+
     mirrorModulator.initialize("mirrorModulator" + getName());
+    mirrorModulator.setRole(GeneratorRole::Normal);
+
     moduloCarrier.initialize("moduloCarrier" + getName());
+    moduloCarrier.setRole(GeneratorRole::Carrier);
+
     moduloModulator.initialize("moduloModulator" + getName());
+    moduloModulator.setRole(GeneratorRole::Normal);
+
     bitModulator.initialize("bitModulator" + getName());
+    bitModulator.setRole(GeneratorRole::Normal);
+
     filter.initialize("filter" + getName());
     filterAdsr.initialize("filterAdsr" + getName());
     ampAdsr.initialize("ampAdsr" + getName());

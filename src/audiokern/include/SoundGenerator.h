@@ -46,17 +46,6 @@ public:
      */
     void connectToOutputBus(const std::string &busName);
 
-protected:
-    /**
-     * @brief Finalized setup hook from DSPObject. Connects to standard buses.
-     */
-    void initializeObject() override final;
-
-    /**
-     * @brief Finalized setup hook from DSPObject with voice count.
-     */
-    void initializeObject(size_t count) override final;
-
     /**
      * @brief Sets the functional role of this sound generator.
      *
@@ -67,6 +56,17 @@ protected:
      * @param role The role to assign (e.g., CarrierOnly, ModulatorOnly, CarrierAndModulator).
      */
     void setRole(GeneratorRole role);
+
+protected:
+    /**
+     * @brief Finalized setup hook from DSPObject. Connects to standard buses.
+     */
+    void initializeObject() override final;
+
+    /**
+     * @brief Finalized setup hook from DSPObject with voice count.
+     */
+    void initializeObject(size_t count) override final;
 
     /**
      * @brief Subclass-specific generator initialization (no voice count).

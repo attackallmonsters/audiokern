@@ -15,6 +15,12 @@ public:
         busName = name;
     }
 
+    void log()
+    {
+        l.log();
+        r.log();
+    }
+
     std::string busName;
     DSPSampleBuffer l;
     DSPSampleBuffer r;
@@ -53,6 +59,23 @@ public:
      * @throws std::runtime_error if the channel limit is reached.
      */
     static DSPAudioBus *registerAudioChannel(const std::string &name);
+
+    /**
+     * @brief Registers and connects an audio channel with external output buffers.
+     *
+     * Associates a previously registered audio channel (by name) with external output
+     * buffers for the left and right channels. This is typically used to route audio
+     * to a specific destination such as a hardware output or audio host like Pure Data,
+     * SuperCollider, VST and so on.
+     *
+     * If the channel name has not been registered via the static
+     * registerAudioChannel(const std::string&) method, the call has no effect.
+     *
+     * @param name The name of the audio channel to bind.
+     * @param outL Pointer to the left output buffer.
+     * @param outR Pointer to the right output buffer.
+     */
+    static DSPAudioBus *registerAudioChannel(const std::string &name, host_float *outL, host_float *outR);
 
     /**
      * @brief Registers a new modulation channel with the given name.

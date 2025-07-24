@@ -113,6 +113,9 @@ private:
     // Pointers to output buses of delay lines
     std::vector<DSPAudioBus *> delayBusses;
 
+    // Wet buffer
+    DSPAudioBus *wetBus;
+
     // Crossfader for dry/wet mixing
     CrossFader fader;
 };

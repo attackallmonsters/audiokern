@@ -61,7 +61,7 @@ JPSynth &JPSynth::instance()
     return instance;
 }
 
-void JPSynth::initialize(host_float * /*out*/, host_float * /*outR*/)
+void JPSynth::initialize(host_float *outL, host_float *outR)
 {
     if (!DSP::isInitialized())
     {
@@ -71,7 +71,7 @@ void JPSynth::initialize(host_float * /*out*/, host_float * /*outR*/)
 
     DSP::log("=====> Initializing JPSYNTH...");
 
-    outputBus = DSPBusManager::registerAudioChannel(outputBusName);
+    outputBus = DSPBusManager::registerAudioChannel(outputBusName, outL, outR);
     wetBus = DSPBusManager::registerAudioChannel(wetBusName);
     voicesOutputBus = DSPBusManager::registerAudioChannel(voicesOutputBusName);
 
@@ -96,14 +96,14 @@ void JPSynth::initialize(host_float * /*out*/, host_float * /*outR*/)
         voice->jpvoice.connectToOutputBus(voiceMixer.getInputBusName(i));
     }
 
-    voiceMixer.connectToOutputBus(voicesOutputBusName); // output buffer for voices
-
-    butterworth.connectToProcessBuffer(outputBusName);
+    voiceMixer.connectToOutputBus(voicesOutputBusName);      // output buffer for voices
+    butterworth.connectToProcessBuffer(voicesOutputBusName); // connects to voices output
     // delay.audioInputFrom(butterworth);
-    //  reverb.audioInputFrom(butterworth);
-    //  wetFader.audioInputForA(voiceMixer);
-    //  wetFader.audioInputForB(reverb);
-    //  wetFader.audioOutputTo(outL, outR);
+    reverb.connectToInputBus(voicesOutputBusName);       // connects to voices output (after butterworth)
+    reverb.connectToOutputBus(wetBusName);               // output to wet bus
+    wetFader.connectToOutputBus(outputBusName);          // connect to host output
+    wetFader.connectToInputBusForA(voicesOutputBusName); // input A from voices
+    wetFader.connectToInputBusForB(wetBusName);         // input B is wet signal
 
     // Finalize initialization
     DSP::finalizeAudio();
@@ -401,11 +401,13 @@ void JPSynth::processBlock()
 
     processVoiceBlock();
 
+    voicesOutputBus->log();
+
     voiceMixer.process();
 
     butterworth.process();
 
-    delay.process();
+    // delay.process();
 
     reverb.process();
 

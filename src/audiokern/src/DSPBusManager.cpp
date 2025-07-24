@@ -36,6 +36,16 @@ DSPAudioBus *DSPBusManager::registerAudioChannel(const std::string &name)
     }
 }
 
+DSPAudioBus *DSPBusManager::registerAudioChannel(const std::string &name, host_float *outL, host_float *outR)
+{
+    DSPAudioBus *bus = registerAudioChannel(name);
+
+    bus->l = outL;
+    bus->r = outR;
+
+    return bus;
+}
+
 DSPModulationBus *DSPBusManager::registerModulationChannel(const std::string &name)
 {
     // Skip registration if channel name already exists
