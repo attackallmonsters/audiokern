@@ -133,7 +133,7 @@ public:
     void setReverbDensity(host_float density);
 
     // Sets the time behaviour in the reverb
-    void setReverbTimeRation(dsp_math::TimeRatio ratio);
+    void setReverbTimeRatio(dsp_math::TimeRatio ratio);
 
     // Sets the reverb wetness
     void setReverbWet(host_float vol);

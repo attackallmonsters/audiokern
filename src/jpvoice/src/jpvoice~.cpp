@@ -677,55 +677,55 @@ void jpvoice_tilde_revdisp(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom * arg
     switch (disp)
     {
     case 0:
-        synth.setReverbTimeRation(dsp_math::TimeRatio::NONE);
+        synth.setReverbTimeRatio(dsp_math::TimeRatio::NONE);
         break;
     case 1:
-        synth.setReverbTimeRation(dsp_math::TimeRatio::HALF);
+        synth.setReverbTimeRatio(dsp_math::TimeRatio::HALF);
         break;
     case 2:
-        synth.setReverbTimeRation(dsp_math::TimeRatio::DOUBLE);
+        synth.setReverbTimeRatio(dsp_math::TimeRatio::DOUBLE);
         break;
     case 3:
-        synth.setReverbTimeRation(dsp_math::TimeRatio::TRIPLET);
+        synth.setReverbTimeRatio(dsp_math::TimeRatio::TRIPLET);
         break;
     case 4:
-        synth.setReverbTimeRation(dsp_math::TimeRatio::DOTTED);
+        synth.setReverbTimeRatio(dsp_math::TimeRatio::DOTTED);
         break;
     case 5:
-        synth.setReverbTimeRation(dsp_math::TimeRatio::POLY_3_4);
+        synth.setReverbTimeRatio(dsp_math::TimeRatio::POLY_3_4);
         break;
     case 6:
-        synth.setReverbTimeRation(dsp_math::TimeRatio::POLY_4_3);
+        synth.setReverbTimeRatio(dsp_math::TimeRatio::POLY_4_3);
         break;
     case 7:
-        synth.setReverbTimeRation(dsp_math::TimeRatio::POLY_3_5);
+        synth.setReverbTimeRatio(dsp_math::TimeRatio::POLY_3_5);
         break;
     case 8:
-        synth.setReverbTimeRation(dsp_math::TimeRatio::POLY_5_3);
+        synth.setReverbTimeRatio(dsp_math::TimeRatio::POLY_5_3);
         break;
     case 9:
-        synth.setReverbTimeRation(dsp_math::TimeRatio::GOLDEN_RATIO);
+        synth.setReverbTimeRatio(dsp_math::TimeRatio::GOLDEN_RATIO);
         break;
     case 10:
-        synth.setReverbTimeRation(dsp_math::TimeRatio::SILVER_RATIO);
+        synth.setReverbTimeRatio(dsp_math::TimeRatio::SILVER_RATIO);
         break;
     case 11:
-        synth.setReverbTimeRation(dsp_math::TimeRatio::PLATINUM_RATIO);
+        synth.setReverbTimeRatio(dsp_math::TimeRatio::PLATINUM_RATIO);
         break;
     case 12:
-        synth.setReverbTimeRation(dsp_math::TimeRatio::SQRT_2);
+        synth.setReverbTimeRatio(dsp_math::TimeRatio::SQRT_2);
         break;
     case 13:
-        synth.setReverbTimeRation(dsp_math::TimeRatio::SQRT_3);
+        synth.setReverbTimeRatio(dsp_math::TimeRatio::SQRT_3);
         break;
     case 14:
-        synth.setReverbTimeRation(dsp_math::TimeRatio::PHI_INV);
+        synth.setReverbTimeRatio(dsp_math::TimeRatio::PHI_INV);
         break;
     case 15:
-        synth.setReverbTimeRation(dsp_math::TimeRatio::PI_REL);
+        synth.setReverbTimeRatio(dsp_math::TimeRatio::PI_REL);
         break;
     case 16:
-        synth.setReverbTimeRation(dsp_math::TimeRatio::E_REL);
+        synth.setReverbTimeRatio(dsp_math::TimeRatio::E_REL);
         break;
     default:
         break;

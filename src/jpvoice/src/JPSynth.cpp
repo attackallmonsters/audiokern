@@ -392,7 +392,7 @@ void JPSynth::setReverbDensity(host_float density)
     reverb.setDensity(density);
 }
 
-void JPSynth::setReverbTimeRation(dsp_math::TimeRatio ratio)
+void JPSynth::setReverbTimeRatio(dsp_math::TimeRatio ratio)
 {
     reverb.setTimeRatio(ratio);
 }
