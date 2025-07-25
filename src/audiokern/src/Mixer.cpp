@@ -18,7 +18,7 @@ void Mixer::initializeObject(size_t count)
     for (size_t i = 0; i < busCount; ++i)
     {
         busNames[i] = getName() + std::to_string(i);
-        DSPBusManager::registerAudioChannel(busNames[i]);
+        DSPBusManager::registerAudioBus(busNames[i]);
         busses[i] = DSPBusManager::getAudioBus(busNames[i]);
     }
 }

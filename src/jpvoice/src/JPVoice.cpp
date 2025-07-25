@@ -32,11 +32,11 @@ void JPVoice::initializeGenerator()
     modAmpAdsrBusName = "ampAdsrBus" + getName();
 
     // create voice exclusive audio and modulation busses
-    carrierBus = DSPBusManager::registerAudioChannel(carrierBusName);
-    modulatorBus = DSPBusManager::registerAudioChannel(modulatorBusName);
-    noiseBus = DSPBusManager::registerAudioChannel(noiseBusName);
-    modFilterAdsrBus = DSPBusManager::registerModulationChannel(modFilterAdsrBusName);
-    modAmpAdsrBus = DSPBusManager::registerModulationChannel(modAmpAdsrBusName);
+    carrierBus = DSPBusManager::registerAudioBus(carrierBusName);
+    modulatorBus = DSPBusManager::registerAudioBus(modulatorBusName);
+    noiseBus = DSPBusManager::registerAudioBus(noiseBusName);
+    modFilterAdsrBus = DSPBusManager::registerModulationBus(modFilterAdsrBusName);
+    modAmpAdsrBus = DSPBusManager::registerModulationBus(modAmpAdsrBusName);
 
     // Waveform oscillators
     sawCarrier.initialize("sawCarrier" + getName());
@@ -104,8 +104,6 @@ void JPVoice::initializeGenerator()
     filterAdsr.connectToModulationBus(modFilterAdsrBusName); // modulation bus amp adsr
     ampAdsr.connectToModulationBus(modAmpAdsrBusName); // modulation bus amp adsr
     filter.connectToModulationBuffer(modFilterAdsrBusName); // cutoff from fltAdsr
-
-    DSPBusManager::log();
 
     filterAdsr.setGain(15000.0);
     ampAdsr.setGain(1.0);

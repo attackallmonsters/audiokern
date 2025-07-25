@@ -1,4 +1,5 @@
 #include "dsp_math.h"
+#include "clamp.h"
 #include <cmath>
 
 namespace dsp_math
@@ -23,6 +24,61 @@ namespace dsp_math
             return 1.0;
         else
             return x * (1.0 - (x * x) / (3.0 * threshold * threshold));
+    }
+
+    int to_int_range(float norm, int min, int max)
+    {
+        norm = clamp(norm, 0.0f, 1.0f);
+        return static_cast<int>(std::round(min + norm * (max - min)));
+    }
+
+    host_float getTimeRatio(host_float time, TimeRatio ratio)
+    {
+        switch (ratio)
+        {
+        case TimeRatio::NONE:
+            return time;
+        case TimeRatio::HALF:
+            return time * 0.5;
+        case TimeRatio::DOUBLE:
+            return time * 2.0;
+
+        case TimeRatio::TRIPLET:
+            return time * (2.0 / 3.0);
+        case TimeRatio::DOTTED:
+            return time * (3.0 / 2.0);
+
+        case TimeRatio::POLY_3_4:
+            return time * (3.0 / 4.0);
+        case TimeRatio::POLY_4_3:
+            return time * (4.0 / 3.0);
+        case TimeRatio::POLY_3_5:
+            return time * (5.0 / 3.0);
+        case TimeRatio::POLY_5_3:
+            return time * (3.0 / 5.0);
+
+        case TimeRatio::GOLDEN_RATIO:
+            return time * 0.6180339887; // 1 / φ
+        case TimeRatio::SILVER_RATIO:
+            return time * 0.4142135623; // 1 / (1 + √2)
+        case TimeRatio::PLATINUM_RATIO:
+            return time * 0.3333333333; // 1/3
+
+        case TimeRatio::SQRT_2:
+            return time * std::sqrt(2.0);
+        case TimeRatio::SQRT_3:
+            return time * std::sqrt(3.0);
+
+        case TimeRatio::PHI_INV:
+            return time * 1.6180339887; // φ
+        case TimeRatio::PI_REL:
+            return time * M_PI;
+        case TimeRatio::E_REL:
+            return time * std::exp(1.0);
+
+        default:
+            return time;
+        }
     }
 
     std::array<host_float, LUT_SIZE + 1> sinLUT;

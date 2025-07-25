@@ -658,6 +658,80 @@ void jpvoice_tilde_revdense(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom * ar
     synth.setReverbDensity(density);
 }
 
+void jpvoice_tilde_revdisp(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom * argv)
+{
+    if (!testDSP())
+    {
+        return;
+    }
+
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: revdisp (amount 0.0 - 1.0)");
+        return;
+    }
+
+    host_float fdisp = clamp(atom_getfloat(argv), 0.0, 1.0);
+    int disp = dsp_math::to_int_range(fdisp, 0, 16);
+
+    switch (disp)
+    {
+    case 0:
+        synth.setReverbTimeRation(dsp_math::TimeRatio::NONE);
+        break;
+    case 1:
+        synth.setReverbTimeRation(dsp_math::TimeRatio::HALF);
+        break;
+    case 2:
+        synth.setReverbTimeRation(dsp_math::TimeRatio::DOUBLE);
+        break;
+    case 3:
+        synth.setReverbTimeRation(dsp_math::TimeRatio::TRIPLET);
+        break;
+    case 4:
+        synth.setReverbTimeRation(dsp_math::TimeRatio::DOTTED);
+        break;
+    case 5:
+        synth.setReverbTimeRation(dsp_math::TimeRatio::POLY_3_4);
+        break;
+    case 6:
+        synth.setReverbTimeRation(dsp_math::TimeRatio::POLY_4_3);
+        break;
+    case 7:
+        synth.setReverbTimeRation(dsp_math::TimeRatio::POLY_3_5);
+        break;
+    case 8:
+        synth.setReverbTimeRation(dsp_math::TimeRatio::POLY_5_3);
+        break;
+    case 9:
+        synth.setReverbTimeRation(dsp_math::TimeRatio::GOLDEN_RATIO);
+        break;
+    case 10:
+        synth.setReverbTimeRation(dsp_math::TimeRatio::SILVER_RATIO);
+        break;
+    case 11:
+        synth.setReverbTimeRation(dsp_math::TimeRatio::PLATINUM_RATIO);
+        break;
+    case 12:
+        synth.setReverbTimeRation(dsp_math::TimeRatio::SQRT_2);
+        break;
+    case 13:
+        synth.setReverbTimeRation(dsp_math::TimeRatio::SQRT_3);
+        break;
+    case 14:
+        synth.setReverbTimeRation(dsp_math::TimeRatio::PHI_INV);
+        break;
+    case 15:
+        synth.setReverbTimeRation(dsp_math::TimeRatio::PI_REL);
+        break;
+    case 16:
+        synth.setReverbTimeRation(dsp_math::TimeRatio::E_REL);
+        break;
+    default:
+        break;
+    }
+}
+
 void jpvoice_tilde_revwet(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom * argv)
 {
     if (!testDSP())
@@ -790,6 +864,7 @@ extern "C" void jpvoice_tilde_setup(void)
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revspace, gensym("revspace"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revdamp, gensym("revdamp"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revdense, gensym("revdense"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revdisp, gensym("revdisp"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revwet, gensym("revwet"), A_GIMME, 0);
 
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_wet, gensym("wet"), A_GIMME, 0);

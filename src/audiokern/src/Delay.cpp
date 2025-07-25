@@ -9,11 +9,16 @@ void Delay::initializeEffect()
 {
     delayBuffer.initialize("delayBuffer" + getName());
     paramFader.initialize("paramFader" + getName());
+    wetFader.initialize("wetFader");
+    wetBus = DSPBusManager::registerAudioBus("wetBus" + getName());
 }
 
 void Delay::onOutputBusConnected()
 {
     paramFader.connectToProcessBuffer(outputBus->busName);
+    wetFader.connectToInputBusForA(inputBus->busName);
+    wetFader.connectToInputBusForB(wetBus->busName);
+    wetFader.connectToOutputBus(outputBus->busName);
 }
 
 // Sets the maximum delay time
@@ -26,14 +31,32 @@ void Delay::setMaxTime(host_float timeMS)
 
 void Delay::setTime(host_float timeMSL, host_float timeMSR)
 {
-    host_float tL = clampmin(timeMSL, 0.0);
-    host_float tR = clampmin(timeMSR, 0.0);
+    host_float tL = timeMSL;
+    host_float tR;
+
+    if (timeRatio != dsp_math::TimeRatio::NONE)
+    {
+        tR = dsp_math::getTimeRatio(tL, timeRatio);
+    }
+    else
+    {
+        tR = timeMSR;
+    }
+
+    currentTimeL = tL;
+    currentTimeR = tR;
 
     paramFader.change(
         [=]()
         {
             delayBuffer.setTime(tL, tR);
         });
+}
+
+void Delay::setTimeRatio(dsp_math::TimeRatio ratio)
+{
+    timeRatio = ratio;
+    setTime(currentTimeL, currentTimeR);
 }
 
 void Delay::setFeedback(host_float fbL, host_float fbR)
@@ -57,11 +80,17 @@ void Delay::processBlock()
         delayBuffer.feedbackBufferR[i] = delayedR * feedbackR;
 
         // Signal output
-        outputBus->l[i] = delayedL;
-        outputBus->r[i] = delayedR;
+        wetBus->l[i] = delayedL;
+        wetBus->r[i] = delayedR;
     }
 
+    wetFader.process();
     paramFader.process();
+}
+
+void Delay::setWet(host_float vol)
+{
+    wetFader.setMix(vol);
 }
 
 void Delay::processBlock(DSPObject *obj)

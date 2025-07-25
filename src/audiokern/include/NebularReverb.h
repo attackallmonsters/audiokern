@@ -57,6 +57,16 @@ public:
      */
     void setWet(host_float vol);
 
+    /**
+     * @brief Sets the time ratio to be applied within the reverb processing structure.
+     *
+     * This ratio is used to scale internal delay times. Applying different ratios can help to avoid
+     * resonances, increase stereo width, and introduce natural-sounding temporal variation.
+     *
+     * @param ratio The time ratio to apply to relevant time-based components within the reverb.
+     */
+    void setTimeRatio(dsp_math::TimeRatio ratio);
+
 protected:
     /**
      * @brief Called during DSP activation. Prepares all delay lines and faders.
@@ -92,30 +102,33 @@ private:
      */
     void updateDelays();
 
-    // Maximum number of comb delay lines allowed
-    static constexpr int maxDelays = 8;
+    /// Maximum number of comb delay lines allowed
+    static constexpr int maxDelays = 12;
 
-    // Number of active delay lines, controlled by density
+    /// Number of active delay lines, controlled by density
     int density;
 
-    // Base delay time (spread between lines)
+    /// Base delay time (spread between lines)
     host_float delayTime;
 
-    // Output wet level
+    /// Output wet level
     host_float wet;
 
-    // All comb delay instances
+    /// CombDelay time relations L/R
+    dsp_math::TimeRatio timeRatio;
+
+    /// All comb delay instances
     std::vector<CombDelay *> delays;
 
-    // Unique names for bus registration
+    /// Unique names for bus registration
     std::vector<std::string> delayNames;
 
-    // Pointers to output buses of delay lines
+    /// Pointers to output buses of delay lines
     std::vector<DSPAudioBus *> delayBusses;
 
-    // Wet buffer
+    /// Wet buffer
     DSPAudioBus *wetBus;
 
-    // Crossfader for dry/wet mixing
-    CrossFader fader;
+    /// Crossfader for dry/wet mixing
+    CrossFader wetFader;
 };

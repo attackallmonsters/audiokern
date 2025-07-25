@@ -7,7 +7,7 @@ NebularReverb::NebularReverb()
 
 void NebularReverb::initializeEffect()
 {
-    wetBus = DSPBusManager::registerAudioChannel("wetBus" + getName());
+    wetBus = DSPBusManager::registerAudioBus("wetBus" + getName());
 
     delayNames.clear();
     delayNames.resize(maxDelays);
@@ -22,9 +22,7 @@ void NebularReverb::initializeEffect()
     {
         delayNames[i] = "delay_" + std::to_string(i) + getName();
 
-        DSPBusManager::registerAudioChannel(delayNames[i]);
-
-        delayBusses[i] = DSPBusManager::getAudioBus(delayNames[i]);
+        delayBusses[i] = DSPBusManager::registerAudioBus(delayNames[i]);
 
         delays[i] = new CombDelay();
         delays[i]->initialize(delayNames[i]);
@@ -34,9 +32,10 @@ void NebularReverb::initializeEffect()
         delays[i]->setMaxTime(1000.0);
     }
 
-    fader.initialize("fader" + getName());
+    wetFader.initialize("fader" + getName());
 
     setDensity(0.5);
+    setTimeRatio(dsp_math::TimeRatio::NONE);
     setSpace(0.3);
     setRoomSize(0.8);
     setDamping(5000.0);
@@ -53,15 +52,15 @@ void NebularReverb::onInputBusConnected()
 
 void NebularReverb::onOutputBusConnected()
 {
-    fader.connectToInputBusForA(inputBus->busName);
-    fader.connectToInputBusForB(wetBus->busName);
-    fader.connectToOutputBus(outputBus->busName);
+    wetFader.connectToInputBusForA(inputBus->busName);
+    wetFader.connectToInputBusForB(wetBus->busName);
+    wetFader.connectToOutputBus(outputBus->busName);
 }
 
 void NebularReverb::setDensity(host_float dense)
 {
-    int d = static_cast<int>(std::round(2 + clamp(dense, 0.0, 1.0) * (maxDelays - 2)));
-
+    int d = dsp_math::to_int_range(dense, 2, maxDelays);
+    
     if (d != density)
     {
         density = d;
@@ -101,7 +100,17 @@ void NebularReverb::setWet(host_float vol)
 {
     wet = clamp(vol, 0.0, 1.0) * 2.0;
 
-    fader.setMix(wet);
+    wetFader.setMix(wet);
+}
+
+void NebularReverb::setTimeRatio(dsp_math::TimeRatio ratio)
+{
+    timeRatio = ratio;
+
+    for (int i = 0; i < density; ++i)
+    {
+        delays[i]->setTimeRatio(timeRatio);
+    }
 }
 
 void NebularReverb::processBlock()
@@ -131,7 +140,7 @@ void NebularReverb::processBlock()
         wetBus->r[i] = sumR / density;
     }
 
-    fader.process();
+    wetFader.process();
 }
 
 void NebularReverb::processBlock(DSPObject *dsp)

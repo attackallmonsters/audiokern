@@ -71,9 +71,9 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
 
     DSP::log("=====> Initializing JPSYNTH...");
 
-    outputBus = DSPBusManager::registerAudioChannel(outputBusName, outL, outR);
-    wetBus = DSPBusManager::registerAudioChannel(wetBusName);
-    voicesOutputBus = DSPBusManager::registerAudioChannel(voicesOutputBusName);
+    outputBus = DSPBusManager::registerAudioBus(outputBusName, outL, outR);
+    wetBus = DSPBusManager::registerAudioBus(wetBusName);
+    voicesOutputBus = DSPBusManager::registerAudioBus(voicesOutputBusName);
 
     // Initialization
     voiceThreads.initialize(cpu_count() / 2);
@@ -98,12 +98,13 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
 
     voiceMixer.connectToOutputBus(voicesOutputBusName);      // output buffer for voices
     butterworth.connectToProcessBuffer(voicesOutputBusName); // connects to voices output
-    // delay.audioInputFrom(butterworth);
-    reverb.connectToInputBus(voicesOutputBusName);       // connects to voices output (after butterworth)
-    reverb.connectToOutputBus(wetBusName);               // output to wet bus
-    wetFader.connectToOutputBus(outputBusName);          // connect to host output
-    wetFader.connectToInputBusForA(voicesOutputBusName); // input A from voices
-    wetFader.connectToInputBusForB(wetBusName);         // input B is wet signal
+    delay.connectToInputBus(voicesOutputBusName);            // connects to voices output (after butterworth)
+    delay.connectToOutputBus(wetBusName);                    // delay output to wet bus
+    reverb.connectToInputBus(wetBusName);                    // connects reverb in to wet bus
+    reverb.connectToOutputBus(wetBusName);                   // output to wet bus as well
+    wetFader.connectToOutputBus(outputBusName);              // connect to host output
+    wetFader.connectToInputBusForA(voicesOutputBusName);     // input A from voices
+    wetFader.connectToInputBusForB(wetBusName);              // input B is wet signal
 
     // Finalize initialization
     DSP::finalizeAudio();
@@ -111,6 +112,12 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     // Static settings for effect chain audio input
     butterworth.setFilterMode(FilterMode::HP);
     butterworth.setCutoffFrequency(200.0);
+
+    delay.setFeedback(0.8, 0.8);
+    delay.setMaxTime(1000.0);
+    delay.setTime(500, 500);
+    delay.setTimeRatio(dsp_math::TimeRatio::POLY_3_4);
+    delay.setWet(0.8);
 
     DSP::log("");
     DSP::log("* %s *", getRandomSynthQuote().c_str());
@@ -385,6 +392,11 @@ void JPSynth::setReverbDensity(host_float density)
     reverb.setDensity(density);
 }
 
+void JPSynth::setReverbTimeRation(dsp_math::TimeRatio ratio)
+{
+    reverb.setTimeRatio(ratio);
+}
+
 void JPSynth::setReverbWet(host_float vol)
 {
     reverb.setWet(vol);
@@ -405,7 +417,7 @@ void JPSynth::processBlock()
 
     butterworth.process();
 
-    // delay.process();
+    delay.process();
 
     reverb.process();
 

@@ -20,33 +20,49 @@ void CombDelay::onOutputBusConnected()
     paramFader.connectToProcessBuffer(outputBus->busName);
 }
 
-void CombDelay::setMaxTime(dsp_float timeMS)
+void CombDelay::setMaxTime(host_float timeMS)
 {
-    dsp_float t = clampmin(timeMS, 0.0);
+    host_float t = clampmin(timeMS, 0.0);
 
     delayBuffer.setMaxTime(t);
 }
 
-void CombDelay::setTime(dsp_float timeMS)
+void CombDelay::setTime(host_float timeMS)
 {
-    dsp_float t = clampmin(timeMS, 0.0);
+    host_float tL = currentTime = clampmin(timeMS, 0.0);
+    host_float tR;
+
+    if (timeRatio != dsp_math::TimeRatio::NONE)
+    {
+        tR = dsp_math::getTimeRatio(tL, timeRatio);
+    }
+    else
+    {
+        tR = tL;
+    }
 
     paramFader.change(
         [=]()
         {
-            delayBuffer.setTime(t, t);
+            delayBuffer.setTime(tL, tR);
             delayBuffer.clear();
         });
 }
 
-void CombDelay::setFeedback(dsp_float fb)
+void CombDelay::setTimeRatio(dsp_math::TimeRatio ratio)
+{
+    timeRatio = ratio;
+    setTime(currentTime);
+}
+
+void CombDelay::setFeedback(host_float fb)
 {
     feedback = clamp(fb, 0.0, 0.999);
 }
 
-void CombDelay::setDamping(dsp_float freqHz)
+void CombDelay::setDamping(host_float freqHz)
 {
-    dsp_float f = clamp(freqHz, 0.0, 20000.0);
+    host_float f = clamp(freqHz, 0.0, 20000.0);
 
     dampingCoeff = std::exp(-2.0 * dsp_math::DSP_PI * f / DSP::sampleRate);
 }

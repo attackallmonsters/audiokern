@@ -64,7 +64,7 @@ public:
      * @param name The unique name of the audio channel to register.
      * @throws std::runtime_error if the channel limit is reached.
      */
-    static DSPAudioBus *registerAudioChannel(const std::string &name);
+    static DSPAudioBus *registerAudioBus(const std::string &name);
 
     /**
      * @brief Registers and connects an audio channel with external output buffers.
@@ -75,13 +75,13 @@ public:
      * SuperCollider, VST and so on.
      *
      * If the channel name has not been registered via the static
-     * registerAudioChannel(const std::string&) method, the call has no effect.
+     * registerAudioBus(const std::string&) method, the call has no effect.
      *
      * @param name The name of the audio channel to bind.
      * @param outL Pointer to the left output buffer.
      * @param outR Pointer to the right output buffer.
      */
-    static DSPAudioBus *registerAudioChannel(const std::string &name, host_float *outL, host_float *outR);
+    static DSPAudioBus *registerAudioBus(const std::string &name, host_float *outL, host_float *outR);
 
     /**
      * @brief Registers a new modulation channel with the given name.
@@ -92,7 +92,7 @@ public:
      * @param name The unique name of the modulation channel to register.
      * @throws std::runtime_error if the modulation channel limit is exceeded.
      */
-    static DSPModulationBus *registerModulationChannel(const std::string &name);
+    static DSPModulationBus *registerModulationBus(const std::string &name);
 
     /**
      * @brief Returns a pointer to the audio bus with the given name.

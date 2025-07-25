@@ -132,6 +132,9 @@ public:
     // Sets the reverb density
     void setReverbDensity(host_float density);
 
+    // Sets the time behaviour in the reverb
+    void setReverbTimeRation(dsp_math::TimeRatio ratio);
+
     // Sets the reverb volume
     void setReverbWet(host_float vol);
 
@@ -194,7 +197,7 @@ private:
     MidiProcessor midi;
 
     // The number of voices
-    const size_t voiceCount = 1;
+    const size_t voiceCount = 6;
 
     const std::string name = "_JPSynth";
 

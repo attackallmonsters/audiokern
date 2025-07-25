@@ -12,7 +12,7 @@ int DSPBusManager::modulationCount = 0;
 
 // ----------- Register Methods -----------
 
-DSPAudioBus *DSPBusManager::registerAudioChannel(const std::string &name)
+DSPAudioBus *DSPBusManager::registerAudioBus(const std::string &name)
 {
     // Skip registration if channel name already exists
     for (int i = 0; i < audioCount; ++i)
@@ -36,9 +36,9 @@ DSPAudioBus *DSPBusManager::registerAudioChannel(const std::string &name)
     }
 }
 
-DSPAudioBus *DSPBusManager::registerAudioChannel(const std::string &name, host_float *outL, host_float *outR)
+DSPAudioBus *DSPBusManager::registerAudioBus(const std::string &name, host_float *outL, host_float *outR)
 {
-    DSPAudioBus *bus = registerAudioChannel(name);
+    DSPAudioBus *bus = registerAudioBus(name);
 
     bus->l.assign("L_" + name, outL);
     bus->r.assign("R_" + name, outR);
@@ -46,7 +46,7 @@ DSPAudioBus *DSPBusManager::registerAudioChannel(const std::string &name, host_f
     return bus;
 }
 
-DSPModulationBus *DSPBusManager::registerModulationChannel(const std::string &name)
+DSPModulationBus *DSPBusManager::registerModulationBus(const std::string &name)
 {
     // Skip registration if channel name already exists
     for (int i = 0; i < modulationCount; ++i)
