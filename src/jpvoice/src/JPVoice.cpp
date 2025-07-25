@@ -366,6 +366,7 @@ void JPVoice::setFilterCutoff(host_float f)
 void JPVoice::setFilterResonance(host_float r)
 {
     filterResonance = clampmin(r, 0.0);
+    filter.setResonance(filterResonance);
 }
 
 // Sets the filter drive

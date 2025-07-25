@@ -135,7 +135,7 @@ public:
     // Sets the time behaviour in the reverb
     void setReverbTimeRation(dsp_math::TimeRatio ratio);
 
-    // Sets the reverb volume
+    // Sets the reverb wetness
     void setReverbWet(host_float vol);
 
     // Sets the delay time left/right
@@ -143,6 +143,12 @@ public:
 
     // Sets the delay feedback amount left/right
     void setDelayFeedback(host_float timeL, host_float timeR);
+
+    // Sets the delay time ration L/R
+    void setDelayTimeRation(dsp_math::TimeRatio ratio);
+
+    // Sets the delay wetness
+    void setDelayWet(host_float vol);
 
     // Sets the wetness amount of the effect chain
     void setWet(host_float wet);

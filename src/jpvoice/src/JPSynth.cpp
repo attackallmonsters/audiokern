@@ -116,7 +116,7 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     delay.setFeedback(0.8, 0.8);
     delay.setMaxTime(1000.0);
     delay.setTime(500, 500);
-    delay.setTimeRatio(dsp_math::TimeRatio::POLY_3_4);
+    delay.setTimeRatio(dsp_math::TimeRatio::POLY_5_3);
     delay.setWet(0.8);
 
     DSP::log("");
@@ -400,6 +400,26 @@ void JPSynth::setReverbTimeRation(dsp_math::TimeRatio ratio)
 void JPSynth::setReverbWet(host_float vol)
 {
     reverb.setWet(vol);
+}
+
+void JPSynth::setDelayTime(host_float timeMSL, host_float timeMSR)
+{
+    delay.setTime(timeMSL, timeMSR);
+}
+
+void JPSynth::setDelayFeedback(host_float fbL, host_float fbR)
+{
+    delay.setFeedback(fbL, fbR);
+}
+
+void JPSynth::setDelayTimeRation(dsp_math::TimeRatio ratio)
+{
+    delay.setTimeRatio(ratio);
+}
+
+void JPSynth::setDelayWet(host_float vol)
+{
+    delay.setWet(vol);
 }
 
 void JPSynth::setWet(host_float wet)
