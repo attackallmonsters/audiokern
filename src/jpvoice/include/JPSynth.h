@@ -194,7 +194,7 @@ private:
     MidiProcessor midi;
 
     // The number of voices
-    const size_t voiceCount = 6;
+    const size_t voiceCount = 1;
 
     const std::string name = "_JPSynth";
 
@@ -202,7 +202,7 @@ private:
     DSPAudioBus *wetBus;
     DSPAudioBus *voicesOutputBus;
 
-    const std::string outputBusName = "output";
+    const std::string outputBusName = "audio_host";
     const std::string wetBusName = "wet";
     const std::string voicesOutputBusName = "voices";
 };

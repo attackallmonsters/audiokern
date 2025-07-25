@@ -28,15 +28,15 @@ void JPVoice::initializeGenerator()
     carrierBusName = "carrierBus" + getName();
     modulatorBusName = "modulatorBus" + getName();
     noiseBusName = "noiseBus" + getName();
-    filterAdsrBusName = "filterAdsr" + getName();
-    ampAdsrBusName = "ampAdsrBus" + getName();
+    modFilterAdsrBusName = "filterAdsrBus" + getName();
+    modAmpAdsrBusName = "ampAdsrBus" + getName();
 
     // create voice exclusive audio and modulation busses
     carrierBus = DSPBusManager::registerAudioChannel(carrierBusName);
     modulatorBus = DSPBusManager::registerAudioChannel(modulatorBusName);
     noiseBus = DSPBusManager::registerAudioChannel(noiseBusName);
-    fltAdsrBus = DSPBusManager::registerModulationChannel(filterAdsrBusName);
-    ampAdsrBus = DSPBusManager::registerModulationChannel(ampAdsrBusName);
+    modFilterAdsrBus = DSPBusManager::registerModulationChannel(modFilterAdsrBusName);
+    modAmpAdsrBus = DSPBusManager::registerModulationChannel(modAmpAdsrBusName);
 
     // Waveform oscillators
     sawCarrier.initialize("sawCarrier" + getName());
@@ -97,11 +97,15 @@ void JPVoice::initializeGenerator()
     paramFader.initialize("paramFader" + getName());
 
     // Patching
-    carrier->connectToOutputBus(carrierBusName);      // carrier output
-    carrier->connectToFMBus(modulatorBusName);        // FM from modulator
-    modulator->connectToOutputBus(modulatorBusName);  // modulator output
-    noise.connectToOutputBus(noiseBusName);           // noise output
-    filter.connectToModulationBuffer(ampAdsrBusName); // cutoff from fltAdsr
+    carrier->connectToOutputBus(carrierBusName);             // carrier output
+    carrier->connectToFMBus(modulatorBusName);               // FM from modulator
+    modulator->connectToOutputBus(modulatorBusName);         // modulator output
+    noise.connectToOutputBus(noiseBusName);                  // noise output
+    filterAdsr.connectToModulationBus(modFilterAdsrBusName); // modulation bus amp adsr
+    ampAdsr.connectToModulationBus(modAmpAdsrBusName); // modulation bus amp adsr
+    filter.connectToModulationBuffer(modFilterAdsrBusName); // cutoff from fltAdsr
+
+    DSPBusManager::log();
 
     filterAdsr.setGain(15000.0);
     ampAdsr.setGain(1.0);
@@ -488,8 +492,11 @@ void JPVoice::processBlock()
     filterAdsr.process();
     filter.process();
 
+    //modFilterAdsrBus->log();
+
     // amp envelope processing and calculation of output amplification
     ampAdsr.multiply();
+    //modAmpAdsrBus->log();
 
     // Assign changed params
     paramFader.process();

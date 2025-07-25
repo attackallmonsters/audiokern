@@ -46,6 +46,16 @@ DSPSampleBuffer &DSPSampleBuffer::operator=(const DSPSampleBuffer &other)
     return *this;
 }
 
+void DSPSampleBuffer::assign(const std::string &name, host_float *externalBuffer)
+{
+    if (ownsBuffer && buffer)
+        delete[] buffer;
+
+    buffer = externalBuffer;
+    ownsBuffer = false;
+    bufferName = name;
+}
+
 host_float &DSPSampleBuffer::operator[](size_t index)
 {
     return buffer[index];
@@ -86,7 +96,7 @@ size_t DSPSampleBuffer::size() const
     return bufferSize;
 }
 
-host_float DSPSampleBuffer::getPeakValue() const
+host_float DSPSampleBuffer::peak() const
 {
     host_float peak = 0.0;
 

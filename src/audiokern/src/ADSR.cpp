@@ -34,7 +34,7 @@ dsp_float ADSR::shapeToExponent(dsp_float f)
 dsp_float ADSR::powerLerp(dsp_float start, dsp_float end, dsp_float phaseInc, dsp_float shape)
 {
     phaseInc = clamp(phaseInc, 0.0, 1.0);
-    
+
     if (shape == 1.0)
         return start + (end - start) * phaseInc;
 

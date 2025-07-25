@@ -40,8 +40,8 @@ DSPAudioBus *DSPBusManager::registerAudioChannel(const std::string &name, host_f
 {
     DSPAudioBus *bus = registerAudioChannel(name);
 
-    bus->l = outL;
-    bus->r = outR;
+    bus->l.assign("L_" + name, outL);
+    bus->r.assign("R_" + name, outR);
 
     return bus;
 }
@@ -129,5 +129,43 @@ void DSPBusManager::validate()
             DSP::log("ModulationBus '%s' validation failed: %s", modulationNames[i].c_str(), e.what());
             throw;
         }
+    }
+}
+
+void DSPBusManager::log()
+{
+    for (int i = 0; i < audioCount; ++i)
+    {
+        if (audioNames[i].empty())
+            continue;
+
+        DSPAudioBus &bus = audioBusses[i];
+
+        DSP::log("Audio bus: %s", bus.busName.c_str());
+
+        DSP::log("  L: name=%s, size=%zu, peak=%.5f",
+                 bus.l.getName().c_str(),
+                 bus.l.size(),
+                 bus.l.peak());
+
+        DSP::log("  R: name=%s, size=%zu, peak=%.5f",
+                 bus.r.getName().c_str(),
+                 bus.r.size(),
+                 bus.r.peak());
+    }
+
+    for (int i = 0; i < modulationCount; ++i)
+    {
+        if (modulationNames[i].empty())
+            continue;
+
+        DSPModulationBus &bus = modulationBusses[i];
+
+        DSP::log("Modulation bus: %s", bus.busName.c_str());
+
+        DSP::log("  L: name=%s, size=%zu, peak=%.5f",
+                 bus.m.getName().c_str(),
+                 bus.m.size(),
+                 bus.m.peak());
     }
 }

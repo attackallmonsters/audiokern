@@ -2,7 +2,7 @@
 
 // Contains options for sample generation and modulation
 
-// OScillator types for oscillator 1
+// OScillator types for oscillator
 enum class CarrierOscillatiorType
 {
     Saw,       // Saw oscillator
@@ -15,7 +15,7 @@ enum class CarrierOscillatiorType
     Modulo     // Modulo wave ocscillator
 };
 
-// OScillator types for oscillator 1
+// OScillator types for oscillator
 enum class ModulatorOscillatorType
 {
     Saw,       // Saw oscillator

@@ -172,14 +172,14 @@ private:
     DSPAudioBus *carrierBus;
     DSPAudioBus *modulatorBus;
     DSPAudioBus *noiseBus;
-    DSPModulationBus *fltAdsrBus;
-    DSPModulationBus *ampAdsrBus;
+    DSPModulationBus *modFilterAdsrBus;
+    DSPModulationBus *modAmpAdsrBus;
 
     std::string carrierBusName;
     std::string modulatorBusName;
     std::string noiseBusName;
-    std::string filterAdsrBusName;
-    std::string ampAdsrBusName;
+    std::string modFilterAdsrBusName;
+    std::string modAmpAdsrBusName;
 
     // Multi mode filter
     KorgonFilter filter;

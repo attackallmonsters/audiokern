@@ -8,53 +8,107 @@
 
 class DSP; // Forward declaration
 
+/**
+ * @brief Abstract base class for all DSP components.
+ *
+ * DSPObject provides a consistent initialization and processing interface
+ * for derived signal processing modules. It allows registration of a block
+ * processing function and manages a name and sample tracking.
+ */
 class DSPObject : public DSP
 {
 public:
-    // Ctor
+    /**
+     * @brief Constructs an uninitialized DSPObject.
+     */
     DSPObject();
 
-    // Dtor
+    /**
+     * @brief Virtual destructor.
+     */
     virtual ~DSPObject();
 
-    // Gets the DSP object name
+    /**
+     * @brief Returns the name of the DSP object.
+     * @return Constant reference to the object name.
+     */
     const std::string &getName() const { return objectName; }
 
-    // Initializes a DSP-Object
+    /**
+     * @brief Initializes the DSP object with a given name.
+     * @param name The name to assign.
+     */
     void initialize(const std::string &name);
 
-    // Initializes the DSP objectwith an amount of internal objects
+    /**
+     * @brief Initializes the DSP object with a name and internal element count.
+     * @param name The name to assign.
+     * @param count Number of internal DSP elements to initialize.
+     */
     void initialize(const std::string &name, size_t count);
 
-    // Finalization of initialization process
+    /**
+     * @brief Finalizes the initialization of the DSP object.
+     *
+     * This is called after `initialize()` to complete setup (e.g. allocate buffers).
+     */
     void finalize();
 
-    // Calculates the next sample buffer
+    /**
+     * @brief Performs the DSP processing for one sample block.
+     *
+     * This function internally dispatches to the registered block processor.
+     */
     void process();
 
 protected:
-    // Avoid vtable lookup, implementation on derived class
+    /**
+     * @brief Typedef for the block processing function.
+     *
+     * A derived class registers this function to define how the block is processed.
+     */
     using BlockProcessor = void (*)(DSPObject *);
 
-    // Derived class registers the function for sample block generation
+    /**
+     * @brief Registers the block processor function.
+     * @param f Function pointer to the block processing function.
+     */
     void registerBlockProcessor(BlockProcessor f);
 
-    // Initializes the component
+    /**
+     * @brief Optional virtual method for object-specific initialization.
+     *
+     * Called by `initialize()` in derived classes.
+     */
     virtual void initializeObject();
 
-    // Initializes the component with an amount of internal objects
+    /**
+     * @brief Optional virtual method for object-specific initialization with count.
+     *
+     * Called by `initialize(name, count)` in derived classes.
+     * @param count Number of internal objects to initialize.
+     */
     virtual void initializeObject(size_t count);
 
 private:
-    // Dummy SampleFunc for setSamples
-    static void defaultBlockProcess(DSPObject *);
+    /**
+     * @brief Default (empty) block processor used if none is registered.
+     * @param obj Pointer to this DSPObject.
+     */
+    static void defaultBlockProcess(DSPObject *obj);
 
-    // Sample generation from derived class
+    /**
+     * @brief Function pointer to the current block processor.
+     */
     BlockProcessor processBlockFunc;
 
-    // Sample counter
+    /**
+     * @brief Global static sample counter shared across all DSPObjects.
+     */
     static long elapsedSamples;
 
-    // The object name
+    /**
+     * @brief Name assigned to this DSP object.
+     */
     std::string objectName;
 };

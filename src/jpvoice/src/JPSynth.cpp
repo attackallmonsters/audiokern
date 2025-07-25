@@ -401,8 +401,6 @@ void JPSynth::processBlock()
 
     processVoiceBlock();
 
-    voicesOutputBus->log();
-
     voiceMixer.process();
 
     butterworth.process();

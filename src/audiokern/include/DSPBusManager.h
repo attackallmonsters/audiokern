@@ -10,8 +10,8 @@ class DSPAudioBus
 public:
     void initialize(const std::string &name, size_t size)
     {
-        l.initialize("L_" + name, size);
-        r.initialize("R_" + name, size);
+        l.initialize("L" + name, size);
+        r.initialize("R" + name, size);
         busName = name;
     }
 
@@ -32,9 +32,15 @@ public:
     void initialize(const std::string &name, size_t size)
     {
         m.initialize(name, size);
+        busName = name;
     }
 
-    const std::string busName;
+    void log()
+    {
+        m.log();
+    }
+
+    std::string busName;
     DSPSampleBuffer m;
 };
 
@@ -118,6 +124,8 @@ public:
      * Only compiled in DEBUG builds.
      */
     static void validate();
+
+    static void log();
 
 private:
     static constexpr int maxBusses = 128; ///< Maximum number of buses per type
