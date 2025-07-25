@@ -806,55 +806,55 @@ void jpvoice_tilde_deldisp(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom * arg
     switch (disp)
     {
     case 0:
-        synth.setDelayTimeRation(dsp_math::TimeRatio::NONE);
+        synth.setDelayTimeRatio(dsp_math::TimeRatio::NONE);
         break;
     case 1:
-        synth.setDelayTimeRation(dsp_math::TimeRatio::HALF);
+        synth.setDelayTimeRatio(dsp_math::TimeRatio::HALF);
         break;
     case 2:
-        synth.setDelayTimeRation(dsp_math::TimeRatio::DOUBLE);
+        synth.setDelayTimeRatio(dsp_math::TimeRatio::DOUBLE);
         break;
     case 3:
-        synth.setDelayTimeRation(dsp_math::TimeRatio::TRIPLET);
+        synth.setDelayTimeRatio(dsp_math::TimeRatio::TRIPLET);
         break;
     case 4:
-        synth.setDelayTimeRation(dsp_math::TimeRatio::DOTTED);
+        synth.setDelayTimeRatio(dsp_math::TimeRatio::DOTTED);
         break;
     case 5:
-        synth.setDelayTimeRation(dsp_math::TimeRatio::POLY_3_4);
+        synth.setDelayTimeRatio(dsp_math::TimeRatio::POLY_3_4);
         break;
     case 6:
-        synth.setDelayTimeRation(dsp_math::TimeRatio::POLY_4_3);
+        synth.setDelayTimeRatio(dsp_math::TimeRatio::POLY_4_3);
         break;
     case 7:
-        synth.setDelayTimeRation(dsp_math::TimeRatio::POLY_3_5);
+        synth.setDelayTimeRatio(dsp_math::TimeRatio::POLY_3_5);
         break;
     case 8:
-        synth.setDelayTimeRation(dsp_math::TimeRatio::POLY_5_3);
+        synth.setDelayTimeRatio(dsp_math::TimeRatio::POLY_5_3);
         break;
     case 9:
-        synth.setDelayTimeRation(dsp_math::TimeRatio::GOLDEN_RATIO);
+        synth.setDelayTimeRatio(dsp_math::TimeRatio::GOLDEN_RATIO);
         break;
     case 10:
-        synth.setDelayTimeRation(dsp_math::TimeRatio::SILVER_RATIO);
+        synth.setDelayTimeRatio(dsp_math::TimeRatio::SILVER_RATIO);
         break;
     case 11:
-        synth.setDelayTimeRation(dsp_math::TimeRatio::PLATINUM_RATIO);
+        synth.setDelayTimeRatio(dsp_math::TimeRatio::PLATINUM_RATIO);
         break;
     case 12:
-        synth.setDelayTimeRation(dsp_math::TimeRatio::SQRT_2);
+        synth.setDelayTimeRatio(dsp_math::TimeRatio::SQRT_2);
         break;
     case 13:
-        synth.setDelayTimeRation(dsp_math::TimeRatio::SQRT_3);
+        synth.setDelayTimeRatio(dsp_math::TimeRatio::SQRT_3);
         break;
     case 14:
-        synth.setDelayTimeRation(dsp_math::TimeRatio::PHI_INV);
+        synth.setDelayTimeRatio(dsp_math::TimeRatio::PHI_INV);
         break;
     case 15:
-        synth.setDelayTimeRation(dsp_math::TimeRatio::PI_REL);
+        synth.setDelayTimeRatio(dsp_math::TimeRatio::PI_REL);
         break;
     case 16:
-        synth.setDelayTimeRation(dsp_math::TimeRatio::E_REL);
+        synth.setDelayTimeRatio(dsp_math::TimeRatio::E_REL);
         break;
     default:
         break;

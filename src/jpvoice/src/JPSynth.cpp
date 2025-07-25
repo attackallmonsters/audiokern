@@ -412,7 +412,7 @@ void JPSynth::setDelayFeedback(host_float fbL, host_float fbR)
     delay.setFeedback(fbL, fbR);
 }
 
-void JPSynth::setDelayTimeRation(dsp_math::TimeRatio ratio)
+void JPSynth::setDelayTimeRatio(dsp_math::TimeRatio ratio)
 {
     delay.setTimeRatio(ratio);
 }

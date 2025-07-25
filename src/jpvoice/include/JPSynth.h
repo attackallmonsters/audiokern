@@ -145,7 +145,7 @@ public:
     void setDelayFeedback(host_float timeL, host_float timeR);
 
     // Sets the delay time ration L/R
-    void setDelayTimeRation(dsp_math::TimeRatio ratio);
+    void setDelayTimeRatio(dsp_math::TimeRatio ratio);
 
     // Sets the delay wetness
     void setDelayWet(host_float vol);
