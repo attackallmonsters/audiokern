@@ -122,8 +122,6 @@ void NebularReverb::processBlock()
         d->process();
     }
 
-    delayThreads.wait();
-
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
         host_float sumL = 0.0;
