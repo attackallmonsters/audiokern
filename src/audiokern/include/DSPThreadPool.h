@@ -87,10 +87,6 @@ public:
      */
     void wait();
 
-    // Prevent copy construction and assignment
-    DSPThreadPool(const DSPThreadPool &) = delete;
-    //DSPThreadPool &operator=(const DSPThreadPool &) = delete;
-
 private:
     /**
      * @brief The worker loop executed by each thread.
