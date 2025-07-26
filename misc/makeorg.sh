@@ -17,13 +17,17 @@ PROJECT="$1"
 sudo mount -o remount,rw /
 
 # removing old directory
-rm -r -f "$PROJECT"
+rm -r -f "audiokern"
 
 # cloning latest from GitHub...
-GIT_SSL_NO_VERIFY=true git clone "https://github.com/attackallmonsters/$PROJECT.git"
+GIT_SSL_NO_VERIFY=true git clone "https://github.com/attackallmonsters/audiokern.git"
+
+# building audiokern release version
+cd "audiokern/src/audiokern" || { echo "directory audiokern not found"; exit 1; }
+make release
 
 # building release version
-cd "$PROJECT" || { echo "directory $PROJECT not found"; exit 1; }
+cd "../$PROJECT" || { echo "directory $PROJECT not found"; exit 1; }
 make release
 
 echo "build complete"

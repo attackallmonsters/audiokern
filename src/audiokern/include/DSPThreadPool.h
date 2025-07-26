@@ -64,7 +64,7 @@ public:
      * @brief Submits a task to be executed asynchronously by the pool.
      *
      * @param task Callable object with no parameters and no return value.
-     * 
+     *
      * Usage:
      * @code
      * DSPThreadPool pool;
@@ -89,7 +89,7 @@ public:
 
     // Prevent copy construction and assignment
     DSPThreadPool(const DSPThreadPool &) = delete;
-    DSPThreadPool &operator=(const DSPThreadPool &) = delete;
+    //DSPThreadPool &operator=(const DSPThreadPool &) = delete;
 
 private:
     /**
