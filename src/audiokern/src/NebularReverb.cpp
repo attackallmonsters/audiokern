@@ -17,7 +17,7 @@ void NebularReverb::initializeEffect()
 
     delayBusses.clear();
     delayBusses.resize(maxDelays);
-    
+
     for (int i = 0; i < maxDelays; ++i)
     {
         delayNames[i] = "delay_" + std::to_string(i) + getName();
@@ -60,7 +60,7 @@ void NebularReverb::onOutputBusConnected()
 void NebularReverb::setDensity(host_float dense)
 {
     int d = dsp_math::to_int_range(dense, 2, maxDelays);
-    
+
     if (d != density)
     {
         density = d;
@@ -117,13 +117,12 @@ void NebularReverb::processBlock()
 {
     for (int i = 0; i < density; ++i)
     {
-        delays[i]->push();
+        CombDelay *d = delays[i];
+        d->push();
+        d->process();
     }
 
-    for (int i = 0; i < density; ++i)
-    {
-        delays[i]->process();
-    }
+    delayThreads.wait();
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {

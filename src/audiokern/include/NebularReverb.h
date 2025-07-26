@@ -4,6 +4,8 @@
 #include "CombDelay.h"
 #include "clamp.h"
 #include "CrossFader.h"
+#include "DSPThreadPool.h"
+#include "dsp_runtime.h"
 #include <array>
 #include <vector>
 
