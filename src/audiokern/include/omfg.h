@@ -20,7 +20,7 @@ class omfg : public std::ostringstream
  * Must be called at the end of the stream chain.
  * Marked [[noreturn]] to help static analysis.
  */
-[[noreturn]] inline void panic(const std::ostringstream oss)
+inline void panic(const std::ostringstream &oss)
 {
     throw std::runtime_error(oss.str());
 }
