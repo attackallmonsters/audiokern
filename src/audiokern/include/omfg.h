@@ -4,23 +4,16 @@
 #include <stdexcept>
 
 /**
- * @brief A humorous wrapper around std::ostringstream for throwing runtime errors.
+ * @brief Panic macro for convenient runtime error reporting using stream syntax.
  *
- * Build your fatal error message using stream syntax, then call panic() to throw it.
- * Example:
- *     omfgstream() << "Missing output bus in module " << getName() << ".";
- */
-class omfg : public std::ostringstream
-{
-};
-
-/**
- * @brief Throws the built message as a std::runtime_error.
+ * Usage:
+ *     PANIC("Missing bus: " << name << ", module: " << moduleName);
  *
- * Must be called at the end of the stream chain.
- * Marked [[noreturn]] to help static analysis.
+ * Internally uses std::ostringstream and throws std::runtime_error.
  */
-inline void panic(const std::ostringstream &oss)
-{
-    throw std::runtime_error(oss.str());
-}
+#define PANIC(msg)                                                   \
+    do {                                                             \
+        std::ostringstream _panic_stream_;                           \
+        _panic_stream_ << msg;                                       \
+        throw std::runtime_error(_panic_stream_.str());              \
+    } while (0)

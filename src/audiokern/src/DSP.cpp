@@ -85,7 +85,7 @@ void DSP::registerObject(DSPObject& obj)
     {
         if (existing->getName() == obj.getName())
         {
-            panic(omfg() << "DSP::registerObject: object name '" + obj.getName() + "' is already registered");
+            PANIC("DSP::registerObject: object name '" + obj.getName() + "' is already registered");
         }
     }
 

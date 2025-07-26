@@ -18,7 +18,7 @@ DSPAudioBus *DSPBusManager::registerAudioBus(const std::string &name)
     for (int i = 0; i < audioCount; ++i)
     {
         if (audioNames[i] == name)
-            panic(omfg() << "DSPBusManager: audio buffer " << name << " already exists");
+            PANIC("DSPBusManager: audio buffer " << name << " already exists");
     }
 
     // Register new channel if space allows
@@ -32,7 +32,7 @@ DSPAudioBus *DSPBusManager::registerAudioBus(const std::string &name)
     }
     else
     {
-        panic(omfg() << "DSPBusManager: maximum number of audio channels exceeded");
+        PANIC("DSPBusManager: maximum number of audio channels exceeded");
     }
 }
 
@@ -52,7 +52,7 @@ DSPModulationBus *DSPBusManager::registerModulationBus(const std::string &name)
     for (int i = 0; i < modulationCount; ++i)
     {
         if (modulationNames[i] == name)
-            panic(omfg() << "DSPBusManager: modulation buffer " << name << " already exists");
+            PANIC("DSPBusManager: modulation buffer " << name << " already exists");
     }
 
     // Register new channel if space allows
@@ -66,7 +66,7 @@ DSPModulationBus *DSPBusManager::registerModulationBus(const std::string &name)
     }
     else
     {
-        panic(omfg() << "DSPBusManager: maximum number of modulation channels exceeded");
+        PANIC("DSPBusManager: maximum number of modulation channels exceeded");
     }
 }
 
@@ -80,7 +80,7 @@ DSPAudioBus *DSPBusManager::getAudioBus(const std::string &name)
             return &audioBusses[i];
     }
 
-    panic(omfg() << "invalid audio bus name: " << name);
+    PANIC("invalid audio bus name: " << name);
 }
 
 DSPModulationBus *DSPBusManager::getModulationBus(const std::string &name)
@@ -91,7 +91,7 @@ DSPModulationBus *DSPBusManager::getModulationBus(const std::string &name)
             return &modulationBusses[i];
     }
 
-    panic(omfg() << "invalid modulation bus name: " << name);
+    PANIC("invalid modulation bus name: " << name);
 }
 
 // ----------- Clear -----------
