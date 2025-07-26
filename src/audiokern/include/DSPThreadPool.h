@@ -87,6 +87,10 @@ public:
      */
     void wait();
 
+    // Prevent copy construction and assignment
+    DSPThreadPool(const DSPThreadPool &) = delete;
+    DSPThreadPool &operator=(const DSPThreadPool &) = delete;
+
 private:
     /**
      * @brief The worker loop executed by each thread.
@@ -101,7 +105,7 @@ private:
     std::mutex taskMutex;                  ///< Mutex for synchronizing task queue
     std::condition_variable taskAvailable; ///< Signaled when a task is available
 
-    std::atomic<int> activeTasks = 0;     ///< Number of tasks currently running
+    std::atomic<int> activeTasks;     ///< Number of tasks currently running
     std::mutex waitMutex;                 ///< Mutex for wait condition
     std::condition_variable allTasksDone; ///< Signaled when all tasks are completed
 

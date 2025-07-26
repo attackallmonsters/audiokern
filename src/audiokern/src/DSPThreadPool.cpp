@@ -1,7 +1,7 @@
 #include "DSPThreadPool.h"
 #include "clamp.h"
 
-DSPThreadPool::DSPThreadPool()
+DSPThreadPool::DSPThreadPool() : activeTasks(0)
 {
 #ifdef __linux__
 #include <pthread.h>
@@ -15,7 +15,7 @@ DSPThreadPool::~DSPThreadPool()
         std::lock_guard<std::mutex> lock(taskMutex);
         shuttingDown = true;
     }
-    
+
     taskAvailable.notify_all();
 
     for (auto &thread : workers)
