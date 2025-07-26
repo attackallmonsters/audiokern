@@ -97,7 +97,7 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     }
 
     voiceMixer.connectToOutputBus(voicesOutputBusName);      // output buffer for voices
-    butterworth.connectToProcessBuffer(voicesOutputBusName); // connects to voices output
+    butterworth.connectToProcessBus(voicesOutputBusName); // connects to voices output
     delay.connectToInputBus(voicesOutputBusName);            // connects to voices output (after butterworth)
     delay.connectToOutputBus(wetBusName);                    // delay output to wet bus
     reverb.connectToInputBus(wetBusName);                    // connects reverb in to wet bus

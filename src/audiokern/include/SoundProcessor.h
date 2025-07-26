@@ -21,7 +21,7 @@ public:
      * @param busName The name of the audio bus to connect to (e.g. "input", "osc1_output").
      * @throws std::runtime_error if the bus with the given name does not exist.
      */
-    void connectToProcessBuffer(const std::string &busName);
+    void connectToProcessBus(const std::string &busName);
 
     /**
      * @brief Connects this DSP object to the modulation buffer of a named bus.
@@ -33,7 +33,7 @@ public:
      * @param busName The name of the modulation bus to connect to (e.g. "mod_cutoff").
      * @throws std::runtime_error if the bus with the given name does not exist.
      */
-    void connectToModulationBuffer(const std::string &busName);
+    void connectToModulationBus(const std::string &busName);
 
 protected:
     /**

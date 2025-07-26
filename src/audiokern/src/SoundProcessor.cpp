@@ -11,14 +11,16 @@ void SoundProcessor::initializeObject(size_t count)
     initializeProcessor(count);
 }
 
-void SoundProcessor::connectToProcessBuffer(const std::string &busName)
+void SoundProcessor::connectToProcessBus(const std::string &busName)
 {
     processBus = DSPBusManager::getAudioBus(busName);
+    onProcessBusConnected();
 }
 
-void SoundProcessor::connectToModulationBuffer(const std::string &busName)
+void SoundProcessor::connectToModulationBus(const std::string &busName)
 {
     modulationBus = DSPBusManager::getModulationBus(busName);
+    onModulationBusConnected();
 }
 
 void SoundProcessor::initializeProcessor()

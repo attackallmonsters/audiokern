@@ -28,15 +28,8 @@ void JPVoice::initializeGenerator()
     carrierBusName = "carrierBus" + getName();
     modulatorBusName = "modulatorBus" + getName();
     noiseBusName = "noiseBus" + getName();
-    modFilterAdsrBusName = "filterAdsrBus" + getName();
-    modAmpAdsrBusName = "ampAdsrBus" + getName();
-
-    // create voice exclusive audio and modulation busses
-    carrierBus = DSPBusManager::registerAudioBus(carrierBusName);
-    modulatorBus = DSPBusManager::registerAudioBus(modulatorBusName);
-    noiseBus = DSPBusManager::registerAudioBus(noiseBusName);
-    modFilterAdsrBus = DSPBusManager::registerModulationBus(modFilterAdsrBusName);
-    modAmpAdsrBus = DSPBusManager::registerModulationBus(modAmpAdsrBusName);
+    filterCutoffBusName = "filterCutoffBus" + getName();
+    outputAmplificationBusName = "outputAmp" + getName();
 
     // Waveform oscillators
     sawCarrier.initialize("sawCarrier" + getName());
@@ -96,14 +89,21 @@ void JPVoice::initializeGenerator()
     noise.initialize("noise" + getName());
     paramFader.initialize("paramFader" + getName());
 
+    // Create voice exclusive audio and modulation busses
+    carrierBus = DSPBusManager::registerAudioBus(carrierBusName);                              // carrier oscillation output bus
+    modulatorBus = DSPBusManager::registerAudioBus(modulatorBusName);                          // modulator oscillation output bus
+    noiseBus = DSPBusManager::registerAudioBus(noiseBusName);                                  // noise generator output bus
+    filterCutoffBus = DSPBusManager::registerModulationBus(filterCutoffBusName);               // filter cutof modulation bus
+    outputAmplificationBus = DSPBusManager::registerModulationBus(outputAmplificationBusName); // output amplification output bus
+
     // Patching
-    carrier->connectToOutputBus(carrierBusName);             // carrier output
-    carrier->connectToFMBus(modulatorBusName);               // FM from modulator
-    modulator->connectToOutputBus(modulatorBusName);         // modulator output
-    noise.connectToOutputBus(noiseBusName);                  // noise output
-    filterAdsr.connectToModulationBus(modFilterAdsrBusName); // modulation bus amp adsr
-    ampAdsr.connectToModulationBus(modAmpAdsrBusName); // modulation bus amp adsr
-    filter.connectToModulationBuffer(modFilterAdsrBusName); // cutoff from fltAdsr
+    carrier->connectToOutputBus(carrierBusName);                // carrier output
+    carrier->connectToFMBus(modulatorBusName);                  // FM from modulator
+    modulator->connectToOutputBus(modulatorBusName);            // modulator output
+    noise.connectToOutputBus(noiseBusName);                     // noise output
+    filter.connectToModulationBus(filterCutoffBusName);         // cutoff modulation
+    filterAdsr.connectToModulationBus(filterCutoffBusName);     // filter adsr on filter cutoff modulation
+    ampAdsr.connectToModulationBus(outputAmplificationBusName); // voice output amplification
 
     filterAdsr.setGain(15000.0);
     ampAdsr.setGain(1.0);
@@ -134,9 +134,9 @@ void JPVoice::initializeGenerator()
 
 void JPVoice::onOutputBusConnected()
 {
-    filter.connectToProcessBuffer(outputBus->busName);     // output filtering
-    ampAdsr.connectToProcessBuffer(outputBus->busName);    // output amplification
-    paramFader.connectToProcessBuffer(outputBus->busName); // fade output on parameter change
+    filter.connectToProcessBus(outputBus->busName);     // output filtering
+    ampAdsr.connectToProcessBuffer(outputBus->busName); // output amplification
+    paramFader.connectToProcessBus(outputBus->busName); // fade output on parameter change
 }
 
 // Start ADSRs
@@ -489,13 +489,12 @@ void JPVoice::processBlock()
 
     // Filter cutoff calculation
     filterAdsr.process();
+
+    // process filter
     filter.process();
 
-    //modFilterAdsrBus->log();
-
-    // amp envelope processing and calculation of output amplification
+    // output amplification
     ampAdsr.multiply();
-    //modAmpAdsrBus->log();
 
     // Assign changed params
     paramFader.process();

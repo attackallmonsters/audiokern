@@ -1,4 +1,5 @@
 #include "DSPThreadPool.h"
+#include "clamp.h"
 
 DSPThreadPool::DSPThreadPool()
 {
@@ -26,6 +27,8 @@ DSPThreadPool::~DSPThreadPool()
 
 void DSPThreadPool::initialize(size_t numThreads)
 {
+    size_t threads = clampmin(numThreads, static_cast<size_t>(2));
+
     // Ensure all tasks are completed before reinitializing
     wait();
 
@@ -56,7 +59,7 @@ void DSPThreadPool::initialize(size_t numThreads)
     }
 
     // Start new threads
-    for (size_t i = 0; i < numThreads; ++i)
+    for (size_t i = 0; i < threads; ++i)
     {
         workers.emplace_back(&DSPThreadPool::workerThread, this);
     }

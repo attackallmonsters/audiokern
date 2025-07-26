@@ -15,7 +15,7 @@ void Delay::initializeEffect()
 
 void Delay::onOutputBusConnected()
 {
-    paramFader.connectToProcessBuffer(outputBus->busName);
+    paramFader.connectToProcessBus(outputBus->busName);
     wetFader.connectToInputBusForA(inputBus->busName);
     wetFader.connectToInputBusForB(wetBus->busName);
     wetFader.connectToOutputBus(outputBus->busName);
