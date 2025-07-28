@@ -1,0 +1,27 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug DSP external (PD)",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "/usr/bin/pd", // <== path to Pure Data
+        "args": [
+          "-stderr",
+          "-guiport", "0",
+          "/home/thomas/Documents/data/Music Production/dsp/audiokern/bin/jpvoice/linux_x64/main-oui.pd" // <== path to test patch
+          //"/home/thomas/Documents/data/Music Production/dsp/audiokern/bin/adsr/linux_x64/adsr~-help.pd" // <== path to test patch
+          //"/home/thomas/Documents/data/Music Production/dsp/audiokern/bin/lfo/linux_x64/lfo~-help.pd" // <== path to test patch
+        ],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}",
+        "environment": [],
+        "externalConsole": true,
+        "MIMode": "gdb",
+        "setupCommands": [
+          { "description": "Enable pretty-printing", "text": "-enable-pretty-printing", "ignoreFailures": true }
+        ]
+      }
+    ]
+  }
+  
