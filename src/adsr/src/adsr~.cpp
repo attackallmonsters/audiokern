@@ -1,7 +1,11 @@
 // adsr~.cpp — Pure Data external for a nonlinear ADSR envelope with clamping and validation
 #pragma GCC diagnostic ignored "-Wcast-function-type"
 
+#include "m_pd.h"
 #include "ADSR.h"
+#include "DSPBusManager.h"
+#include "dsp_math.h"
+#include <cstdlib>
 
 static t_class *adsr_tilde_class;
 
@@ -52,7 +56,6 @@ void adsr_sustain(t_adsr_tilde *x, t_floatarg f)
 {
     x->adsr->setSustain(f);
 }
-make: *** [Makefile:54: release] Error 2
 
 void adsr_attackshape(t_adsr_tilde *x, t_floatarg f)
 {
@@ -78,31 +81,33 @@ void adsr_oneshot(t_adsr_tilde *x, t_floatarg f)
 t_int *adsr_perform(t_int *w)
 {
     t_adsr_tilde *x = (t_adsr_tilde *)(w[1]);
-    t_sample *out = (t_sample *)(w[2]);
-    int n = (int)(w[3]);
 
     x->adsr->process();
     
-    dsp_float* buf = x->adsr->getBuffer();
-
-    for (int i = 0; i < n; ++i)
-    {
-        out[i] = static_cast<t_sample>(buf[i]);
-    }
-
     return (w + 4);
 }
 
 void adsr_dsp(t_adsr_tilde *x, t_signal **sp)
 {
+    t_sample *out = sp[0]->s_vec;
     x->samplerate = sp[0]->s_sr;
     x->blockSize = sp[0]->s_n;
     
     DSP::initializeAudio(x->samplerate, x->blockSize);
     
-    x->adsr->initialize();
+    x->adsr->initialize(dsp_math::unique_string_id("adsr"));
+
+    std::string busName = dsp_math::unique_string_id("buffered_lfo_bus");
+
+    DSPBusManager::registerModulationBus(busName, out);
+    x->adsr->connectToModulationBus(busName);
 
     dsp_add(adsr_perform, 3, x, sp[0]->s_vec, sp[0]->s_n);
+}
+
+inline void log(const std::string &entry)
+{
+    post("%s", entry.c_str());
 }
 
 // === Object constructor ===

@@ -3,6 +3,7 @@
 #pragma GCC diagnostic ignored "-Wcast-function-type"
 
 #include "m_pd.h"
+#include "dsp_math.h"
 #include "LFO.h"
 #include <cmath>
 #include <cstdlib>
@@ -116,7 +117,7 @@ void lfo_dsp(t_lfo *x, t_signal **sp)
 
     DSP::initializeAudio(x->samplerate, x->blockSize);
 
-    x->lfo->initialize();
+    x->lfo->initialize(dsp_math::unique_string_id("value_lfo"));
     x->lfo->setMode(LFOMode::Value);
 }
 

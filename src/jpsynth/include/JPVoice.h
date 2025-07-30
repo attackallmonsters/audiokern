@@ -116,6 +116,9 @@ public:
     // Sets the amp envelope gain
     void setAmpGain(host_float g);
 
+    /** @brief Sets the analog feeling (amound) */
+    void setAnalogDrift(host_float amount);
+
     // Next sample block generation
     void processBlock();
 
@@ -143,6 +146,7 @@ private:
     host_float noisemix = 0.0; // Mix oscillators <=> noise
     bool syncEnabled = false;  // True if Sync is active
 
+    host_float filterCutoff;    ///< filter cutof frequency
     host_float filterResonance; // filter reso
 
     host_float detune = 0.0;     // Detune factor supersaw oszillator
@@ -167,6 +171,8 @@ private:
     ModuloWavetable moduloCarrier;
     ModuloWavetable moduloModulator;
     BitWavetable bitModulator;
+
+    host_float oscDrift;
 
     // Audio buffers
     DSPAudioBus *carrierBus;

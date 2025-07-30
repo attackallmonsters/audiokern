@@ -41,18 +41,6 @@ void DSPObject::initializeObject(size_t /*count*/)
 void DSPObject::process()
 {
     (*processBlockFunc)(this);
-
-#if DEBUG
-    try
-    {
-        DSPBusManager::validate();
-    }
-    catch (const std::runtime_error &e)
-    {
-        DSP::log("DSP signal bus validation failed: %s", e.what());
-        throw;
-    }
-#endif
 }
 
 void DSPObject::registerBlockProcessor(BlockProcessor f)

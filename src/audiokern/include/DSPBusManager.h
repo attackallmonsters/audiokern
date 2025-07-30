@@ -84,6 +84,22 @@ public:
     static DSPAudioBus *registerAudioBus(const std::string &name, host_float *outL, host_float *outR);
 
     /**
+     * @brief Registers and connects a modulation channel with an external output buffer.
+     *
+     * Associates a previously registered modulation channel (by name) with an external
+     * output buffer. This is typically used to route low-rate control signals (e.g. LFOs,
+     * envelopes, automation data) to external environments such as Pure Data, VST hosts,
+     * or control-rate buses in SuperCollider.
+     *
+     * If the channel name has not been registered via the static
+     * registerModulationBus(const std::string&) method, the call has no effect.
+     *
+     * @param name The name of the modulation channel to bind.
+     * @param out Pointer to the control-rate output buffer.
+     */
+    static DSPModulationBus *registerModulationBus(const std::string &name, host_float *out);
+
+    /**
      * @brief Registers a new modulation channel with the given name.
      *
      * Ensures that each modulation bus name is unique. If the name already exists,

@@ -13,203 +13,209 @@
 #include "ButterworthFilter.h"
 #include "CrossFader.h"
 #include "Delay.h"
+#include "AnalogDrift.h"
 
+/**
+ * @brief Lightweight structure representing a single active synth voice.
+ */
 struct SynthVoice
 {
-    JPVoice jpvoice;
-    int note;
+    JPVoice jpvoice; ///< Synth voice DSP instance
+    int note;        ///< Associated MIDI note
 };
 
+/**
+ * @brief Enum placeholder for defining LFO modulation targets (to be implemented).
+ */
 enum class LFOTargets
 {
-
+    // Reserved for future modulation routing
 };
 
+/**
+ * @brief Container for setting LFO modulation parameters.
+ */
 struct LFOParams
 {
-    LFOType type;
-    host_float frequency;
-    host_float offset;
-    host_float depth;
-    host_float shape;
-    host_float pw;
-    host_float smooth;
+    LFOType type;         ///< LFO waveform type
+    host_float frequency; ///< Frequency in Hz
+    host_float offset;    ///< Offset added to LFO output
+    host_float depth;     ///< Modulation depth
+    host_float shape;     ///< Waveform shaping (if supported)
+    host_float pw;        ///< Pulse width (if applicable)
+    host_float smooth;    ///< Smoothing factor
 };
 
+/**
+ * @brief Central class representing a complete polyphonic synthesizer.
+ *
+ * JPSynth encapsulates all core components of a modular software synthesizer,
+ * including oscillator configuration, modulation, envelopes, filtering, delay,
+ * reverb, analog drift simulation and multithreaded voice rendering.
+ *
+ * The class is implemented as a singleton and provides a high-level API for real-time use.
+ */
 class JPSynth
 {
 public:
-    // Static instance
+    /** @brief Returns the singleton instance. */
     static JPSynth &instance();
 
-    // Initializes the instance
+    /**
+     * @brief Initializes the synthesizer.
+     *
+     * Sets up voice structures, routing and connects to output buses.
+     * Must be called once after the DSP engine is initialized.
+     *
+     * @param outL Pointer to output buffer left
+     * @param outR Pointer to output buffer right
+     */
     void initialize(host_float *outL, host_float *outR);
 
-    // Handles a note in event
+    /** @brief Triggers a note-on event with given velocity. */
     void noteIn(int note, host_float velocity);
 
-    // Sets the oscillator mix
+    /** @brief Sets the mix between carrier and modulator oscillators. */
     void setOscillatorMix(host_float mix);
 
-    // Sets the noise mix
+    /** @brief Sets the noise oscillator volume mix. */
     void setNoiseMix(host_float mix);
 
-    // Sets the modulator pitch offset in halftones
+    /** @brief Sets pitch offset (in semitones) for the modulator. */
     void setPitchOffset(host_float offset);
 
-    // Sets the modulator finetuning in cent
+    /** @brief Sets fine tuning (in cents) for the modulator. */
     void setFineTune(host_float fine);
 
-    // Sets the carrier voices detuning
+    /** @brief Sets detune amount for the carrier oscillator voices. */
     void setDetune(host_float detune);
 
-    // Sets the carrier oscillator type
+    /** @brief Sets the carrier oscillator waveform type. */
     void setCarrierOscillatorType(CarrierOscillatiorType carrierType);
 
-    // Sets the modulator oscillator type
+    /** @brief Sets the modulator oscillator waveform type. */
     void setModulatorOscillatorType(ModulatorOscillatorType modulatorType);
 
-    // Sets the noise type
+    /** @brief Selects the active noise type. */
     void setNoiseType(NoiseType noiseType);
 
-    // Sets the modulation (carrier phase modulation)
+    /** @brief Sets the modulation index for phase modulation. */
     void setModulation(host_float idx);
 
-    // Sets the pitch bend
+    /** @brief Sets pitch bend (as float multiplier). */
     void setPitchBend(host_float bend);
 
-    // Sets the carrier number of voices
+    /** @brief Sets the number of unison voices for the carrier oscillator. */
     void setNumVoices(int numVoices);
 
-    // Enables oscillator sync
+    /** @brief Enables or disables hard sync between modulator and carrier. */
     void setSyncEnabled(bool enable);
 
-    // Sets the carriers feedback amount
+    /** @brief Sets the feedback amount applied to the carrier oscillator. */
     void setFeedbackCarrier(host_float fb);
 
-    // Sets the modulators feedback amount
+    /** @brief Sets the feedback amount applied to the modulator oscillator. */
     void setFeedbackModulator(host_float fb);
 
-    // Sets the filter cutoff
+    /** @brief Sets the base cutoff frequency of the filter. */
     void setFilterCutoff(host_float f);
 
-    // Sets the filter resonance
+    /** @brief Sets the resonance amount of the filter. */
     void setFilterResonance(host_float r);
 
-    // Sets the filter drive
+    /** @brief Sets the nonlinear drive factor of the filter. */
     void setFilterDrive(host_float d);
 
-    // Sets the filter mode
+    /** @brief Selects the filter mode (lowpass, highpass, etc). */
     void setFilterMode(FilterMode mode);
 
-    // Sets the filter envelope parameters
+    /** @brief Sets the ADSR envelope parameters for the filter. */
     void setFilterADSR(ADSRParams adsr);
 
-    // Sets the amplification envelope parameters
+    /** @brief Sets the ADSR envelope parameters for the amplifier. */
     void setAmpADSR(ADSRParams adsr);
 
-    // Enable link filter and amp ADSR
+    /** @brief Enables or disables linking of filter and amp envelopes. */
     void linkADSR(bool enable);
 
-    // Sets ADSRs to one shot mode (ignores key release)
+    /** @brief Enables one-shot mode for all envelopes (ignores note off). */
     void setADSROneshot(bool enable);
 
-    // Sets the parameters for LFO 1
+    /** @brief Sets the LFO 1 parameters. */
     void setLFO1(LFOParams params);
 
-    // Sets the parameters for LFO 2
+    /** @brief Sets the LFO 2 parameters. */
     void setLFO2(LFOParams params);
 
-    // Sets the reverb space reflections
+    /** @brief Sets the size of the early reflection reverb stage. */
     void setReverbSpace(host_float space);
 
-    // Sets the reverb room size
+    /** @brief Sets the perceived room size of the reverb. */
     void setReverbRoom(host_float room);
 
-    // Sets the reverb damping cutoff frequency
+    /** @brief Sets the damping filter cutoff frequency of the reverb. */
     void setReverbDamping(host_float damping);
 
-    // Sets the reverb density
+    /** @brief Sets the density parameter of the reverb decay. */
     void setReverbDensity(host_float density);
 
-    // Sets the time behaviour in the reverb
+    /** @brief Sets the stereo time ratio between early and late reverb. */
     void setReverbTimeRatio(dsp_math::TimeRatio ratio);
 
-    // Sets the reverb wetness
+    /** @brief Sets the reverb wet level. */
     void setReverbWet(host_float vol);
 
-    // Sets the delay time left/right
+    /** @brief Sets delay time per channel (L and R in seconds). */
     void setDelayTime(host_float timeL, host_float timeR);
 
-    // Sets the delay feedback amount left/right
-    void setDelayFeedback(host_float timeL, host_float timeR);
+    /** @brief Sets feedback gain per channel for the delay. */
+    void setDelayFeedback(host_float fbL, host_float fbR);
 
-    // Sets the delay time ration L/R
+    /** @brief Sets stereo time ratio between delay lines. */
     void setDelayTimeRatio(dsp_math::TimeRatio ratio);
 
-    // Sets the delay wetness
+    /** @brief Sets the delay wet level. */
     void setDelayWet(host_float vol);
 
-    // Sets the wetness amount of the effect chain
+    /** @brief Sets the total wetness of the combined effect chain. */
     void setWet(host_float wet);
 
-    // Computes the samples of all voices
-    void processBlock();
+    /** @brief Sets the analog feeling (amound and damping) */
+    void setAnalogDrift(host_float amount, host_float damping);
+
+    /** @brief Renders the full audio block from all voices and effect units. */
+    void process();
 
 private:
-    // Creates the samples vor the voice buffer
-    void processVoiceBlock();
+    void processVoiceBlock(); ///< Internal voice rendering
+    void createVoices();      ///< Initializes voices
 
-    // Creates the voices
-    void createVoices();
+    SynthVoice *currentVoice;             ///< Active voice pointer
+    VoiceAllocator<SynthVoice> allocator; ///< Voice manager
+    DSPThreadPool voiceThreads;           ///< Thread pool for parallel voice processing
 
-    // The currenttly active voice
-    SynthVoice *currentVoice;
+    Mixer voiceMixer;        ///< Dry voice mixdown
+    CrossFader wetFader;     ///< Dry/wet fader
 
-    // Poly voice allocation management
-    VoiceAllocator<SynthVoice> allocator;
+    AnalogDrift analogDrift; ///< analog feeling
 
-    // Thread pool for voices
-    DSPThreadPool voiceThreads;
+    LFO lfo1; ///< First global LFO
+    LFO lfo2; ///< Second global LFO
 
-    // Voice mixer
-    Mixer voiceMixer;
+    ButterworthFilter butterworth; ///< High-pass filter at 80 Hz
+    NebularReverb reverb;          ///< Reverb effect unit
+    Delay delay;                   ///< Stereo delay unit
 
-    // Cross fade dry<>wet
-    CrossFader wetFader;
+    TuningSystem carrierTuning;   ///< Tuning for carrier oscillator
+    TuningSystem modulatorTuning; ///< Tuning for modulator oscillator
+    MidiProcessor midi;           ///< Internal MIDI handler
 
-    // LFO 1
-    LFO lfo1;
+    const size_t voiceCount = 6;         ///< Maximum voice count
+    const std::string name = "_JPSynth"; ///< Synth name for routing
 
-    // LFO 2
-    LFO lfo2;
-
-    // Butterworth fixed high pass 80 Hz
-    ButterworthFilter butterworth;
-
-    // The reverb
-    NebularReverb reverb;
-
-    // The delay
-    Delay delay;
-
-    // Tuning system carrier
-    TuningSystem carrierTuning;
-
-    // Tuning system modulator
-    TuningSystem modulatorTuning;
-
-    // MIDI support
-    MidiProcessor midi;
-
-    // The number of voices
-    const size_t voiceCount = 6;
-
-    const std::string name = "_JPSynth";
-
-    DSPAudioBus *outputBus;
-    DSPAudioBus *wetBus;
-    DSPAudioBus *voicesOutputBus;
+    DSPAudioBus *outputBus;       ///< Final output bus (host)
+    DSPAudioBus *wetBus;          ///< Internal wet signal bus
+    DSPAudioBus *voicesOutputBus; ///< Pre-effect voice sum
 
     const std::string outputBusName = "audio_host";
     const std::string wetBusName = "wet";

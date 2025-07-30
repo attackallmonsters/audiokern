@@ -25,59 +25,59 @@ void ADSR::initializeModulator()
     enterPhase(ADSRPhase::Idle);
 }
 
-dsp_float ADSR::shapeToExponent(dsp_float f)
+host_float ADSR::shapeToExponent(host_float f)
 {
-    dsp_float shape = clamp(f, -1.0, 1.0);
+    host_float shape = clamp(f, -1.0, 1.0);
     return (shape < 0.0) ? 1.0 + shape * 0.9 : 1.0 + shape * 9.0;
 }
 
-dsp_float ADSR::powerLerp(dsp_float start, dsp_float end, dsp_float phaseInc, dsp_float shape)
+host_float ADSR::powerLerp(host_float start, host_float end, host_float phaseInc, host_float shape)
 {
     phaseInc = clamp(phaseInc, 0.0, 1.0);
 
     if (shape == 1.0)
         return start + (end - start) * phaseInc;
 
-    dsp_float curved = (end < start) ? 1.0 - std::pow(1.0 - phaseInc, shape) : std::pow(phaseInc, shape);
+    host_float curved = (end < start) ? 1.0 - std::pow(1.0 - phaseInc, shape) : std::pow(phaseInc, shape);
 
     return start + (end - start) * curved;
 }
 
-void ADSR::setAttack(dsp_float ms)
+void ADSR::setAttack(host_float ms)
 {
     attackTime = clamp(ms, 0.0, MAX_TIME);
     attackSamples = std::max(1, static_cast<int>(attackTime * sampleRateMS));
 }
 
-void ADSR::setDecay(dsp_float ms)
+void ADSR::setDecay(host_float ms)
 {
     decayTime = clamp(ms, 0.0, MAX_TIME);
     decaySamples = std::max(1, static_cast<int>(decayTime * sampleRateMS));
 }
 
-void ADSR::setSustain(dsp_float level)
+void ADSR::setSustain(host_float level)
 {
     sustainLevel = clamp(level, 0.0, 1.0);
 }
 
-void ADSR::setRelease(dsp_float ms)
+void ADSR::setRelease(host_float ms)
 {
-    dsp_float offset = startAtCurrentEnv ? 0.0 : startupTimeMS;
+    host_float offset = startAtCurrentEnv ? 0.0 : startupTimeMS;
     releaseTime = clamp(ms - offset, 0.0, MAX_TIME);
     releaseSamples = std::max(1, static_cast<int>(releaseTime * sampleRateMS));
 }
 
-void ADSR::setAttackShape(dsp_float f)
+void ADSR::setAttackShape(host_float f)
 {
     attackShape = shapeToExponent(f);
 }
 
-void ADSR::setReleaseShape(dsp_float f)
+void ADSR::setReleaseShape(host_float f)
 {
     releaseShape = shapeToExponent(f);
 }
 
-void ADSR::setGain(dsp_float g)
+void ADSR::setGain(host_float g)
 {
     gain = clampmin(g, 0.0);
 }
@@ -142,7 +142,7 @@ void ADSR::phaseIdle()
 
 void ADSR::phaseStartup()
 {
-    dsp_float p = static_cast<dsp_float>(currentSample) / startupSamples;
+    host_float p = static_cast<host_float>(currentSample) / startupSamples;
     currentEnv = powerLerp(phaseStartEnv, 0.0, p, 1.0);
 
     if (++currentSample >= startupSamples)
@@ -154,7 +154,7 @@ void ADSR::phaseStartup()
 
 void ADSR::phaseAttack()
 {
-    dsp_float p = static_cast<dsp_float>(currentSample) / attackSamples;
+    host_float p = static_cast<host_float>(currentSample) / attackSamples;
     currentEnv = powerLerp(phaseStartEnv, 1.0, p, attackShape);
 
     if (++currentSample >= attackSamples)
@@ -163,7 +163,7 @@ void ADSR::phaseAttack()
 
 void ADSR::phaseDecay()
 {
-    dsp_float p = static_cast<dsp_float>(currentSample) / decaySamples;
+    host_float p = static_cast<host_float>(currentSample) / decaySamples;
     currentEnv = (1.0 - p) * (1.0 - sustainLevel) + sustainLevel;
 
     if (++currentSample >= decaySamples)
@@ -187,7 +187,7 @@ void ADSR::phaseSustain()
 
 void ADSR::phaseRelease()
 {
-    dsp_float p = static_cast<dsp_float>(currentSample) / releaseSamples;
+    host_float p = static_cast<host_float>(currentSample) / releaseSamples;
     currentEnv = powerLerp(phaseStartEnv, 0.0, p, releaseShape);
 
     if (++currentSample >= releaseSamples)

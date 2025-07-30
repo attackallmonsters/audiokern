@@ -70,6 +70,15 @@ DSPModulationBus *DSPBusManager::registerModulationBus(const std::string &name)
     }
 }
 
+DSPModulationBus *DSPBusManager::registerModulationBus(const std::string &name, host_float *out)
+{
+    DSPModulationBus *bus = registerModulationBus(name);
+
+    bus->m.assign("L_" + name, out);
+
+    return bus;
+}
+
 // ----------- Get Methods -----------
 
 DSPAudioBus *DSPBusManager::getAudioBus(const std::string &name)
@@ -101,7 +110,7 @@ void DSPBusManager::clear()
     audioCount = 0;
     modulationCount = 0;
 
-    for (int i; i < maxBusses; ++i)
+    for (int i = 0; i < maxBusses; ++i)
     {
         audioNames[i] = "";
     }

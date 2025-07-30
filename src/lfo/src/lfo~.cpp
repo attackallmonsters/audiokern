@@ -4,6 +4,7 @@
 
 #include "m_pd.h"
 #include "LFO.h"
+#include "DSPBusManager.h"
 #include <cmath>
 #include <cstdlib>
 
@@ -117,10 +118,13 @@ void lfo_tilde_dsp(t_lfo_tilde *x, t_signal **sp)
 
     DSP::initializeAudio(x->samplerate, x->blockSize);
 
-    x->lfo->initialize();
+    x->lfo->initialize(dsp_math::unique_string_id("buffered_lfo"));
     x->lfo->setMode(LFOMode::Buffered);
 
-    x->lfo->outputBuffer = out;
+    std::string busName = dsp_math::unique_string_id("buffered_lfo_bus");
+
+    DSPBusManager::registerModulationBus(busName, out);
+    x->lfo->connectToModulationBus(busName);
 }
 
 inline void log(const std::string &entry)

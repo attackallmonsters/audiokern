@@ -11,12 +11,14 @@
 #include "dsp_types.h"
 #include "dsp_math.h"
 #include "DSPBusManager.h"
+#include "dsp_rnd.h"
 
 size_t DSP::blockSize = 64;
 dsp_float DSP::sampleRate = -1.0;
 bool DSP::initialized = false;
 long DSP::elapsedSamples = 0;
 long DSP::processedBlocks = 0;
+size_t DSP::currentLogInterval = 0;
 
 // Dummy logger, does nothing
 static void defaultLogger(const std::string &)
@@ -28,7 +30,6 @@ DSP::LogFunc DSP::logger = &defaultLogger;
 // Contructor
 DSP::DSP()
 {
-    dsp_math::init_trig_lut();
 }
 
 // Destructor
@@ -54,6 +55,9 @@ void DSP::initializeAudio(dsp_float rate, size_t size)
     if (initialized)
         return;
 
+    dsp_math::init_trig_lut();
+    dsp_rnd::initialize();
+
     sampleRate = clamp(rate, 1.0, maxSamplerate);
     blockSize = clamp(size, static_cast<size_t>(1), maxBlockSize);
 
@@ -61,8 +65,10 @@ void DSP::initializeAudio(dsp_float rate, size_t size)
     DSP::log("DSP audio settings: block size is %i", blockSize);
 
     getMutableRegistry().clear();
+
     DSPBusManager::clear();
 
+    currentLogInterval = 0;
     initialized = true;
 }
 
@@ -80,12 +86,12 @@ void DSP::registerLogger(LogFunc func)
     logger = func;
 }
 
-void DSP::registerObject(DSPObject& obj)
+void DSP::registerObject(DSPObject &obj)
 {
-    auto& registry = getMutableRegistry();
+    auto &registry = getMutableRegistry();
 
     // Check for duplicate object name
-    for (const auto* existing : registry)
+    for (const auto *existing : registry)
     {
         if (existing->getName() == obj.getName())
         {
@@ -103,7 +109,7 @@ std::vector<DSPObject *> &DSP::getMutableRegistry()
     return registry;
 }
 
-const std::vector<DSPObject*>& DSP::getRegistry()
+const std::vector<DSPObject *> &DSP::getRegistry()
 {
     return getMutableRegistry();
 }
@@ -114,15 +120,30 @@ dsp_float DSP::zeroSubnormals(dsp_float value)
     return (std::fabs(value) < epsilon) ? 0.0 : value;
 }
 
+void DSP::logv(const char *fmt, va_list args)
+{
+    char buffer[4096];
+    vsnprintf(buffer, sizeof(buffer), fmt, args);
+    logger(std::string(buffer));
+}
+
 void DSP::log(const char *fmt, ...)
 {
-    char buffer[2048];
     va_list args;
     va_start(args, fmt);
-    vsnprintf(buffer, sizeof(buffer), fmt, args);
+    logv(fmt, args);
     va_end(args);
+}
 
-    logger(std::string(buffer));
+void DSP::log(size_t interval, const char *fmt, ...)
+{
+    if (++currentLogInterval % interval != 0)
+        return;
+
+    va_list args;
+    va_start(args, fmt);
+    logv(fmt, args);
+    va_end(args);
 }
 
 void DSP::logBuffer(const std::string &label, host_float *buffer, size_t size)

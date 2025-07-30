@@ -131,6 +131,17 @@ public:
     static void log(const char* fmt, ...);
 
     /**
+     * @brief Formatted log message output (like printf).
+     * 
+     * Uses the registered log function, if available.
+     * 
+     * @param interval DSP loop interval (1000/samplerate (44100) * blocksize (64) = 1 interval (1.45ms))
+     * @param fmt printf-style format string
+     * @param ... optional format arguments
+     */
+    void log(size_t interval, const char *fmt, ...);
+
+    /**
      * @brief Logs the contents of a buffer with label.
      * 
      * Outputs each value to the log function in formatted form.
@@ -142,6 +153,9 @@ public:
     static void logBuffer(const std::string& label, host_float* buffer, size_t size);
 
 private:
+    /// log function
+    static void logv(const char* fmt, va_list args);
+
     /// Internal flag: true after successful initialization
     static bool initialized;
 
@@ -153,6 +167,9 @@ private:
 
     /// Current logger callback function
     static LogFunc logger;
+
+    /// Current log intervall counter
+    static size_t currentLogInterval;
 
     /**
      * @brief Returns the mutable internal DSP object registry.

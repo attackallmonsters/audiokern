@@ -83,6 +83,7 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     reverb.initialize("reverb" + name);
     delay.initialize("delay" + name);
     wetFader.initialize("wetFader" + name);
+    setAnalogDrift(0.0, 1.0);
 
     createVoices();
 
@@ -425,7 +426,13 @@ void JPSynth::setWet(host_float wet)
     wetFader.setMix(wet);
 }
 
-void JPSynth::processBlock()
+void JPSynth::setAnalogDrift(host_float amount, host_float damping)
+{
+    analogDrift.setAmount(clamp(amount, 0.0, 1.0));
+    analogDrift.setDamping(damping);
+}
+
+void JPSynth::process()
 {
     DSP::nextBlock();
 
@@ -440,15 +447,32 @@ void JPSynth::processBlock()
     reverb.process();
 
     wetFader.process();
+
+#if DEBUG
+    try
+    {
+        DSPBusManager::validate();
+    }
+    catch (const std::runtime_error &e)
+    {
+        DSP::log("DSP signal bus validation failed: %s", e.what());
+        throw;
+    }
+#endif
 }
 
 void JPSynth::processVoiceBlock()
 {
+    host_float drift = analogDrift.getDrift();
+
     for (auto *voice : allocator.getVoices())
     {
         voiceThreads.execute(
-            [voice]()
-            { voice->jpvoice.process(); });
+            [voice, drift]()
+            {
+                voice->jpvoice.setAnalogDrift(drift);
+                voice->jpvoice.process();
+            });
     }
 
     voiceThreads.wait();

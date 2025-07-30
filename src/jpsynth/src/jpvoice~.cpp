@@ -375,6 +375,25 @@ void jpvoice_tilde_mode(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
     }
 }
 
+void jpvoice_tilde_drift(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+{
+    if (!testDSP())
+    {
+        return;
+    }
+
+    if (argc < 2)
+    {
+        post("[jpvoice~] usage: drift amount 0 - 1, damping 0 - 1");
+        return;
+    }
+
+    host_float a = atom_getfloat(&argv[0]);
+    host_float d = atom_getfloat(&argv[1]);
+
+    synth.setAnalogDrift(a, d);
+}
+
 // [carrierfb (0 - 1.2)]
 void jpvoice_tilde_carrierfb(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom * argv)
 {
@@ -898,7 +917,7 @@ void jpvoice_tilde_wet(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom * argv)
 // DSP perform function
 t_int *jpvoice_tilde_perform(t_int *w)
 {
-    synth.processBlock();
+    synth.process();
     return (w + 5);
 }
 
@@ -980,6 +999,9 @@ extern "C" void jpvoice_tilde_setup(void)
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_reso, gensym("reso"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_drive, gensym("drive"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_mode, gensym("mode"), A_GIMME, 0);
+
+    // TODO
+    //class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_drift, gensym("drift"), A_GIMME, 0);
 
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_fltadsr, gensym("fltadsr"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_ampadsr, gensym("ampadsr"), A_GIMME, 0);

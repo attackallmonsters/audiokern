@@ -258,6 +258,7 @@ void JPVoice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
     carrierTmp->setModIndex(modulationIndex);
     carrierTmp->setDetune(detune);
     carrierTmp->setNumVoices(numVoices);
+    carrierTmp->setAnalogDrift(oscDrift);
 
     paramFader.change(
         [=]()
@@ -314,6 +315,7 @@ void JPVoice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
     }
 
     modulatorTmp->setFrequency(modulatorFrequency);
+    modulatorTmp->setAnalogDrift(oscDrift);
 
     paramFader.change(
         [=]()
@@ -359,7 +361,9 @@ void JPVoice::setFilterMode(FilterMode mode)
 // Sets the cutoff frequency
 void JPVoice::setFilterCutoff(host_float f)
 {
-    filterAdsr.setGain(clamp(f, 0.0, 20000.0));
+    filterCutoff = clamp(f, 0.0, 20000.0);
+
+    filterAdsr.setGain(filterCutoff);
 }
 
 // Sets the filter resonance
@@ -432,6 +436,15 @@ void JPVoice::setADSROneshot(bool isEnabled)
 void JPVoice::setAmpGain(host_float g)
 {
     ampAdsr.setGain(clampmin(g, 0.0));
+}
+
+
+void JPVoice::setAnalogDrift(host_float amount)
+{
+    oscDrift = amount * 0.08;
+    
+    carrier->setAnalogDrift(oscDrift);
+    modulator->setAnalogDrift(oscDrift);
 }
 
 // Next sample block generation

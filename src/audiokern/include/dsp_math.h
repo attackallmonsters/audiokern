@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dsp_types.h"
+#include "clamp.h"
 #include <cmath>
 #include <array>
 #include <chrono>
@@ -30,130 +31,119 @@ namespace dsp_math
     /** @brief Step size in radians for LUT indexing (π / LUT_SIZE) */
     constexpr host_float LUT_RESOLUTION = DSP_PI / LUT_SIZE;
 
+    // Internal LUTs (defined inline to avoid linker issues)
+    inline std::array<host_float, LUT_SIZE + 1> sinLUT{};
+    inline std::array<host_float, LUT_SIZE + 1> cosLUT{};
+    inline bool lut_initialized = false;
+
     /**
      * @brief Maps a normalized float value [0.0, 1.0] to an integer range [min, max].
-     * 
-     * Values outside [0.0, 1.0] are clamped before mapping.
-     * 
-     * @param norm Normalized float input (expected in range [0.0, 1.0]).
-     * @param min Minimum integer output value.
-     * @param max Maximum integer output value.
-     * @return int Resulting integer in range [min, max].
      */
-    int normf_to_int_range(float norm, int min, int max);
+    inline int normf_to_int_range(float norm, int min, int max)
+    {
+        norm = clamp(norm, 0.0f, 1.0f);
+        return static_cast<int>(std::round(min + norm * (max - min)));
+    }
 
     /**
      * @brief Fast tanh approximation for waveshaping or saturation.
-     *
-     * Usually implemented as a polynomial or clipped rational approximation.
-     *
-     * @param val Input value.
-     * @return Approximated tanh(val).
      */
-    host_float fast_tanh(host_float val);
+    inline host_float fast_tanh(host_float val)
+    {
+        if (val < -3.0) return -1.0;
+        if (val > 3.0) return 1.0;
+        host_float val2 = val * val;
+        return val * (27.0 + val2) / (27.0 + 9.0 * val2);
+    }
 
     /**
      * @brief Soft clipping function for smooth distortion.
-     *
-     * Clamps the signal near ±1.0 with a nonlinear transition.
-     *
-     * @param x Input signal.
-     * @return Soft-clipped signal.
      */
-    host_float soft_clip(host_float x);
+    inline host_float soft_clip(host_float x)
+    {
+        constexpr host_float threshold = 2.5;
+        if (x < -threshold) return -1.0;
+        if (x > threshold) return 1.0;
+        return x * (1.0 - (x * x) / (3.0 * threshold * threshold));
+    }
 
     /**
-     * @brief Enum defining commonly used or mathematically interesting time ratios.
-     *
-     * These values represent multipliers that can be applied to a base time value
-     * to derive a related secondary time value. Useful in contexts like timing,
-     * modulation, rhythmic relationships, or spatial effects.
+     * @brief Enum defining time ratios.
      */
     enum class TimeRatio
     {
-        NONE,   ///< No change; the secondary time remains equal to the base time.
-        HALF,   ///< Multiplies base time by 0.5 (half-time).
-        DOUBLE, ///< Multiplies base time by 2.0 (double-time).
-
-        TRIPLET, ///< Two-thirds of the base time (common in triplet rhythms).
-        DOTTED,  ///< One and a half times the base time (dotted rhythm).
-
-        POLY_3_4, ///< Ratio 3:4 – often used for subtle time offsets.
-        POLY_4_3, ///< Ratio 4:3 – slight temporal expansion.
-        POLY_3_5, ///< Ratio 3:5 – irregular relationship for added complexity.
-        POLY_5_3, ///< Ratio 5:3 – inverse of 3:5, for tighter relation.
-
-        GOLDEN_RATIO,   ///< Approximately 0.618 – the inverse of the golden ratio φ.
-        SILVER_RATIO,   ///< Approximately 0.414 – 1 / (1 + √2), less common but useful.
-        PLATINUM_RATIO, ///< Exactly 1/3 – simple subdivision.
-
-        SQRT_2, ///< Square root of 2 (~1.414) – geometric midpoint between 1× and 2×.
-        SQRT_3, ///< Square root of 3 (~1.732) – broader irrational relationship.
-
-        PHI_INV, ///< The golden ratio φ (~1.618) – inverse of GOLDEN_RATIO.
-        PI_REL,  ///< Pi (~3.14159) – useful for irrational, circular or non-repeating timings.
-        E_REL    ///< Euler’s number e (~2.71828) – exponential time scaling or growth.
+        NONE, HALF, DOUBLE, TRIPLET, DOTTED,
+        POLY_3_4, POLY_4_3, POLY_3_5, POLY_5_3,
+        GOLDEN_RATIO, SILVER_RATIO, PLATINUM_RATIO,
+        SQRT_2, SQRT_3, PHI_INV, PI_REL, E_REL
     };
 
     /**
      * @brief Applies a time ratio to a given base time value.
-     *
-     * This function returns a scaled time value based on the specified ratio.
-     * It can be used in contexts such as rhythmic relationships, modulation timing,
-     * signal delays, or other time-based processing scenarios.
-     *
-     * @param time  The base time value to scale.
-     * @param ratio The ratio to apply to the base time.
-     * @return host_float The resulting time value after applying the ratio.
      */
-    host_float getTimeRatio(host_float time, TimeRatio ratio);
-
-    /**
-     * @brief Precomputed sine lookup table from 0 to π.
-     *
-     * Index range: [0, LUT_SIZE]
-     */
-    extern std::array<host_float, LUT_SIZE + 1> sinLUT;
-
-    /**
-     * @brief Precomputed cosine lookup table from 0 to π.
-     *
-     * Index range: [0, LUT_SIZE]
-     */
-    extern std::array<host_float, LUT_SIZE + 1> cosLUT;
-
-    /**
-     * @brief Indicates whether the lookup tables have been initialized.
-     */
-    extern bool lut_initialized;
+    inline host_float getTimeRatio(host_float time, TimeRatio ratio)
+    {
+        switch (ratio)
+        {
+        case TimeRatio::NONE: return time;
+        case TimeRatio::HALF: return time * 0.5;
+        case TimeRatio::DOUBLE: return time * 2.0;
+        case TimeRatio::TRIPLET: return time * (2.0 / 3.0);
+        case TimeRatio::DOTTED: return time * (3.0 / 2.0);
+        case TimeRatio::POLY_3_4: return time * (3.0 / 4.0);
+        case TimeRatio::POLY_4_3: return time * (4.0 / 3.0);
+        case TimeRatio::POLY_3_5: return time * (5.0 / 3.0);
+        case TimeRatio::POLY_5_3: return time * (3.0 / 5.0);
+        case TimeRatio::GOLDEN_RATIO: return time * 0.6180339887;
+        case TimeRatio::SILVER_RATIO: return time * 0.4142135623;
+        case TimeRatio::PLATINUM_RATIO: return time * 0.3333333333;
+        case TimeRatio::SQRT_2: return time * std::sqrt(2.0);
+        case TimeRatio::SQRT_3: return time * std::sqrt(3.0);
+        case TimeRatio::PHI_INV: return time * 1.6180339887;
+        case TimeRatio::PI_REL: return time * DSP_PI;
+        case TimeRatio::E_REL: return time * std::exp(1.0);
+        default: return time;
+        }
+    }
 
     /**
      * @brief Initializes sine and cosine lookup tables.
-     *
-     * Must be called once before using `get_sin_cos`.
      */
-    void init_trig_lut();
+    inline void init_trig_lut()
+    {
+        if (lut_initialized) return;
+        for (int i = 0; i <= LUT_SIZE; ++i)
+        {
+            host_float omega = i * LUT_RESOLUTION;
+            sinLUT[i] = std::sin(omega);
+            cosLUT[i] = std::cos(omega);
+        }
+        lut_initialized = true;
+    }
 
     /**
      * @brief Computes equal-power panning coefficients from angle.
-     *
-     * Uses LUTs if initialized. Converts phase angle (omega) into cosine and sine values:
-     * - `cos_out` = left gain
-     * - `sin_out` = right gain
-     *
-     * @param omega Angle in radians (typically 0 to π/2).
-     * @param cos_out Pointer to receive cos(omega).
-     * @param sin_out Pointer to receive sin(omega).
      */
-    void get_sin_cos(host_float omega, host_float *cos_out, host_float *sin_out);
+    inline void get_sin_cos(host_float omega, host_float *cos_out, host_float *sin_out)
+    {
+        omega = clamp(omega, 0.0, DSP_PI);
+        int index = static_cast<int>(omega / LUT_RESOLUTION + 0.5);
+        if (index > LUT_SIZE) index = LUT_SIZE;
+        *sin_out = sinLUT[index];
+        *cos_out = cosLUT[index];
+    }
 
     /**
      * @brief Generates a unique string identifier using timestamp and counter.
-     *
-     * Useful for dynamic naming of temporary buffers, instances, etc.
-     *
-     * @param name Base string to prefix.
-     * @return Unique string (e.g., "mod1234567").
      */
-    std::string unique_string_id(const std::string &name);
+    inline std::string unique_string_id(const std::string &name)
+    {
+        static std::atomic<uint64_t> counter{0};
+        uint64_t count = counter.fetch_add(1);
+        auto now = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        const void *addr = static_cast<const void *>(&count);
+        std::ostringstream ss;
+        ss << name << "_" << now << "_" << count << std::hex << reinterpret_cast<uintptr_t>(addr);
+        return ss.str();
+    }
 }

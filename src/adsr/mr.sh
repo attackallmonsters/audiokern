@@ -20,9 +20,9 @@ echo "RUN_DEPS = $RUN_DEPS"
 make clean
 
 if [ "$RUN_DEPS" = "true" ]; then
-  echo ">>> Building DSP module in ../dsp (release)"
-  make -C ../dsp clear
-  make -C ../dsp release || { echo "Error in ../dsp"; exit 1; }
+  echo ">>> Building audiokern module in ../audiokern (release)"
+  make -C ../audiokern clear
+  make -C ../audiokern release || { echo "Error in ../audiokern"; exit 1; }
 fi
 
 make clean

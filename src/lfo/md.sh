@@ -22,11 +22,10 @@ echo "RUN_DEPS = $RUN_DEPS"
 make clean
 
 if [ "$RUN_DEPS" = "true" ]; then
-  echo ">>> Building DSP module in ../dsp (debug)"
-  make -C ../dsp clear
-  make -C ../dsp debug || { echo "Error in ../dsp"; exit 1; }
+  echo ">>> Building audiokern module in ../audiokern (debug)"
+  make -C ../audiokern clear
+  make -C ../audiokern debug || { echo "Error in ../audiokern"; exit 1; }
 fi
 
 make clean
-clear
 make debug
