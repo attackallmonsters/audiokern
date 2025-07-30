@@ -72,18 +72,30 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     outputBus = DSPBusManager::registerAudioBus(outputBusName, outL, outR);
     wetBus = DSPBusManager::registerAudioBus(wetBusName);
     voicesOutputBus = DSPBusManager::registerAudioBus(voicesOutputBusName);
+    modFilterCutoffBus = DSPBusManager::registerModulationBus(modFilterCutoffBusName);
+
+    modFilterCutoffBus->fill(1.0);
 
     // Initialization
     voiceThreads.initialize(cpu_count() / 2);
     carrierTuning.initialize();
     modulatorTuning.initialize();
+    filterCutoffTuning.initialize();
     midi.initialize();
     voiceMixer.initialize("voiceMixer" + name, voiceCount);
     butterworth.initialize("butterworth" + name);
+    lfo1.initialize("lfo1" + name);
     reverb.initialize("reverb" + name);
     delay.initialize("delay" + name);
     wetFader.initialize("wetFader" + name);
     setAnalogDrift(0.0, 1.0);
+
+    lfo1.connectToModulationBus(modFilterCutoffBusName);
+
+    lfo1.isUnipolar(true);
+    lfo1.setFreq(0.1);
+    lfo1.setOffset(0.3);
+    lfo1.setDepth(0.5);
 
     createVoices();
 
@@ -132,6 +144,12 @@ void JPSynth::noteIn(int note, host_float velocity)
         currentVoice->jpvoice.setCarrierFrequency(carrierTuning.frequency(note));
         currentVoice->jpvoice.setModulatorFrequency(modulatorTuning.frequency(note));
         currentVoice->jpvoice.setAmpGain(midi.normalizeVelocityRMS(velocity));
+
+        if (filterFollowEnabled)
+        {
+            currentVoice->jpvoice.setFilterCutoff(filterCutoffTuning.frequency(note + 36));
+        }
+
         currentVoice->jpvoice.playNote();
     }
     else
@@ -291,6 +309,11 @@ void JPSynth::setFeedbackModulator(host_float fb)
 
 void JPSynth::setFilterCutoff(host_float f)
 {
+    currentCutoff = f;
+
+    if (filterFollowEnabled)
+        return;
+
     allocator.forEachVoice(
         [&](auto &v)
         {
@@ -324,6 +347,16 @@ void JPSynth::setFilterMode(FilterMode mode)
         {
             v.jpvoice.setFilterMode(mode);
         });
+}
+
+void JPSynth::setFilterFollow(bool enabled)
+{
+    filterFollowEnabled = enabled;
+
+    if (filterFollowEnabled)
+        currentVoice->jpvoice.setFilterCutoff(filterCutoffTuning.frequency(currentVoice->note + 24));
+    else
+        setFilterCutoff(currentCutoff);
 }
 
 void JPSynth::setFilterADSR(ADSRParams adsr)
@@ -436,6 +469,8 @@ void JPSynth::process()
 {
     DSP::nextBlock();
 
+    lfo1.process();
+
     processVoiceBlock();
 
     voiceMixer.process();
@@ -487,6 +522,7 @@ void JPSynth::createVoices()
         std::unique_ptr<SynthVoice> voice = std::make_unique<SynthVoice>();
 
         voice->jpvoice.initialize("jpvoice_" + std::to_string(i) + name);
+        voice->jpvoice.setFilterCutoffModulationBus(modFilterCutoffBus);
 
         // Transfer ownership to allocator
         allocator.add(std::move(voice));

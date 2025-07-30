@@ -123,6 +123,8 @@ public:
      */
     void free();
 
+    void multiplyWith(DSPSampleBuffer &targetBuffer);
+
     /**
      * @brief Validates buffer content (e.g. check for NaNs or denormals).
      *

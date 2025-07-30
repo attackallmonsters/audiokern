@@ -119,6 +119,9 @@ public:
     /** @brief Sets the analog feeling (amound) */
     void setAnalogDrift(host_float amount);
 
+    /** @brief Sets the modulation bus for filter citoff */
+    void setFilterCutoffModulationBus(DSPModulationBus *bus);
+
     // Next sample block generation
     void processBlock();
 
@@ -175,15 +178,16 @@ private:
     host_float oscDrift;
 
     // Audio buffers
-    DSPAudioBus *carrierBus;
-    DSPAudioBus *modulatorBus;
-    DSPAudioBus *noiseBus;
+    DSPAudioBus *carrierAudioBus;
+    DSPAudioBus *modulatorAudioBus;
+    DSPAudioBus *noiseAudioBus;
     DSPModulationBus *filterCutoffBus;
+    DSPModulationBus *filterCutoffModulationBus;
     DSPModulationBus *outputAmplificationBus;
 
-    std::string carrierBusName;
-    std::string modulatorBusName;
-    std::string noiseBusName;
+    std::string carrierAudioBusName;
+    std::string modulatorAudioBusName;
+    std::string noiseAudioBusName;
     std::string filterCutoffBusName;
     std::string outputAmplificationBusName;
 

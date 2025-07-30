@@ -375,6 +375,24 @@ void jpvoice_tilde_mode(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
     }
 }
 
+void jpvoice_tilde_follow(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+{
+    if (!testDSP())
+    {
+        return;
+    }
+
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: follow 0|1");
+        return;
+    }
+
+    int f = atom_getfloat(argv);
+
+    synth.setFilterFollow(f != 0);
+}
+
 void jpvoice_tilde_drift(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
@@ -995,10 +1013,12 @@ extern "C" void jpvoice_tilde_setup(void)
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_sync, gensym("sync"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_carrierfb, gensym("carrierfb"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_modulatorfb, gensym("modulatorfb"), A_GIMME, 0);
+
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_cutoff, gensym("cutoff"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_reso, gensym("reso"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_drive, gensym("drive"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_mode, gensym("mode"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_follow, gensym("follow"), A_GIMME, 0);
 
     // TODO
     //class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_drift, gensym("drift"), A_GIMME, 0);

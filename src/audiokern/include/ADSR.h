@@ -20,13 +20,13 @@ class ADSR : public Modulator
 public:
     ADSR();
 
-    void setAttack(dsp_float ms);
-    void setDecay(dsp_float ms);
-    void setSustain(dsp_float level);
-    void setRelease(dsp_float ms);
-    void setAttackShape(dsp_float shape);
-    void setReleaseShape(dsp_float shape);
-    void setGain(dsp_float g);
+    void setAttack(host_float ms);
+    void setDecay(host_float ms);
+    void setSustain(host_float level);
+    void setRelease(host_float ms);
+    void setAttackShape(host_float shape);
+    void setReleaseShape(host_float shape);
+    void setGain(host_float g);
     void setOneShot(bool b);
     void setStartAtCurrent(bool start);
 
@@ -46,10 +46,10 @@ private:
     PhaseFunc phaseFunc;
 
     // Envelope values
-    dsp_float attackTime, decayTime, sustainLevel, releaseTime;
-    dsp_float attackShape, releaseShape;
-    dsp_float currentEnv, phaseStartEnv;
-    dsp_float gain;
+    host_float attackTime, decayTime, sustainLevel, releaseTime;
+    host_float attackShape, releaseShape;
+    host_float currentEnv, phaseStartEnv;
+    host_float gain;
     bool oneShot;
     bool startAtCurrentEnv;
 
@@ -66,12 +66,12 @@ private:
     void phaseSustain();
     void phaseRelease();
 
-    static dsp_float powerLerp(dsp_float start, dsp_float end, dsp_float p, dsp_float shape);
-    static dsp_float shapeToExponent(dsp_float f);
+    static host_float powerLerp(host_float start, host_float end, host_float p, host_float shape);
+    static host_float shapeToExponent(host_float f);
 
-    dsp_float sampleRateMS;
+    host_float sampleRateMS;
     ADSRPhase phase;
     int currentSample;
 
-    static constexpr dsp_float MAX_TIME = std::numeric_limits<dsp_float>::max();
+    static constexpr host_float MAX_TIME = std::numeric_limits<host_float>::max();
 };

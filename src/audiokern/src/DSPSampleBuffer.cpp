@@ -118,11 +118,23 @@ void DSPSampleBuffer::free()
         delete[] buffer;
 }
 
+void DSPSampleBuffer::multiplyWith(DSPSampleBuffer &sourceBuffer)
+{
+    if (bufferSize != sourceBuffer.bufferSize)
+        PANIC("Bufferssizes not matching " << bufferName << "(" << std::to_string(bufferSize) << ") => " << 
+        sourceBuffer.bufferName << "(" << std::to_string(sourceBuffer.bufferSize) << ")");
+
+    for (size_t i = 0; i < bufferSize; ++i)
+    {
+        buffer[i] *= sourceBuffer[i];
+    }
+}
+
 void DSPSampleBuffer::isValid()
 {
     constexpr host_float maxReasonable = 1.0e6;
 
-    for (size_t i = 0; i < size(); ++i)
+    for (size_t i = 0; i < bufferSize; ++i)
     {
         host_float value = buffer[i];
         if (std::isnan(value))

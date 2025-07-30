@@ -129,6 +129,9 @@ public:
     /** @brief Selects the filter mode (lowpass, highpass, etc). */
     void setFilterMode(FilterMode mode);
 
+    /** @brief Enables or disabled cutoff follow */
+    void setFilterFollow(bool enabled);
+
     /** @brief Sets the ADSR envelope parameters for the filter. */
     void setFilterADSR(ADSRParams adsr);
 
@@ -194,8 +197,8 @@ private:
     VoiceAllocator<SynthVoice> allocator; ///< Voice manager
     DSPThreadPool voiceThreads;           ///< Thread pool for parallel voice processing
 
-    Mixer voiceMixer;        ///< Dry voice mixdown
-    CrossFader wetFader;     ///< Dry/wet fader
+    Mixer voiceMixer;    ///< Dry voice mixdown
+    CrossFader wetFader; ///< Dry/wet fader
 
     AnalogDrift analogDrift; ///< analog feeling
 
@@ -206,9 +209,10 @@ private:
     NebularReverb reverb;          ///< Reverb effect unit
     Delay delay;                   ///< Stereo delay unit
 
-    TuningSystem carrierTuning;   ///< Tuning for carrier oscillator
-    TuningSystem modulatorTuning; ///< Tuning for modulator oscillator
-    MidiProcessor midi;           ///< Internal MIDI handler
+    TuningSystem carrierTuning;      ///< Tuning for carrier oscillator
+    TuningSystem modulatorTuning;    ///< Tuning for modulator oscillator
+    TuningSystem filterCutoffTuning; ///< Tuning for filter cutoff
+    MidiProcessor midi;              ///< Internal MIDI handler
 
     const size_t voiceCount = 6;         ///< Maximum voice count
     const std::string name = "_JPSynth"; ///< Synth name for routing
@@ -217,7 +221,13 @@ private:
     DSPAudioBus *wetBus;          ///< Internal wet signal bus
     DSPAudioBus *voicesOutputBus; ///< Pre-effect voice sum
 
-    const std::string outputBusName = "audio_host";
-    const std::string wetBusName = "wet";
-    const std::string voicesOutputBusName = "voices";
+    DSPModulationBus *modFilterCutoffBus; ///< Cutoff bis for filter modulation by LFO 1
+
+    bool filterFollowEnabled; /// Indicates if filter cutoff follows the note
+    host_float currentCutoff; ///< To reset filter cutoff when follow is disabled
+
+    const std::string outputBusName = "audio_host";            ///< signal bus name for output
+    const std::string wetBusName = "wet";                      ///< signal bus name wet
+    const std::string voicesOutputBusName = "voices";          ///< bus name for voice output
+    const std::string modFilterCutoffBusName = "modCutoffBus"; ///< bus name of filter cutoff modulation bus
 };

@@ -35,6 +35,17 @@ public:
         busName = name;
     }
 
+    void multiplyWidth(DSPModulationBus *bus)
+    {
+        // Multiply this buffer with target buffer into target buffer
+        m.multiplyWith(bus->m);
+    }
+
+    void fill(host_float v)
+    {
+        m.fill(v);
+    }
+
     void log()
     {
         m.log();
