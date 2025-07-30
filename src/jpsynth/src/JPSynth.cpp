@@ -72,9 +72,15 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     outputBus = DSPBusManager::registerAudioBus(outputBusName, outL, outR);
     wetBus = DSPBusManager::registerAudioBus(wetBusName);
     voicesOutputBus = DSPBusManager::registerAudioBus(voicesOutputBusName);
+
     modFilterCutoffBus = DSPBusManager::registerModulationBus(modFilterCutoffBusName);
+    modAmpBus = DSPBusManager::registerModulationBus(modAmpBusName);
+
+    lfo1DummyBus = DSPBusManager::registerModulationBus(lfo1DummyBusName);
+    lfo2DummyBus = DSPBusManager::registerModulationBus(lfo2DummyBusName);
 
     modFilterCutoffBus->fill(1.0);
+    modAmpBus->fill(1.0);
 
     // Initialization
     voiceThreads.initialize(cpu_count() / 2);
@@ -84,18 +90,26 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     midi.initialize();
     voiceMixer.initialize("voiceMixer" + name, voiceCount);
     butterworth.initialize("butterworth" + name);
-    lfo1.initialize("lfo1" + name);
+    lfo1ar.initialize("lfo1" + name);
+    lfo2ar.initialize("lfo2" + name);
     reverb.initialize("reverb" + name);
     delay.initialize("delay" + name);
     wetFader.initialize("wetFader" + name);
     setAnalogDrift(0.0, 1.0);
 
-    lfo1.connectToModulationBus(modFilterCutoffBusName);
+    lfo1ar.connectToModulationBus(modFilterCutoffBusName);
 
-    lfo1.isUnipolar(true);
-    lfo1.setFreq(0.1);
-    lfo1.setOffset(0.3);
-    lfo1.setDepth(0.5);
+    lfo1ar.isUnipolar(true);
+    lfo1ar.setFreq(0.0);
+    lfo1ar.setOffset(0.0);
+    lfo1ar.setDepth(1.0);
+    lfo1Target = LFOTarget::None;
+
+    lfo2ar.isUnipolar(true);
+    lfo2ar.setFreq(0.0);
+    lfo2ar.setOffset(0.0);
+    lfo2ar.setDepth(1.0);
+    lfo2Target = LFOTarget::None;
 
     createVoices();
 
@@ -396,12 +410,53 @@ void JPSynth::setADSROneshot(bool enable)
         });
 }
 
-void JPSynth::setLFO1(LFOParams /*params*/)
+void JPSynth::setLFO1(LFOParams params)
 {
+    lfo1ar.setFreq(params.frequency);
+    lfo1ar.setType(params.type);
+    lfo1ar.setOffset(clamp(params.offset, 0.0, 1.0));
+    lfo1ar.setDepth(clamp(params.depth, 0.0, 1.0));
+    lfo1ar.setShape(params.shape);
+    lfo1ar.setPulseWidth(params.pw);
+    lfo1ar.setSmooth(params.smooth);
+
+    if (lfo1Target != params.target)
+    {
+        lfo1ar.connectToModulationBus(lfo1DummyBusName);
+
+        modFilterCutoffBus->fill(1.0);
+        modAmpBus->fill(1.0);
+
+        lfo1Target = params.target;
+    }
+
+    switch (params.target)
+    {
+    case LFOTarget::None:
+        lfo1ar.connectToModulationBus(lfo1DummyBusName);
+        break;
+    case LFOTarget::Cutoff:
+        lfo1ar.connectToModulationBus(modFilterCutoffBusName);
+        break;
+    case LFOTarget::Amp:
+        lfo1ar.connectToModulationBus(modAmpBusName);
+        break;
+
+    default:
+        lfo1ar.connectToModulationBus(lfo1DummyBusName);
+        break;
+    }
 }
 
-void JPSynth::setLFO2(LFOParams /*params*/)
+void JPSynth::setLFO2(LFOParams params)
 {
+    lfo2ar.setFreq(params.frequency);
+    lfo2ar.setType(params.type);
+    lfo2ar.setOffset(clamp(params.offset, 0.0, 1.0));
+    lfo2ar.setDepth(clamp(params.depth, 0.0, 1.0));
+    lfo2ar.setShape(params.shape);
+    lfo2ar.setPulseWidth(params.pw);
+    lfo2ar.setSmooth(params.smooth);
 }
 
 void JPSynth::setReverbSpace(host_float space)
@@ -469,11 +524,17 @@ void JPSynth::process()
 {
     DSP::nextBlock();
 
-    lfo1.process();
+    if (lfo1Target != LFOTarget::None)
+        lfo1ar.process();
+
+    if (lfo2Target != LFOTarget::None)
+        lfo2ar.process();
 
     processVoiceBlock();
 
     voiceMixer.process();
+
+    voicesOutputBus->multiplyWidth(modAmpBus);
 
     butterworth.process();
 

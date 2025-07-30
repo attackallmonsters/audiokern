@@ -52,9 +52,6 @@ void DSP::nextBlock()
 // Initializes the DSP with samplerate and blocksize
 void DSP::initializeAudio(dsp_float rate, size_t size)
 {
-    if (initialized)
-        return;
-
     dsp_math::init_trig_lut();
     dsp_rnd::initialize();
 

@@ -27,9 +27,11 @@ struct SynthVoice
 /**
  * @brief Enum placeholder for defining LFO modulation targets (to be implemented).
  */
-enum class LFOTargets
+enum class LFOTarget
 {
-    // Reserved for future modulation routing
+    None,   ///< No target, not active (LFO1, LFO2)
+    Cutoff, ///< Filter cutof (LFO1)
+    Amp,    ///< Amplification (LFO1)
 };
 
 /**
@@ -44,6 +46,7 @@ struct LFOParams
     host_float shape;     ///< Waveform shaping (if supported)
     host_float pw;        ///< Pulse width (if applicable)
     host_float smooth;    ///< Smoothing factor
+    LFOTarget target;     ///< LFO target paramter
 };
 
 /**
@@ -202,8 +205,11 @@ private:
 
     AnalogDrift analogDrift; ///< analog feeling
 
-    LFO lfo1; ///< First global LFO
-    LFO lfo2; ///< Second global LFO
+    LFO lfo1ar; ///< First LFO audio rate
+    LFO lfo2ar; ///< Second LFO audio rate
+
+    LFOTarget lfo1Target; ///< Target parameter LFO1
+    LFOTarget lfo2Target; ///< Target parameter LFO2
 
     ButterworthFilter butterworth; ///< High-pass filter at 80 Hz
     NebularReverb reverb;          ///< Reverb effect unit
@@ -222,12 +228,21 @@ private:
     DSPAudioBus *voicesOutputBus; ///< Pre-effect voice sum
 
     DSPModulationBus *modFilterCutoffBus; ///< Cutoff bis for filter modulation by LFO 1
+    DSPModulationBus *modAmpBus;          ///< Amplification modulation by LFO1
+
+    DSPModulationBus *lfo1DummyBus; ///< Dummy bus for LFO1
+    DSPModulationBus *lfo2DummyBus; ///< Dummy bus for LFO2
 
     bool filterFollowEnabled; /// Indicates if filter cutoff follows the note
     host_float currentCutoff; ///< To reset filter cutoff when follow is disabled
 
-    const std::string outputBusName = "audio_host";            ///< signal bus name for output
-    const std::string wetBusName = "wet";                      ///< signal bus name wet
-    const std::string voicesOutputBusName = "voices";          ///< bus name for voice output
+    const std::string outputBusName = "audio_host";   ///< signal bus name for output
+    const std::string wetBusName = "wet";             ///< signal bus name wet
+    const std::string voicesOutputBusName = "voices"; ///< bus name for voice output
+
     const std::string modFilterCutoffBusName = "modCutoffBus"; ///< bus name of filter cutoff modulation bus
+    const std::string modAmpBusName = "modAmpBus";             ///< Amplification modulation bus name
+
+    const std::string lfo1DummyBusName = "lfo1dummy"; ///< dummy bus for LFO1
+    const std::string lfo2DummyBusName = "lfo2dummy"; ///< dummy bus for LFO2
 };

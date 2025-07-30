@@ -5,27 +5,6 @@
 #include "omfg.h"
 #include <stdexcept>
 
-class DSPAudioBus
-{
-public:
-    void initialize(const std::string &name, size_t size)
-    {
-        l.initialize("L" + name, size);
-        r.initialize("R" + name, size);
-        busName = name;
-    }
-
-    void log()
-    {
-        l.log();
-        r.log();
-    }
-
-    std::string busName;
-    DSPSampleBuffer l;
-    DSPSampleBuffer r;
-};
-
 class DSPModulationBus
 {
 public:
@@ -37,7 +16,7 @@ public:
 
     void multiplyWidth(DSPModulationBus *bus)
     {
-        // Multiply this buffer with target buffer into target buffer
+        // Multiply this buffer with target buffer
         m.multiplyWith(bus->m);
     }
 
@@ -53,6 +32,34 @@ public:
 
     std::string busName;
     DSPSampleBuffer m;
+};
+
+class DSPAudioBus
+{
+public:
+    void initialize(const std::string &name, size_t size)
+    {
+        l.initialize("L" + name, size);
+        r.initialize("R" + name, size);
+        busName = name;
+    }
+
+    void multiplyWidth(DSPModulationBus *bus)
+    {
+        // Multiply this buffers with target buffer
+        l.multiplyWith(bus->m);
+        r.multiplyWith(bus->m);
+    }
+
+    void log()
+    {
+        l.log();
+        r.log();
+    }
+
+    std::string busName;
+    DSPSampleBuffer l;
+    DSPSampleBuffer r;
 };
 
 /**
