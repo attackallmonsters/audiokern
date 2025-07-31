@@ -21,12 +21,12 @@ public:
      * The object will then receive its modulation input from this bus during processing.
      *
      * Example usage:
-     *     connectToModulationBus("mod_cutoff");
+     *     connectModulationToBus("mod_cutoff");
      *
      * @param busName The name of the modulation bus to connect to.
      * @throws std::runtime_error if no such bus exists.
      */
-    void connectToModulationBus(const std::string &busName);
+    void connectModulationToBus(const std::string &busName);
 
     /**
      * @brief Connects this DSP object to the audio processing buffer of a named bus.
@@ -37,7 +37,7 @@ public:
      * @param busName The name of the audio bus to connect to (e.g. "input", "osc1_output").
      * @throws std::runtime_error if the bus with the given name does not exist.
      */
-    void connectToProcessBuffer(const std::string &busName);
+    void connectProcessToBus(const std::string &busName);
 
     /**
      * @brief Multiplies the internal modulation signal with the given buffers. Executes process!

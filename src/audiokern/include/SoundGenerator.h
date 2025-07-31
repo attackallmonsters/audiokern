@@ -25,12 +25,12 @@ public:
      * The object will then receive its audio FM input from this bus during processing.
      *
      * Example usage:
-     *     connectToInputBus("osc1_output");
+     *     connectInputToBus("osc1_output");
      *
      * @param busName The name of the audio input bus to connect to.
      * @throws std::runtime_error if no such bus exists.
      */
-    void connectToFMBus(const std::string &busName);
+    void connectFMToBus(const std::string &busName);
 
     /**
      * @brief Connects this DSP object to the output or wet buffer of a named audio bus.
@@ -39,12 +39,12 @@ public:
      * All generated or processed audio will be written to this bus.
      *
      * Example usage:
-     *     connectToOutputBus("wet_output");
+     *     connectOutputToBus("wet_output");
      *
      * @param busName The name of the audio output bus to connect to.
      * @throws std::runtime_error if no such bus exists.
      */
-    void connectToOutputBus(const std::string &busName);
+    void connectOutputToBus(const std::string &busName);
 
     /**
      * @brief Sets the functional role of this sound generator.

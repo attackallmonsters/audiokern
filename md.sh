@@ -12,5 +12,5 @@ make -B debug
 cd ../lfo
 make -B debug
 
-cd ../jpvoice
+cd ../jpsynth
 make -B debug

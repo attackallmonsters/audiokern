@@ -196,12 +196,12 @@ private:
     void processVoiceBlock(); ///< Internal voice rendering
     void createVoices();      ///< Initializes voices
 
-    SynthVoice *currentVoice;             ///< Active voice pointer
+    SynthVoice *currentVoice; ///< Active voice pointer
+
     VoiceAllocator<SynthVoice> allocator; ///< Voice manager
     DSPThreadPool voiceThreads;           ///< Thread pool for parallel voice processing
-
-    Mixer voiceMixer;    ///< Dry voice mixdown
-    CrossFader wetFader; ///< Dry/wet fader
+    Mixer voiceMixer;                     ///< Dry voice mixdown
+    CrossFader wetFader;                  ///< Dry/wet fader
 
     AnalogDrift analogDrift; ///< analog feeling
 

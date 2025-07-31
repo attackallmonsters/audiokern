@@ -19,12 +19,12 @@ public:
      * The object will then receive its audio input from this bus during processing.
      *
      * Example usage:
-     *     connectToInputBus("osc1_output");
+     *     connectInputToBus("osc1_output");
      *
      * @param busName The name of the audio input bus to connect to.
      * @throws std::runtime_error if no such bus exists.
      */
-    void connectToInputBus(const std::string &busName);
+    void connectInputToBus(const std::string &busName);
 
     /**
      * @brief Connects this DSP object to the output or wet buffer of a named audio bus.
@@ -33,12 +33,12 @@ public:
      * All generated or processed audio will be written to this bus.
      *
      * Example usage:
-     *     connectToOutputBus("wet_output");
+     *     connectOutputToBus("wet_output");
      *
      * @param busName The name of the audio output bus to connect to.
      * @throws std::runtime_error if no such bus exists.
      */
-    void connectToOutputBus(const std::string &busName);
+    void connectOutputToBus(const std::string &busName);
 
     /**
      * @brief Sets the name of the modulation bus to be used by this object.
@@ -48,7 +48,7 @@ public:
      *
      * @param busName The name of the modulation bus (e.g., "mod_wet").
      */
-    void connectToModulationBus(const std::string &busName);
+    void connectModulationToBus(const std::string &busName);
 
 protected:
     /**

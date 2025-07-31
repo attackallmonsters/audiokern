@@ -15,10 +15,10 @@ void Delay::initializeEffect()
 
 void Delay::onOutputBusConnected()
 {
-    paramFader.connectToProcessBus(outputBus->busName);
-    wetFader.connectToInputBusForA(inputBus->busName);
-    wetFader.connectToInputBusForB(wetBus->busName);
-    wetFader.connectToOutputBus(outputBus->busName);
+    paramFader.connectProcessToBus(outputBus->busName);
+    wetFader.connectInputAToBus(inputBus->busName);
+    wetFader.connectInputBToBus(wetBus->busName);
+    wetFader.connectOutputToBus(outputBus->busName);
 }
 
 // Sets the maximum delay time

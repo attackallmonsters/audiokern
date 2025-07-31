@@ -1,4 +1,4 @@
-// jpvoice.cpp - Pure Data external wrapping the Voice audio synthesis class
+// jpsynth.cpp - Pure Data external wrapping the Voice audio synthesis class
 
 #include "m_pd.h"
 #include "DSP.h"
@@ -9,9 +9,9 @@
 
 #define synth JPSynth::instance()
 
-static t_class *jpvoice_class;
+static t_class *jpsynth_class;
 
-typedef struct _jpvoice
+typedef struct _jpsynth
 {
     t_object x_obj;
 
@@ -25,7 +25,7 @@ typedef struct _jpvoice
     size_t blockSize;
     LFOParams lfo1;
     LFOParams lfo2;
-} t_jpvoice;
+} t_jpsynth;
 
 bool testDSP()
 {
@@ -39,7 +39,7 @@ bool testDSP()
 }
 
 // Frequency of carrier set via list [f1 freq(
-void jpvoice_tilde_note(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_note(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -48,7 +48,7 @@ void jpvoice_tilde_note(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc != 2)
     {
-        pd_error(x, "[jpvoice~]: expected float arguments 0 - n for note and velocity: [note f v(");
+        pd_error(x, "[jpsynth~]: expected float arguments 0 - n for note and velocity: [note f v(");
         return;
     }
 
@@ -59,7 +59,7 @@ void jpvoice_tilde_note(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 }
 
 // Frequency offset modulator in halftones
-void jpvoice_tilde_offset(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_offset(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -68,7 +68,7 @@ void jpvoice_tilde_offset(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
-        pd_error(x, "[jpvoice~]: expected float argument -24 - 24 for modulator offset: [offset f(");
+        pd_error(x, "[jpsynth~]: expected float argument -24 - 24 for modulator offset: [offset f(");
         return;
     }
 
@@ -77,7 +77,7 @@ void jpvoice_tilde_offset(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 }
 
 // Frequency fine tuning for modulator -100 - 100 [fine f(
-void jpvoice_tilde_fine(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_fine(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -86,7 +86,7 @@ void jpvoice_tilde_fine(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
-        pd_error(x, "[jpvoice~]: expected float argument -100 - 100 for modulator fine tune: [fine f(");
+        pd_error(x, "[jpsynth~]: expected float argument -100 - 100 for modulator fine tune: [fine f(");
         return;
     }
 
@@ -95,7 +95,7 @@ void jpvoice_tilde_fine(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 }
 
 // Frequency of modulator set via list [detune factor(
-void jpvoice_tilde_detune(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_detune(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -104,7 +104,7 @@ void jpvoice_tilde_detune(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
-        pd_error(x, "[jpvoice~]: expected float argument 0 - 1 for detune factor: [detune f(");
+        pd_error(x, "[jpsynth~]: expected float argument 0 - 1 for detune factor: [detune f(");
         return;
     }
 
@@ -113,7 +113,7 @@ void jpvoice_tilde_detune(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 }
 
 // Oscillator type carrier [carrier n( 1 - 5
-void jpvoice_tilde_carrier(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_carrier(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -122,7 +122,7 @@ void jpvoice_tilde_carrier(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
-        pd_error(x, "[jpvoice~]: expected int argument 1 - 5 for carrier oscillator type: [carrier n(");
+        pd_error(x, "[jpsynth~]: expected int argument 1 - 5 for carrier oscillator type: [carrier n(");
         return;
     }
 
@@ -159,7 +159,7 @@ void jpvoice_tilde_carrier(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 }
 
 // Oscillator type carrier [modulator n( 1 - 4
-void jpvoice_tilde_modulator(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_modulator(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -168,7 +168,7 @@ void jpvoice_tilde_modulator(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
-        pd_error(x, "[jpvoice~]: expected int argument 1 - 4 for modulation oscillator type: [modulator n(");
+        pd_error(x, "[jpsynth~]: expected int argument 1 - 4 for modulation oscillator type: [modulator n(");
         return;
     }
 
@@ -208,7 +208,7 @@ void jpvoice_tilde_modulator(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 }
 
 // Sets the type of noise to white (0) or pink (1)
-void jpvoice_tilde_noisetype(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_noisetype(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -217,7 +217,7 @@ void jpvoice_tilde_noisetype(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
-        pd_error(x, "[jpvoice~]: expected int argument 0 (white) or 1 (pink) for noise type: [noisetype n(");
+        pd_error(x, "[jpsynth~]: expected int argument 0 (white) or 1 (pink) for noise type: [noisetype n(");
         return;
     }
 
@@ -236,7 +236,7 @@ void jpvoice_tilde_noisetype(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 }
 
 // Oscillator mix [oscmix f(
-void jpvoice_tilde_oscmix(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_oscmix(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -245,7 +245,7 @@ void jpvoice_tilde_oscmix(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
-        pd_error(x, "[jpvoice~]: expected int argument 0 - 1 for oscillator mix: [oscmix f(");
+        pd_error(x, "[jpsynth~]: expected int argument 0 - 1 for oscillator mix: [oscmix f(");
         return;
     }
 
@@ -254,7 +254,7 @@ void jpvoice_tilde_oscmix(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 }
 
 // Noise mix [noisemix f(
-void jpvoice_tilde_noisemix(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_noisemix(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -263,7 +263,7 @@ void jpvoice_tilde_noisemix(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
-        pd_error(x, "[jpvoice~]: expected int argument 0 - 1 for noise mix: [noisemix f(");
+        pd_error(x, "[jpsynth~]: expected int argument 0 - 1 for noise mix: [noisemix f(");
         return;
     }
 
@@ -272,7 +272,7 @@ void jpvoice_tilde_noisemix(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 }
 
 // Sets the FM modulation index [fmmod f(
-void jpvoice_tilde_modidx(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_modidx(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -281,7 +281,7 @@ void jpvoice_tilde_modidx(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
-        pd_error(x, "[jpvoice~]: expected int argument 0 - n for FM/PM modulation index: [modidx f(");
+        pd_error(x, "[jpsynth~]: expected int argument 0 - n for FM/PM modulation index: [modidx f(");
         return;
     }
 
@@ -290,7 +290,7 @@ void jpvoice_tilde_modidx(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 }
 
 // Sets the pitch bend [bend f(
-void jpvoice_tilde_bend(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_bend(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -299,7 +299,7 @@ void jpvoice_tilde_bend(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
-        pd_error(x, "[jpvoice~]: expected int argument 0 - n for FM/PM modulation index: [modidx f(");
+        pd_error(x, "[jpsynth~]: expected int argument 0 - n for FM/PM modulation index: [modidx f(");
         return;
     }
 
@@ -308,7 +308,7 @@ void jpvoice_tilde_bend(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 }
 
 // Sets the number of voices 1 - 9 [nov f(
-void jpvoice_tilde_nov(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_nov(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -317,7 +317,7 @@ void jpvoice_tilde_nov(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
-        pd_error(x, "[jpvoice~]: expected int argument 1 - 9 for number of voices: [nov f(");
+        pd_error(x, "[jpsynth~]: expected int argument 1 - 9 for number of voices: [nov f(");
         return;
     }
 
@@ -326,7 +326,7 @@ void jpvoice_tilde_nov(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 }
 
 // Oscillator sync
-void jpvoice_tilde_sync(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_sync(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -335,7 +335,7 @@ void jpvoice_tilde_sync(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
-        pd_error(x, "[jpvoice~]: expected int argument 0 (unsynced) or 1 (synced) for oscillator sync: [oscsync n(");
+        pd_error(x, "[jpsynth~]: expected int argument 0 (unsynced) or 1 (synced) for oscillator sync: [oscsync n(");
         return;
     }
 
@@ -344,7 +344,7 @@ void jpvoice_tilde_sync(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 }
 
 // [filtermode <0|1|2>] → 0 = LPF12, 1 = BPF12, 2 = HPF12
-void jpvoice_tilde_mode(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_mode(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -353,7 +353,7 @@ void jpvoice_tilde_mode(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: mode <0=LP | 1=HP>");
+        post("[jpsynth~] usage: mode <0=LP | 1=HP>");
         return;
     }
 
@@ -373,7 +373,7 @@ void jpvoice_tilde_mode(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
     }
 }
 
-void jpvoice_tilde_follow(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_follow(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -382,7 +382,7 @@ void jpvoice_tilde_follow(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: follow 0|1");
+        post("[jpsynth~] usage: follow 0|1");
         return;
     }
 
@@ -391,7 +391,7 @@ void jpvoice_tilde_follow(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
     synth.setFilterFollow(f != 0);
 }
 
-void jpvoice_tilde_drift(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_drift(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -400,7 +400,7 @@ void jpvoice_tilde_drift(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
 
     if (argc < 2)
     {
-        post("[jpvoice~] usage: drift amount 0 - 1, damping 0 - 1");
+        post("[jpsynth~] usage: drift amount 0 - 1, damping 0 - 1");
         return;
     }
 
@@ -411,7 +411,7 @@ void jpvoice_tilde_drift(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
 }
 
 // [carrierfb (0 - 1.2)]
-void jpvoice_tilde_carrierfb(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_carrierfb(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -420,7 +420,7 @@ void jpvoice_tilde_carrierfb(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *ar
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: carrierfb (amount 0.0 – 1.2)");
+        post("[jpsynth~] usage: carrierfb (amount 0.0 – 1.2)");
         return;
     }
 
@@ -429,7 +429,7 @@ void jpvoice_tilde_carrierfb(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *ar
 }
 
 // [carrierfb (0 - 1.2)]
-void jpvoice_tilde_modulatorfb(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_modulatorfb(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -438,7 +438,7 @@ void jpvoice_tilde_modulatorfb(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: modulatorfb (amount 0.0 – 1.2)");
+        post("[jpsynth~] usage: modulatorfb (amount 0.0 – 1.2)");
         return;
     }
 
@@ -446,7 +446,7 @@ void jpvoice_tilde_modulatorfb(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *
     synth.setFeedbackModulator(fb);
 }
 
-void jpvoice_tilde_cutoff(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_cutoff(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -455,7 +455,7 @@ void jpvoice_tilde_cutoff(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: filter cutoff (amount 0.0 – samplerate / 2)");
+        post("[jpsynth~] usage: filter cutoff (amount 0.0 – samplerate / 2)");
         return;
     }
 
@@ -463,7 +463,7 @@ void jpvoice_tilde_cutoff(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
     synth.setFilterCutoff(f);
 }
 
-void jpvoice_tilde_reso(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_reso(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -472,7 +472,7 @@ void jpvoice_tilde_reso(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: filter reso (amount 0.0 – 1.0)");
+        post("[jpsynth~] usage: filter reso (amount 0.0 – 1.0)");
         return;
     }
 
@@ -480,7 +480,7 @@ void jpvoice_tilde_reso(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
     synth.setFilterResonance(r);
 }
 
-void jpvoice_tilde_drive(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_drive(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -489,7 +489,7 @@ void jpvoice_tilde_drive(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: filter drive (amount 0.0 - 1.0)");
+        post("[jpsynth~] usage: filter drive (amount 0.0 - 1.0)");
         return;
     }
 
@@ -498,7 +498,7 @@ void jpvoice_tilde_drive(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
 }
 
 // Filter ADSR [fltadsr att dec sus rel cutoff attshape relshape(
-void jpvoice_tilde_fltadsr(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_fltadsr(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -507,7 +507,7 @@ void jpvoice_tilde_fltadsr(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc < 6)
     {
-        pd_error(x, "[jpvoice~]: expected filter ADSR settings [fltadsr att dec sus rel cutoff attshape relshape(");
+        pd_error(x, "[jpsynth~]: expected filter ADSR settings [fltadsr att dec sus rel cutoff attshape relshape(");
         return;
     }
 
@@ -524,7 +524,7 @@ void jpvoice_tilde_fltadsr(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 }
 
 // Filter ADSR [ampadsr att dec sus rel cutoff attshape relshape(
-void jpvoice_tilde_ampadsr(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_ampadsr(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -533,7 +533,7 @@ void jpvoice_tilde_ampadsr(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc < 6)
     {
-        pd_error(x, "[jpvoice~]: expected amp ADSR settings [ampadsr att dec sus rel cutoff attshape relshape(");
+        pd_error(x, "[jpsynth~]: expected amp ADSR settings [ampadsr att dec sus rel cutoff attshape relshape(");
         return;
     }
 
@@ -549,7 +549,7 @@ void jpvoice_tilde_ampadsr(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     synth.setAmpADSR(adsr);
 }
 
-void jpvoice_tilde_adsrlink(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_adsrlink(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -558,14 +558,14 @@ void jpvoice_tilde_adsrlink(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *arg
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: adsrlink [adsrlink 0|1(");
+        post("[jpsynth~] usage: adsrlink [adsrlink 0|1(");
         return;
     }
 
     synth.linkADSR(atom_getfloat(argv) != 0.0);
 }
 
-void jpvoice_tilde_adsroneshot(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_adsroneshot(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -574,7 +574,7 @@ void jpvoice_tilde_adsroneshot(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: adsroneshot [adsroneshot 0|1(");
+        post("[jpsynth~] usage: adsroneshot [adsroneshot 0|1(");
         return;
     }
 
@@ -582,7 +582,7 @@ void jpvoice_tilde_adsroneshot(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *
 }
 
 // LFO1 [lfo1 type freq offset depth shape pw smooth target(
-void jpvoice_tilde_lfo1(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_lfo1(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -591,7 +591,7 @@ void jpvoice_tilde_lfo1(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc < 8)
     {
-        pd_error(x, "[jpvoice~]: expected LFO1 settings [lfo1 freq type offset depth shape pw smooth target(");
+        pd_error(x, "[jpsynth~]: expected LFO1 settings [lfo1 freq type offset depth shape pw smooth target(");
         return;
     }
 
@@ -620,6 +620,7 @@ void jpvoice_tilde_lfo1(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
         lfo.type = LFOType::Random;
         break;
     default:
+        lfo.type = LFOType::Sine;
         break;
     }
 
@@ -639,9 +640,9 @@ void jpvoice_tilde_lfo1(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
         break;
     case 2:
         lfo.target = LFOTarget::Amp;
-        break;
-    
+        break;    
     default:
+        lfo.target = LFOTarget::None;
         break;
     }
 
@@ -649,7 +650,7 @@ void jpvoice_tilde_lfo1(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 }
 
 // LFO2 [lfo2 type freq offset depth shape pw smooth target(
-void jpvoice_tilde_lfo2(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_lfo2(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -658,14 +659,14 @@ void jpvoice_tilde_lfo2(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc < 6)
     {
-        pd_error(x, "[jpvoice~]: expected filter ADSR settings [fltadsr att dec sus rel cutoff attshape relshape(");
+        pd_error(x, "[jpsynth~]: expected filter ADSR settings [fltadsr att dec sus rel cutoff attshape relshape(");
         return;
     }
 
     
 }
 
-void jpvoice_tilde_revroom(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_revroom(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -674,7 +675,7 @@ void jpvoice_tilde_revroom(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: revroom (amount 0.0 - 1.0)");
+        post("[jpsynth~] usage: revroom (amount 0.0 - 1.0)");
         return;
     }
 
@@ -682,7 +683,7 @@ void jpvoice_tilde_revroom(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv
     synth.setReverbRoom(room);
 }
 
-void jpvoice_tilde_revspace(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_revspace(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -691,7 +692,7 @@ void jpvoice_tilde_revspace(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *arg
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: revspace (amount 0.0 - 1.0)");
+        post("[jpsynth~] usage: revspace (amount 0.0 - 1.0)");
         return;
     }
 
@@ -699,7 +700,7 @@ void jpvoice_tilde_revspace(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *arg
     synth.setReverbSpace(space);
 }
 
-void jpvoice_tilde_revdamp(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_revdamp(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -708,7 +709,7 @@ void jpvoice_tilde_revdamp(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: revdamp (amount 0.0 - 10000.0)");
+        post("[jpsynth~] usage: revdamp (amount 0.0 - 10000.0)");
         return;
     }
 
@@ -716,7 +717,7 @@ void jpvoice_tilde_revdamp(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv
     synth.setReverbDamping(damping);
 }
 
-void jpvoice_tilde_revdense(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_revdense(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -725,7 +726,7 @@ void jpvoice_tilde_revdense(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *arg
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: revdense (amount 0.0 - 1,0)");
+        post("[jpsynth~] usage: revdense (amount 0.0 - 1,0)");
         return;
     }
 
@@ -733,7 +734,7 @@ void jpvoice_tilde_revdense(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *arg
     synth.setReverbDensity(density);
 }
 
-void jpvoice_tilde_revdisp(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_revdisp(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -742,7 +743,7 @@ void jpvoice_tilde_revdisp(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: revdisp (amount 0.0 - 1.0)");
+        post("[jpsynth~] usage: revdisp (amount 0.0 - 1.0)");
         return;
     }
 
@@ -807,7 +808,7 @@ void jpvoice_tilde_revdisp(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv
     }
 }
 
-void jpvoice_tilde_revwet(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_revwet(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -816,7 +817,7 @@ void jpvoice_tilde_revwet(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: revvol (revvol 0.0 - 1,0)");
+        post("[jpsynth~] usage: revvol (revvol 0.0 - 1,0)");
         return;
     }
 
@@ -824,7 +825,7 @@ void jpvoice_tilde_revwet(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
     synth.setReverbWet(v);
 }
 
-void jpvoice_tilde_deltime(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_deltime(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -833,7 +834,7 @@ void jpvoice_tilde_deltime(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: deltime (deltime tL tR)");
+        post("[jpsynth~] usage: deltime (deltime tL tR)");
         return;
     }
 
@@ -843,7 +844,7 @@ void jpvoice_tilde_deltime(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv
     synth.setDelayTime(tL, tR);
 }
 
-void jpvoice_tilde_delfb(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_delfb(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -852,7 +853,7 @@ void jpvoice_tilde_delfb(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: delfb (deltime fbL fbR)");
+        post("[jpsynth~] usage: delfb (deltime fbL fbR)");
         return;
     }
 
@@ -862,7 +863,7 @@ void jpvoice_tilde_delfb(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
     synth.setDelayFeedback(fbL, fbR);
 }
 
-void jpvoice_tilde_deldisp(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_deldisp(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -871,7 +872,7 @@ void jpvoice_tilde_deldisp(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: deldisp (deldisp 0.0 - 1.0)");
+        post("[jpsynth~] usage: deldisp (deldisp 0.0 - 1.0)");
         return;
     }
 
@@ -936,7 +937,7 @@ void jpvoice_tilde_deldisp(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv
     }
 }
 
-void jpvoice_tilde_delwet(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_delwet(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -945,7 +946,7 @@ void jpvoice_tilde_delwet(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: delwet (delwet 0.0 - 1,0)");
+        post("[jpsynth~] usage: delwet (delwet 0.0 - 1,0)");
         return;
     }
 
@@ -953,7 +954,7 @@ void jpvoice_tilde_delwet(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
     synth.setDelayWet(v);
 }
 
-void jpvoice_tilde_wet(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
+void jpsynth_tilde_wet(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 {
     if (!testDSP())
     {
@@ -962,7 +963,7 @@ void jpvoice_tilde_wet(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: wet (wet 0.0 - 1,0)");
+        post("[jpsynth~] usage: wet (wet 0.0 - 1,0)");
         return;
     }
 
@@ -971,14 +972,14 @@ void jpvoice_tilde_wet(t_jpvoice * /*x*/, t_symbol *, int argc, t_atom *argv)
 }
 
 // DSP perform function
-t_int *jpvoice_tilde_perform(t_int *w)
+t_int *jpsynth_tilde_perform(t_int *w)
 {
     synth.process();
     return (w + 5);
 }
 
 // DSP add function
-void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
+void jpsynth_tilde_dsp(t_jpsynth *x, t_signal **sp)
 {
     t_sample *outL = sp[0]->s_vec;
     t_sample *outR = sp[1]->s_vec;
@@ -990,7 +991,7 @@ void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
 
     synth.initialize(outL, outR);
 
-    dsp_add(jpvoice_tilde_perform, 4,
+    dsp_add(jpsynth_tilde_perform, 4,
             x,
             sp[0]->s_vec, // outL
             sp[1]->s_vec, // outR
@@ -1003,9 +1004,9 @@ void log(const std::string &entry)
 }
 
 // Constructor
-void *jpvoice_tilde_new()
+void *jpsynth_tilde_new()
 {
-    t_jpvoice *x = (t_jpvoice *)pd_new(jpvoice_class);
+    t_jpsynth *x = (t_jpsynth *)pd_new(jpsynth_class);
 
     x->left_out = outlet_new(&x->x_obj, &s_signal);
     x->right_out = outlet_new(&x->x_obj, &s_signal);
@@ -1016,7 +1017,7 @@ void *jpvoice_tilde_new()
 }
 
 // Destructor
-void jpvoice_tilde_free(t_jpvoice *x)
+void jpsynth_tilde_free(t_jpsynth *x)
 {
     outlet_free(x->left_out);
     outlet_free(x->right_out);
@@ -1025,61 +1026,61 @@ void jpvoice_tilde_free(t_jpvoice *x)
 }
 
 // Setup function
-extern "C" void jpvoice_tilde_setup(void)
+extern "C" void jpsynth_tilde_setup(void)
 {
-    jpvoice_class = class_new(gensym("jpvoice~"),
-                              (t_newmethod)jpvoice_tilde_new,
-                              (t_method)jpvoice_tilde_free,
-                              sizeof(t_jpvoice),
+    jpsynth_class = class_new(gensym("jpsynth~"),
+                              (t_newmethod)jpsynth_tilde_new,
+                              (t_method)jpsynth_tilde_free,
+                              sizeof(t_jpsynth),
                               CLASS_DEFAULT,
                               A_NULL);
 
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_dsp, gensym("dsp"), A_CANT, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_dsp, gensym("dsp"), A_CANT, 0);
 
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_note, gensym("note"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_offset, gensym("offset"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_fine, gensym("fine"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_detune, gensym("detune"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_carrier, gensym("carrier"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_modulator, gensym("modulator"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_oscmix, gensym("oscmix"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_noisemix, gensym("noisemix"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_noisetype, gensym("noisetype"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_modidx, gensym("modidx"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_bend, gensym("bend"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_nov, gensym("nov"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_sync, gensym("sync"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_carrierfb, gensym("carrierfb"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_modulatorfb, gensym("modulatorfb"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_note, gensym("note"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_offset, gensym("offset"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_fine, gensym("fine"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_detune, gensym("detune"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_carrier, gensym("carrier"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_modulator, gensym("modulator"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_oscmix, gensym("oscmix"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_noisemix, gensym("noisemix"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_noisetype, gensym("noisetype"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_modidx, gensym("modidx"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_bend, gensym("bend"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_nov, gensym("nov"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_sync, gensym("sync"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_carrierfb, gensym("carrierfb"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_modulatorfb, gensym("modulatorfb"), A_GIMME, 0);
 
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_cutoff, gensym("cutoff"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_reso, gensym("reso"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_drive, gensym("drive"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_mode, gensym("mode"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_follow, gensym("follow"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_cutoff, gensym("cutoff"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_reso, gensym("reso"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_drive, gensym("drive"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_mode, gensym("mode"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_follow, gensym("follow"), A_GIMME, 0);
 
     // TODO
-    // class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_drift, gensym("drift"), A_GIMME, 0);
+    // class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_drift, gensym("drift"), A_GIMME, 0);
 
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_fltadsr, gensym("fltadsr"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_ampadsr, gensym("ampadsr"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_adsrlink, gensym("adsrlink"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_adsroneshot, gensym("adsroneshot"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_fltadsr, gensym("fltadsr"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_ampadsr, gensym("ampadsr"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_adsrlink, gensym("adsrlink"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_adsroneshot, gensym("adsroneshot"), A_GIMME, 0);
 
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_lfo1, gensym("lfo1"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_lfo2, gensym("lfo2"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_lfo1, gensym("lfo1"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_lfo2, gensym("lfo2"), A_GIMME, 0);
 
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revroom, gensym("revroom"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revspace, gensym("revspace"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revdamp, gensym("revdamp"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revdense, gensym("revdense"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revdisp, gensym("revdisp"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_revwet, gensym("revwet"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_revroom, gensym("revroom"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_revspace, gensym("revspace"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_revdamp, gensym("revdamp"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_revdense, gensym("revdense"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_revdisp, gensym("revdisp"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_revwet, gensym("revwet"), A_GIMME, 0);
 
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_deltime, gensym("deltime"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_delfb, gensym("delfb"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_deldisp, gensym("deldisp"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_delwet, gensym("delwet"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_deltime, gensym("deltime"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_delfb, gensym("delfb"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_deldisp, gensym("deldisp"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_delwet, gensym("delwet"), A_GIMME, 0);
 
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_wet, gensym("wet"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_wet, gensym("wet"), A_GIMME, 0);
 }

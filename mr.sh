@@ -12,5 +12,5 @@ make -B release
 # cd ../lfo
 # make -B release
 
-cd ../jpvoice
+cd ../jpsynth
 make -B release

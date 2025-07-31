@@ -12,13 +12,13 @@ void Modulator::initializeObject(size_t count)
     initializeModulator(count);
 }
 
-void Modulator::connectToModulationBus(const std::string &busName)
+void Modulator::connectModulationToBus(const std::string &busName)
 {
     modulationBus = DSPBusManager::getModulationBus(busName);
     onModulationBusConnected();
 }
 
-void Modulator::connectToProcessBuffer(const std::string &busName)
+void Modulator::connectProcessToBus(const std::string &busName)
 {
     processBus = DSPBusManager::getAudioBus(busName);
     onProcessBusConnected();

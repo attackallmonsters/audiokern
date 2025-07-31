@@ -40,21 +40,21 @@ public:
      * 
      * @param busName The name of the audio bus to connect to input A.
      */
-    void connectToInputBusForA(const std::string &busName);
+    void connectInputAToBus(const std::string &busName);
 
     /**
      * @brief Connects the input audio bus B (typically the "wet" or processed signal).
      * 
      * @param busName The name of the audio bus to connect to input B.
      */
-    void connectToInputBusForB(const std::string &busName);
+    void connectInputBToBus(const std::string &busName);
 
     /**
      * @brief Connects the output audio bus for the mix of A and B.
      * 
      * @param busName The name of the output audio bus.
      */
-    void connectToOutputBus(const std::string &busName);
+    void connectOutputToBus(const std::string &busName);
 
     /**
      * @brief Sets the mix balance between input A and input B.

@@ -1,5 +1,5 @@
 ########################################
-#         jpvoice~ Pd Wrapper          #
+#         jpsynth~ Pd Wrapper          #
 ########################################
 
 CXX = g++
@@ -17,9 +17,9 @@ ifeq ($(UNAME),armv7l)
 	DEPLOY_BASE = linux_arm
 endif
 
-DEPLOY_DIR = ../../bin/jpvoice/$(DEPLOY_BASE)
+DEPLOY_DIR = ../../bin/jpsynth/$(DEPLOY_BASE)
 
-OBJ_NAME    = jpvoice~
+OBJ_NAME    = jpsynth~
 SRC_DIR     = src
 OBJ_DIR     = ../../obj/$(OBJ_NAME)
 LIB_DIR     = ../../lib

@@ -9,9 +9,9 @@
         "args": [
           "-stderr",
           "-guiport", "0",
-          //"/home/thomas/Documents/data/Music Production/dsp/audiokern/bin/jpvoice/linux_x64/main-oui.pd" // <== path to test patch
+          "/home/thomas/Documents/data/Music Production/dsp/audiokern/bin/jpsynth/linux_x64/main-oui.pd" // <== path to test patch
           //"/home/thomas/Documents/data/Music Production/dsp/audiokern/bin/adsr/linux_x64/adsr~-help.pd" // <== path to test patch
-          "/home/thomas/Documents/data/Music Production/dsp/audiokern/bin/lfo/linux_x64/lfo~-help.pd" // <== path to test patch
+          //"/home/thomas/Documents/data/Music Production/dsp/audiokern/bin/lfo/linux_x64/lfo~-help.pd" // <== path to test patch
         ],
         "stopAtEntry": false,
         "cwd": "${workspaceFolder}",

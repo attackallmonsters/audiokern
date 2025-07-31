@@ -225,6 +225,9 @@ private:
     // Flag indicating if frequency modulation (FM) is enabled
     bool fmEnabled;
 
+    /// @brief Stores the current random value
+    host_float currentRnd;
+
     // Pointer to the current waveform function
     host_float (LFO::*lfoFunc)() = nullptr;
 };

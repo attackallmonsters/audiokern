@@ -20,7 +20,7 @@ void CombDelay::initializeEffect()
 
 void CombDelay::onOutputBusConnected()
 {
-    paramFader.connectToProcessBus(outputBus->busName);
+    paramFader.connectProcessToBus(outputBus->busName);
 }
 
 void CombDelay::setMaxTime(host_float timeMS)

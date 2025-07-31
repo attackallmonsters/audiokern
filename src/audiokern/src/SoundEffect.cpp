@@ -10,19 +10,19 @@ void SoundEffect::initializeObject(size_t count)
     initializeEffect(count);
 }
 
-void SoundEffect::connectToInputBus(const std::string &busName)
+void SoundEffect::connectInputToBus(const std::string &busName)
 {
     inputBus = DSPBusManager::getAudioBus(busName);
     onInputBusConnected();
 }
 
-void SoundEffect::connectToOutputBus(const std::string &busName)
+void SoundEffect::connectOutputToBus(const std::string &busName)
 {
     outputBus = DSPBusManager::getAudioBus(busName);
     onOutputBusConnected();
 }
 
-void SoundEffect::connectToModulationBus(const std::string &busName)
+void SoundEffect::connectModulationToBus(const std::string &busName)
 {
     modulationBus = DSPBusManager::getModulationBus(busName);
     onModulationBusConnected();

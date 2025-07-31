@@ -37,7 +37,7 @@ public:
      * 
      * @param busName Name of the output bus to connect to
      */
-    void connectToOutputBus(const std::string busName);
+    void connectOutputToBus(const std::string busName);
 
 protected:
     /**

@@ -125,7 +125,7 @@ void lfo_tilde_dsp(t_lfo_tilde *x, t_signal **sp)
     x->busname = dsp_math::unique_string_id("buffered_lfo_bus");
     
     DSPBusManager::registerModulationBus(x->busname, out);
-    x->lfo->connectToModulationBus(x->busname);
+    x->lfo->connectModulationToBus(x->busname);
 }
 
 inline void log(const std::string &entry)

@@ -10,6 +10,7 @@ void LFO::initializeModulator()
     smoothVal = 0.0;
     phase = 0.0;
     phaseInc = 0.0;
+    currentRnd = 0.0;
 
     setMode(LFOMode::Buffered);
     setFreq(0.0);
@@ -58,7 +59,7 @@ inline host_float LFO::lfoRampDown()
 inline host_float LFO::lfoTriangle()
 {
     host_float p = phase * 2.0;
-    
+
     if (p < 1.0)
         return 2.0 * shapedRamp(p) - 1.0;
     else
@@ -72,7 +73,7 @@ inline host_float LFO::lfoSquare()
 
 inline host_float LFO::lfoRandom()
 {
-    return 2.0 * ((host_float)rand() / RAND_MAX) - 1.0;
+    return currentRnd;
 }
 
 void LFO::setFreq(host_float f)
@@ -212,6 +213,8 @@ void LFO::processBlockBuffer()
 
             if (onPhaseWrap)
                 onPhaseWrap();
+
+            currentRnd = 2.0 * ((host_float)rand() / RAND_MAX) - 1.0;
         }
 
         phase += phaseInc;
@@ -249,6 +252,8 @@ void LFO::processBlockValue()
 
         if (onPhaseWrap)
             onPhaseWrap();
+
+        currentRnd = 2.0 * ((host_float)rand() / RAND_MAX) - 1.0;
     }
 
     phase += phaseInc;

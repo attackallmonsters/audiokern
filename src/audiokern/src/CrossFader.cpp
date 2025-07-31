@@ -12,17 +12,17 @@ void CrossFader::initializeObject()
     setMix(0.0);
 }
 
-void CrossFader::connectToInputBusForA(const std::string &busName)
+void CrossFader::connectInputAToBus(const std::string &busName)
 {
     inputBusA = DSPBusManager::getAudioBus(busName);
 }
 
-void CrossFader::connectToInputBusForB(const std::string &busName)
+void CrossFader::connectInputBToBus(const std::string &busName)
 {
     inputBusB = DSPBusManager::getAudioBus(busName);
 }
 
-void CrossFader::connectToOutputBus(const std::string &busName)
+void CrossFader::connectOutputToBus(const std::string &busName)
 {
     outputBus = DSPBusManager::getAudioBus(busName);
 }

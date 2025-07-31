@@ -97,13 +97,13 @@ void JPVoice::initializeGenerator()
     outputAmplificationBus = DSPBusManager::registerModulationBus(outputAmplificationBusName);       // output amplification output bus
 
     // Patching
-    carrier->connectToOutputBus(carrierAudioBusName);           // carrier output
-    carrier->connectToFMBus(modulatorAudioBusName);             // FM from modulator
-    modulator->connectToOutputBus(modulatorAudioBusName);       // modulator output
-    noise.connectToOutputBus(noiseAudioBusName);                // noise output
-    filter.connectToModulationBus(filterCutoffBusName);         // cutoff modulation set by filterADSR
-    filterAdsr.connectToModulationBus(filterCutoffBusName);     // filter adsr on filter cutoff modulation
-    ampAdsr.connectToModulationBus(outputAmplificationBusName); // voice output amplification
+    carrier->connectOutputToBus(carrierAudioBusName);           // carrier output
+    carrier->connectFMToBus(modulatorAudioBusName);             // FM from modulator
+    modulator->connectOutputToBus(modulatorAudioBusName);       // modulator output
+    noise.connectOutputToBus(noiseAudioBusName);                // noise output
+    filter.connectModulationToBus(filterCutoffBusName);         // cutoff modulation set by filterADSR
+    filterAdsr.connectModulationToBus(filterCutoffBusName);     // filter adsr on filter cutoff modulation
+    ampAdsr.connectModulationToBus(outputAmplificationBusName); // voice output amplification
 
     filterAdsr.setGain(15000.0);
     ampAdsr.setGain(1.0);
@@ -134,9 +134,9 @@ void JPVoice::initializeGenerator()
 
 void JPVoice::onOutputBusConnected()
 {
-    filter.connectToProcessBus(outputBus->busName);     // output filtering
-    ampAdsr.connectToProcessBuffer(outputBus->busName); // output amplification
-    paramFader.connectToProcessBus(outputBus->busName); // fade output on parameter change
+    filter.connectProcessToBus(outputBus->busName);     // output filtering
+    ampAdsr.connectProcessToBus(outputBus->busName); // output amplification
+    paramFader.connectProcessToBus(outputBus->busName); // fade output on parameter change
 }
 
 // Start ADSRs
@@ -265,8 +265,8 @@ void JPVoice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
         {
             carrier = carrierTmp;
 
-            carrier->connectToOutputBus(carrierAudioBusName);
-            carrier->connectToFMBus(modulatorAudioBusName);
+            carrier->connectOutputToBus(carrierAudioBusName);
+            carrier->connectFMToBus(modulatorAudioBusName);
 
             filter.reset();
         });
@@ -322,8 +322,8 @@ void JPVoice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
         {
             modulator = modulatorTmp;
 
-            carrier->connectToFMBus(modulatorAudioBusName);
-            modulator->connectToOutputBus(modulatorAudioBusName);
+            carrier->connectFMToBus(modulatorAudioBusName);
+            modulator->connectOutputToBus(modulatorAudioBusName);
 
             filter.reset();
         });

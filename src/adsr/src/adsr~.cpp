@@ -100,7 +100,7 @@ void adsr_dsp(t_adsr_tilde *x, t_signal **sp)
     std::string busName = dsp_math::unique_string_id("buffered_lfo_bus");
 
     DSPBusManager::registerModulationBus(busName, out);
-    x->adsr->connectToModulationBus(busName);
+    x->adsr->connectModulationToBus(busName);
 
     dsp_add(adsr_perform, 3, x, sp[0]->s_vec, sp[0]->s_n);
 }

@@ -23,7 +23,7 @@ void Mixer::initializeObject(size_t count)
     }
 }
 
-void Mixer::connectToOutputBus(const std::string busName)
+void Mixer::connectOutputToBus(const std::string busName)
 {
     outputBus = DSPBusManager::getAudioBus(busName);
 }

@@ -97,7 +97,7 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     wetFader.initialize("wetFader" + name);
     setAnalogDrift(0.0, 1.0);
 
-    lfo1ar.connectToModulationBus(modFilterCutoffBusName);
+    lfo1ar.connectModulationToBus(modFilterCutoffBusName);
 
     lfo1ar.isUnipolar(true);
     lfo1ar.setFreq(0.0);
@@ -118,25 +118,25 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     for (size_t i = 0; i < voiceCount; ++i)
     {
         SynthVoice *voice = allocator.getVoice(i);
-        voice->jpvoice.connectToOutputBus(voiceMixer.getInputBusName(i));
+        voice->jpvoice.connectOutputToBus(voiceMixer.getInputBusName(i));
     }
 
-    voiceMixer.connectToOutputBus(voicesOutputBusName);   // output buffer for voices
-    butterworth.connectToProcessBus(voicesOutputBusName); // connects to voices output
-    delay.connectToInputBus(voicesOutputBusName);         // connects to voices output (after butterworth)
-    delay.connectToOutputBus(wetBusName);                 // delay output to wet bus
-    reverb.connectToInputBus(wetBusName);                 // connects reverb in to wet bus
-    reverb.connectToOutputBus(wetBusName);                // output to wet bus as well
-    wetFader.connectToOutputBus(outputBusName);           // connect to host output
-    wetFader.connectToInputBusForA(voicesOutputBusName);  // input A from voices
-    wetFader.connectToInputBusForB(wetBusName);           // input B is wet signal
+    voiceMixer.connectOutputToBus(voicesOutputBusName);   // output buffer for voices
+    butterworth.connectProcessToBus(voicesOutputBusName); // connects to voices output
+    delay.connectInputToBus(voicesOutputBusName);         // connects to voices output (after butterworth)
+    delay.connectOutputToBus(wetBusName);                 // delay output to wet bus
+    reverb.connectInputToBus(wetBusName);                 // connects reverb in to wet bus
+    reverb.connectOutputToBus(wetBusName);                // output to wet bus as well
+    wetFader.connectOutputToBus(outputBusName);           // connect to host output
+    wetFader.connectInputAToBus(voicesOutputBusName);  // input A from voices
+    wetFader.connectInputBToBus(wetBusName);           // input B is wet signal
 
     // Finalize initialization
     DSP::finalizeAudio();
 
     // Static settings for effect chain audio input
     butterworth.setFilterMode(FilterMode::HP);
-    butterworth.setCutoffFrequency(200.0);
+    butterworth.setCutoffFrequency(100.0);
 
     delay.setFeedback(0.8, 0.8);
     delay.setMaxTime(1000.0);
@@ -153,9 +153,11 @@ void JPSynth::noteIn(int note, host_float velocity)
 {
     if (velocity > 0)
     {
+        host_float freq = carrierTuning.frequency(note);
+
         currentVoice = allocator.allocate(note);
         currentVoice->note = note;
-        currentVoice->jpvoice.setCarrierFrequency(carrierTuning.frequency(note));
+        currentVoice->jpvoice.setCarrierFrequency(freq);
         currentVoice->jpvoice.setModulatorFrequency(modulatorTuning.frequency(note));
         currentVoice->jpvoice.setAmpGain(midi.normalizeVelocityRMS(velocity));
 
@@ -422,7 +424,7 @@ void JPSynth::setLFO1(LFOParams params)
 
     if (lfo1Target != params.target)
     {
-        lfo1ar.connectToModulationBus(lfo1DummyBusName);
+        lfo1ar.connectModulationToBus(lfo1DummyBusName);
 
         modFilterCutoffBus->fill(1.0);
         modAmpBus->fill(1.0);
@@ -433,17 +435,17 @@ void JPSynth::setLFO1(LFOParams params)
     switch (params.target)
     {
     case LFOTarget::None:
-        lfo1ar.connectToModulationBus(lfo1DummyBusName);
+        lfo1ar.connectModulationToBus(lfo1DummyBusName);
         break;
     case LFOTarget::Cutoff:
-        lfo1ar.connectToModulationBus(modFilterCutoffBusName);
+        lfo1ar.connectModulationToBus(modFilterCutoffBusName);
         break;
     case LFOTarget::Amp:
-        lfo1ar.connectToModulationBus(modAmpBusName);
+        lfo1ar.connectModulationToBus(modAmpBusName);
         break;
 
     default:
-        lfo1ar.connectToModulationBus(lfo1DummyBusName);
+        lfo1ar.connectModulationToBus(lfo1DummyBusName);
         break;
     }
 }

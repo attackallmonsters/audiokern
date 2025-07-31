@@ -33,7 +33,7 @@ void NebularReverb::initializeEffect()
         delays[i]->setMaxTime(1000.0);
         delays[i]->initialize(delayNames[i]);
         delays[i]->setTimeOffset(5.0);
-        delays[i]->connectToOutputBus(delayNames[i]);
+        delays[i]->connectOutputToBus(delayNames[i]);
     }
 
     lowPass.initialize("lowpass" + getName());
@@ -51,16 +51,16 @@ void NebularReverb::onInputBusConnected()
 {
     for (int i = 0; i < maxDelays; ++i)
     {
-        delays[i]->connectToInputBus(inputBus->busName);
+        delays[i]->connectInputToBus(inputBus->busName);
     }
 }
 
 void NebularReverb::onOutputBusConnected()
 {
-    wetFader.connectToInputBusForA(inputBus->busName);
-    wetFader.connectToInputBusForB(wetBus->busName);
-    wetFader.connectToOutputBus(outputBus->busName);
-    lowPass.connectToProcessBus(wetBus->busName);
+    wetFader.connectInputAToBus(inputBus->busName);
+    wetFader.connectInputBToBus(wetBus->busName);
+    wetFader.connectOutputToBus(outputBus->busName);
+    lowPass.connectProcessToBus(wetBus->busName);
 }
 
 void NebularReverb::setDensity(host_float dense)
