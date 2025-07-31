@@ -23,6 +23,7 @@ typedef struct t_lfo_tilde
     t_float blockSize;
 
     t_sample inletValue;
+    std::string busname;
 
     t_sample *in_fm;
     t_outlet *x_out_sig;
@@ -121,10 +122,10 @@ void lfo_tilde_dsp(t_lfo_tilde *x, t_signal **sp)
     x->lfo->initialize(dsp_math::unique_string_id("buffered_lfo"));
     x->lfo->setMode(LFOMode::Buffered);
 
-    std::string busName = dsp_math::unique_string_id("buffered_lfo_bus");
-
-    DSPBusManager::registerModulationBus(busName, out);
-    x->lfo->connectToModulationBus(busName);
+    x->busname = dsp_math::unique_string_id("buffered_lfo_bus");
+    
+    DSPBusManager::registerModulationBus(x->busname, out);
+    x->lfo->connectToModulationBus(x->busname);
 }
 
 inline void log(const std::string &entry)

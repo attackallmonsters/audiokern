@@ -27,15 +27,16 @@ inline host_float LFO::shapedRamp(host_float x)
 {
     if (shape == 0.0)
         return x;
-    else if (shape > 0.0)
-        return std::pow(x, 1.0 + shape * 4.0); // convex
-    else
-        return 1.0 - std::pow(1.0 - x, 1.0 - shape * 4.0); // concave
+
+    x = clamp(x, 0.0, 1.0);
+
+    // convex : concave
+    return (shape > 0.0) ? std::pow(x, 1.0 + shape * 4.0) : 1.0 - std::pow(1.0 - x, 1.0 - shape * 4.0);
 }
 
 void LFO::setSmooth(host_float f)
 {
-    f = clamp(f, 0.0, 1.0);
+    f = clamp(f, 0.0, 0.8);
     smoothCoeff = 1.0 - f;
 }
 
@@ -57,6 +58,7 @@ inline host_float LFO::lfoRampDown()
 inline host_float LFO::lfoTriangle()
 {
     host_float p = phase * 2.0;
+    
     if (p < 1.0)
         return 2.0 * shapedRamp(p) - 1.0;
     else
@@ -79,11 +81,11 @@ void LFO::setFreq(host_float f)
 
     if (lfoMode == LFOMode::Value)
     {
-        phaseInc = freq / DSP::sampleRate * DSP::blockSize;
+        phaseInc = clamp(freq / DSP::sampleRate * DSP::blockSize, 0.0, 1.0);
     }
     else
     {
-        phaseInc = freq / DSP::sampleRate;
+        phaseInc = clamp(freq / DSP::sampleRate, 0.0, 1.0);
     }
 }
 
