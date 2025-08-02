@@ -21,7 +21,7 @@ public:
      * @param busName The name of the audio bus to connect to (e.g. "input", "osc1_output").
      * @throws std::runtime_error if the bus with the given name does not exist.
      */
-    void connectProcessToBus(const std::string &busName);
+    void connectProcessToBus(DSPAudioBus &bus);
 
     /**
      * @brief Connects this DSP object to the modulation buffer of a named bus.
@@ -33,7 +33,7 @@ public:
      * @param busName The name of the modulation bus to connect to (e.g. "mod_cutoff").
      * @throws std::runtime_error if the bus with the given name does not exist.
      */
-    void connectModulationToBus(const std::string &busName);
+    void connectModulationToBus(DSPModulationBus &bus);
 
 protected:
     /**
@@ -66,7 +66,7 @@ protected:
      *
      * Default implementation does nothing.
      */
-    virtual void onProcessBusConnected();
+    virtual void onProcessBusConnected(DSPAudioBus &bus);
 
     /**
      * @brief Called when an modulation audio bus has been successfully connected.
@@ -76,15 +76,15 @@ protected:
      *
      * Default implementation does nothing.
      */
-    virtual void onModulationBusConnected();
+    virtual void onModulationBusConnected(DSPModulationBus &bus);
 
     /**
      * @brief The connected audio processing bus.
      */
-    DSPAudioBus *processBus = nullptr;
+    DSPAudioBus processBus;
 
     /**
      * @brief The connected modulation bus.
      */
-    DSPModulationBus *modulationBus = nullptr;
+    DSPModulationBus modulationBus;
 };

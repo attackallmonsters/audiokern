@@ -141,9 +141,8 @@ private:
      */
     void processBlockBlendMono();
 
-    SlewLimiter slew;            ///< Smooths pan transitions over time
-    double pan = 0.5;            ///< Current pan value (0.0–1.0), centered by default
-
-    DSPAudioBus *inputBus = nullptr;  ///< Pointer to stereo input bus (L/R)
-    DSPAudioBus *outputBus = nullptr; ///< Pointer to stereo output bus (L/R)
+    /**
+     * @brief Current pan value (0.0–1.0), centered by default
+     */
+    double pan = 0.5;
 };

@@ -14,7 +14,7 @@ class DSPObject; // Forward declaration
  * @brief Static utility and management class for the DSP system.
  * 
  * Provides centralized initialization, logging, and global object registration
- * for all DSP-related components.
+ * for all DSP.melated components.
  */
 class DSP
 {

@@ -198,16 +198,16 @@ void WavetableOscillator::processBlockVoice()
             size_t i1R = (i0R + 1) % selectedWaveTableSize;
             host_float fracR = indexR - i0R;
 
-            outputBus->l[i] = (1.0 - fracL) * (*selectedWaveTable)[i0L] + fracL * (*selectedWaveTable)[i1L];
-            outputBus->r[i] = (1.0 - fracR) * (*selectedWaveTable)[i0R] + fracR * (*selectedWaveTable)[i1R];
+            outputBus.l[i] = (1.0 - fracL) * (*selectedWaveTable)[i0L] + fracL * (*selectedWaveTable)[i1L];
+            outputBus.r[i] = (1.0 - fracR) * (*selectedWaveTable)[i0R] + fracR * (*selectedWaveTable)[i1R];
         }
     }
     else
     {
         for (size_t i = 0; i < DSP::blockSize; ++i)
         {
-            host_float modLeft = fmBus->l[i];
-            host_float modRight = fmBus->r[i];
+            host_float modLeft = fmBus.l[i];
+            host_float modRight = fmBus.r[i];
 
             currentPhase += phaseIncrement;
 
@@ -234,8 +234,8 @@ void WavetableOscillator::processBlockVoice()
             size_t i1R = (i0R + 1) % selectedWaveTableSize;
             host_float fracR = indexR - i0R;
 
-            outputBus->l[i] = (1.0 - fracL) * (*selectedWaveTable)[i0L] + fracL * (*selectedWaveTable)[i1L];
-            outputBus->r[i] = (1.0 - fracR) * (*selectedWaveTable)[i0R] + fracR * (*selectedWaveTable)[i1R];
+            outputBus.l[i] = (1.0 - fracL) * (*selectedWaveTable)[i0L] + fracL * (*selectedWaveTable)[i1L];
+            outputBus.r[i] = (1.0 - fracR) * (*selectedWaveTable)[i0R] + fracR * (*selectedWaveTable)[i1R];
         }
     }
 }
@@ -287,16 +287,16 @@ void WavetableOscillator::processBlockVoices()
                 }
             }
 
-            outputBus->l[i] = sumL * voiceGain;
-            outputBus->r[i] = sumR * voiceGain;
+            outputBus.l[i] = sumL * voiceGain;
+            outputBus.r[i] = sumR * voiceGain;
         }
     }
     else
     {
         for (size_t i = 0; i < DSP::blockSize; ++i)
         {
-            host_float modLeft = fmBus->l[i];
-            host_float modRight = fmBus->r[i];
+            host_float modLeft = fmBus.l[i];
+            host_float modRight = fmBus.r[i];
 
             host_float sumL = 0.0;
             host_float sumR = 0.0;
@@ -335,8 +335,8 @@ void WavetableOscillator::processBlockVoices()
                 }
             }
 
-            outputBus->l[i] = sumL * voiceGain;
-            outputBus->r[i] = sumR * voiceGain;
+            outputBus.l[i] = sumL * voiceGain;
+            outputBus.r[i] = sumR * voiceGain;
         }
     }
 }

@@ -30,7 +30,7 @@ public:
      * @param busName The name of the audio input bus to connect to.
      * @throws std::runtime_error if no such bus exists.
      */
-    void connectFMToBus(const std::string &busName);
+    void connectFMToBus(DSPAudioBus &bus);
 
     /**
      * @brief Connects this DSP object to the output or wet buffer of a named audio bus.
@@ -44,7 +44,7 @@ public:
      * @param busName The name of the audio output bus to connect to.
      * @throws std::runtime_error if no such bus exists.
      */
-    void connectOutputToBus(const std::string &busName);
+    void connectOutputToBus(DSPAudioBus &bus);
 
     /**
      * @brief Sets the functional role of this sound generator.
@@ -86,7 +86,7 @@ protected:
      *
      * Default implementation does nothing.
      */
-    virtual void onFMBusConnected();
+    virtual void onFMBusConnected(DSPAudioBus &bus);
 
     /**
      * @brief Called when an output audio bus has been successfully connected.
@@ -96,17 +96,17 @@ protected:
      *
      * Default implementation does nothing.
      */
-    virtual void onOutputBusConnected();
+    virtual void onOutputBusConnected(DSPAudioBus &bus);
 
     /**
      * @brief Connected audio output bus
      */
-    DSPAudioBus *outputBus = nullptr;
+    DSPAudioBus outputBus;
 
     /**
      * @brief Connected FM bus
      */
-    DSPAudioBus *fmBus = nullptr;
+    DSPAudioBus fmBus;
 
     /**
      * @brief Role of the sound generator

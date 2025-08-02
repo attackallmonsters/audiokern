@@ -50,8 +50,8 @@ void Limiter::processBlock()
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
         // Read current input sample (assuming input is written to outputBuffer)
-        host_float inputL = processBus->l[i];
-        host_float inputR = processBus->r[i];
+        host_float inputL = processBus.l[i];
+        host_float inputR = processBus.r[i];
 
         // Combine channels to get peak (for shared gain)
         host_float peak = std::max(std::fabs(inputL), std::fabs(inputR));
@@ -71,8 +71,8 @@ void Limiter::processBlock()
 
         auto &delayed = lookaheadBuffer[readIndex];
 
-        processBus->l[i] = delayed.first * gain;
-        processBus->r[i] = delayed.second * gain;
+        processBus.l[i] = delayed.first * gain;
+        processBus.r[i] = delayed.second * gain;
     }
 }
 

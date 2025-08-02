@@ -73,24 +73,24 @@ void ButterworthFilter::processBlock()
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
         // Left channel
-        const host_float inL = processBus->l[i];
+        const host_float inL = processBus.l[i];
         const host_float outL = b0 * inL + b1 * x1L + b2 * x2L - a1 * y1L - a2 * y2L;
 
         x2L = x1L;
         x1L = inL;
         y2L = y1L;
         y1L = outL;
-        processBus->l[i] = outL;
+        processBus.l[i] = outL;
 
         // Right channel
-        const host_float inR = processBus->r[i];
+        const host_float inR = processBus.r[i];
         const host_float outR = b0 * inR + b1 * x1R + b2 * x2R - a1 * y1R - a2 * y2R;
 
         x2R = x1R;
         x1R = inR;
         y2R = y1R;
         y1R = outR;
-        processBus->r[i] = outR;
+        processBus.r[i] = outR;
     }
 }
 

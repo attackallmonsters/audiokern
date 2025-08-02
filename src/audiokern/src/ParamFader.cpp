@@ -45,8 +45,8 @@ void ParamFader::processBlock()
         // Apply fade to entire output buffer
         for (size_t i = 0; i < DSP::blockSize; ++i)
         {
-            processBus->l[i] *= fadeValue;
-            processBus->r[i] *= fadeValue;
+            processBus.l[i] *= fadeValue;
+            processBus.r[i] *= fadeValue;
         }
     }
 }

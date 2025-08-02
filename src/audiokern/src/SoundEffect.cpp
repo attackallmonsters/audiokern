@@ -10,22 +10,28 @@ void SoundEffect::initializeObject(size_t count)
     initializeEffect(count);
 }
 
-void SoundEffect::connectInputToBus(const std::string &busName)
+void SoundEffect::connectInputToBus(DSPAudioBus &bus)
 {
-    inputBus = DSPBusManager::getAudioBus(busName);
-    onInputBusConnected();
+    inputBus = bus;
+    onInputBusConnected(inputBus);
 }
 
-void SoundEffect::connectOutputToBus(const std::string &busName)
+void SoundEffect::connectOutputToBus(DSPAudioBus &bus)
 {
-    outputBus = DSPBusManager::getAudioBus(busName);
-    onOutputBusConnected();
+    outputBus = bus;
+    onOutputBusConnected(outputBus);
 }
 
-void SoundEffect::connectModulationToBus(const std::string &busName)
+void SoundEffect::setOutputBus(DSPAudioBus &bus)
 {
-    modulationBus = DSPBusManager::getModulationBus(busName);
-    onModulationBusConnected();
+    outputBus = bus;
+    onOutputBusConnected(outputBus);
+}
+
+void SoundEffect::connectModulationToBus(DSPModulationBus &bus)
+{
+    modulationBus = bus;
+    onModulationBusConnected(modulationBus);
 }
 
 void SoundEffect::initializeEffect()
@@ -36,14 +42,14 @@ void SoundEffect::initializeEffect(size_t /*count*/)
 {
 }
 
-void SoundEffect::onInputBusConnected()
+void SoundEffect::onInputBusConnected(DSPAudioBus & /*bus*/)
 {
 }
 
-void SoundEffect::onOutputBusConnected()
+void SoundEffect::onOutputBusConnected(DSPAudioBus & /*bus*/)
 {
 }
 
-void SoundEffect::onModulationBusConnected()
+void SoundEffect::onModulationBusConnected(DSPModulationBus & /*bus*/)
 {
 }

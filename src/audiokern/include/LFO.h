@@ -24,7 +24,7 @@ enum class LFOType
 
 /**
  * @brief LFO operating modes.
- * - Buffered: Fills a full audio-rate buffer each block.
+ * - Buffered: Fills a full audio.mate buffer each block.
  * - Value: Computes only one value per block (e.g., for param control).
  */
 enum class LFOMode
@@ -48,15 +48,15 @@ public:
     // Constructor: sets default parameters
     LFO();
 
-        /**
+    /**
      * @brief Sets the frequency of the LFO in Hertz.
-     * 
+     *
      * Controls how many cycles per second the waveform completes.
      * Must be > 0.0 to avoid invalid phase increments.
      *
      * @param f Frequency in Hz (typically 0.01 – 20.0)
      */
-    void setFreq(host_float f);
+    void setFrequency(host_float f);
 
     /**
      * @brief Sets the waveform type of the LFO.
@@ -92,9 +92,9 @@ public:
      * @brief Sets the shape amount for ramp-based waveforms.
      *
      * Shapes the linear ramp curve into exponential/logarithmic curves.
-     * 
-     * - 0.0 = linear ramp  
-     * - < 0.0 = convex (log-like)  
+     *
+     * - 0.0 = linear ramp
+     * - < 0.0 = convex (log-like)
      * - > 0.0 = concave (exp-like)
      *
      * Has no effect on sine or square waveforms.
@@ -134,7 +134,7 @@ public:
     /**
      * @brief Enables or disables unipolar output mode.
      *
-     * - false = Bipolar mode: output ranges from -1.0 to +1.0  
+     * - false = Bipolar mode: output ranges from -1.0 to +1.0
      * - true  = Unipolar mode: output ranges from 0.0 to +1.0
      *
      * @param enabled True for unipolar, false for bipolar
@@ -145,15 +145,14 @@ public:
      * @brief Sets the LFO operating mode.
      *
      * Determines how the LFO is processed:
-     * - `Buffered`: generates a full audio-rate buffer
+     * - `Buffered`: generates a full audio.mate buffer
      * - `Value`: computes a single control value per block
      *
      * @param mode Operating mode
      */
     void setMode(LFOMode mode);
 
-
-    /** 
+    /**
      * @brief Reset internal oscillator phase
      */
     void reset();
@@ -171,16 +170,16 @@ public:
     std::function<void(host_float)> processLFOValue = nullptr;
 
     /**
-     * @brief Buffer for audio-rate LFO output.
+     * @brief Buffer for audio.mate LFO output.
      * Only used in Buffered mode.
      */
     DSPSampleBuffer modulationBuffer;
 
 protected:
-    // Called once during DSP setup to initialize internal state
+    /// @brief  Called once during DSP setup to initialize internal state
     void initializeModulator() override;
 
-private:
+    private :
     // Static dispatcher for Buffered mode
     static void processBlockBuffer(DSPObject *dsp);
 
@@ -194,22 +193,22 @@ private:
     void processBlockValue();
 
     // Internal phase and frequency variables
-    host_float phase;        // Current oscillator phase [0.0 ... 1.0)
-    host_float freq;         // Frequency in Hz
-    host_float phaseInc;     // Phase increment per sample
+    host_float phase;    // Current oscillator phase [0.0 ... 1.0)
+    host_float freq;     // Frequency in Hz
+    host_float phaseInc; // Phase increment per sample
 
     // LFO parameter values
-    host_float offset;       // DC offset added to output
-    host_float depth;        // Modulation depth (amplitude)
-    host_float shape;        // Shape factor (nonlinear ramp shaping)
-    host_float pw;           // Pulse width (for square)
-    host_float smoothVal;    // Current smoothed output value
-    host_float smoothCoeff;  // Smoothing coefficient
-    host_float idleSignal;   // Fallback value when idle
-    bool unipolar;           // Output mode: true = [0..1], false = [-1..1]
-    LFOMode lfoMode;         // Operation mode (buffer or per-block value)
+    host_float offset;      // DC offset added to output
+    host_float depth;       // Modulation depth (amplitude)
+    host_float shape;       // Shape factor (nonlinear ramp shaping)
+    host_float pw;          // Pulse width (for square)
+    host_float smoothVal;   // Current smoothed output value
+    host_float smoothCoeff; // Smoothing coefficient
+    host_float idleSignal;  // Fallback value when idle
+    bool unipolar;          // Output mode: true = [0..1], false = [-1..1]
+    LFOMode lfoMode;        // Operation mode (buffer or per-block value)
 
-    LFOType lfoType;         // Current waveform type
+    LFOType lfoType; // Current waveform type
 
     // Apply shaping to ramp waveform
     host_float shapedRamp(host_float x);
@@ -221,9 +220,6 @@ private:
     host_float lfoTriangle();
     host_float lfoSquare();
     host_float lfoRandom();
-
-    // Flag indicating if frequency modulation (FM) is enabled
-    bool fmEnabled;
 
     /// @brief Stores the current random value
     host_float currentRnd;

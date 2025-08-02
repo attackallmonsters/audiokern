@@ -90,20 +90,20 @@ void JPVoice::initializeGenerator()
     paramFader.initialize("paramFader" + getName());
 
     // Create voice exclusive audio and modulation busses
-    carrierAudioBus = DSPBusManager::registerAudioBus(carrierAudioBusName);                          // carrier oscillation output bus
-    modulatorAudioBus = DSPBusManager::registerAudioBus(modulatorAudioBusName);                      // modulator oscillation output bus
-    noiseAudioBus = DSPBusManager::registerAudioBus(noiseAudioBusName);                              // noise generator output bus
-    filterCutoffBus = DSPBusManager::registerModulationBus(filterCutoffBusName);                     // filter cutoff modulation bus (from filterADSR)
-    outputAmplificationBus = DSPBusManager::registerModulationBus(outputAmplificationBusName);       // output amplification output bus
+    carrierAudioBus = DSPBusManager::registerAudioBus(carrierAudioBusName);                    // carrier oscillation output bus
+    modulatorAudioBus = DSPBusManager::registerAudioBus(modulatorAudioBusName);                // modulator oscillation output bus
+    noiseAudioBus = DSPBusManager::registerAudioBus(noiseAudioBusName);                        // noise generator output bus
+    filterCutoffBus = DSPBusManager::registerModulationBus(filterCutoffBusName);               // filter cutoff modulation bus (from filterADSR)
+    outputAmplificationBus = DSPBusManager::registerModulationBus(outputAmplificationBusName); // output amplification output bus
 
     // Patching
-    carrier->connectOutputToBus(carrierAudioBusName);           // carrier output
-    carrier->connectFMToBus(modulatorAudioBusName);             // FM from modulator
-    modulator->connectOutputToBus(modulatorAudioBusName);       // modulator output
-    noise.connectOutputToBus(noiseAudioBusName);                // noise output
-    filter.connectModulationToBus(filterCutoffBusName);         // cutoff modulation set by filterADSR
-    filterAdsr.connectModulationToBus(filterCutoffBusName);     // filter adsr on filter cutoff modulation
-    ampAdsr.connectModulationToBus(outputAmplificationBusName); // voice output amplification
+    carrier->connectOutputToBus(carrierAudioBus);           // carrier output
+    carrier->connectFMToBus(modulatorAudioBus);             // FM from modulator
+    modulator->connectOutputToBus(modulatorAudioBus);       // modulator output
+    noise.connectOutputToBus(noiseAudioBus);                // noise output
+    filter.connectModulationToBus(filterCutoffBus);         // cutoff modulation set by filterADSR
+    filterAdsr.connectModulationToBus(filterCutoffBus);     // filter adsr on filter cutoff modulation
+    ampAdsr.connectModulationToBus(outputAmplificationBus); // voice output amplification
 
     filterAdsr.setGain(15000.0);
     ampAdsr.setGain(1.0);
@@ -132,11 +132,10 @@ void JPVoice::initializeGenerator()
     setModIndex(0.0);
 }
 
-void JPVoice::onOutputBusConnected()
+void JPVoice::onOutputBusConnected(DSPAudioBus &bus)
 {
-    filter.connectProcessToBus(outputBus->busName);     // output filtering
-    ampAdsr.connectProcessToBus(outputBus->busName); // output amplification
-    paramFader.connectProcessToBus(outputBus->busName); // fade output on parameter change
+    filter.connectProcessToBus(bus);     // output filtering
+    paramFader.connectProcessToBus(bus); // fade output on parameter change
 }
 
 // Start ADSRs
@@ -265,8 +264,8 @@ void JPVoice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
         {
             carrier = carrierTmp;
 
-            carrier->connectOutputToBus(carrierAudioBusName);
-            carrier->connectFMToBus(modulatorAudioBusName);
+            carrier->connectOutputToBus(carrierAudioBus);
+            carrier->connectFMToBus(modulatorAudioBus);
 
             filter.reset();
         });
@@ -322,8 +321,8 @@ void JPVoice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
         {
             modulator = modulatorTmp;
 
-            carrier->connectFMToBus(modulatorAudioBusName);
-            modulator->connectOutputToBus(modulatorAudioBusName);
+            carrier->connectFMToBus(modulatorAudioBus);
+            modulator->connectOutputToBus(modulatorAudioBus);
 
             filter.reset();
         });
@@ -446,7 +445,7 @@ void JPVoice::setAnalogDrift(host_float amount)
     modulator->setAnalogDrift(oscDrift);
 }
 
-void JPVoice::setFilterCutoffModulationBus(DSPModulationBus *bus)
+void JPVoice::setFilterCutoffModulationBus(DSPModulationBus &bus)
 {
     filterCutoffModulationBus = bus;
 }
@@ -474,10 +473,10 @@ void JPVoice::processBlock()
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        carrierLeft = carrierAudioBus->l[i] + lastSampleCarrierLeft * feedbackAmountCarrier;
-        carrierRight = carrierAudioBus->r[i] + lastSampleCarrierRight * feedbackAmountCarrier;
-        modLeft = modulatorAudioBus->l[i] + lastSampleModulatorLeft * feedbackAmountModulator;
-        modRight = modulatorAudioBus->r[i] + lastSampleModulatorRight * feedbackAmountModulator;
+        carrierLeft = carrierAudioBus.l[i] + lastSampleCarrierLeft * feedbackAmountCarrier;
+        carrierRight = carrierAudioBus.r[i] + lastSampleCarrierRight * feedbackAmountCarrier;
+        modLeft = modulatorAudioBus.l[i] + lastSampleModulatorLeft * feedbackAmountModulator;
+        modRight = modulatorAudioBus.r[i] + lastSampleModulatorRight * feedbackAmountModulator;
 
         mixL = amp_carrier * carrierLeft + amp_modulator * modLeft;
         mixR = amp_carrier * carrierRight + amp_modulator * modRight;
@@ -496,25 +495,25 @@ void JPVoice::processBlock()
 
         if (noisemix > 0)
         {
-            mixL = amp_oscs * mixL + amp_noise * noiseAudioBus->l[i];
-            mixR = amp_oscs * mixR + amp_noise * noiseAudioBus->r[i];
+            mixL = amp_oscs * mixL + amp_noise * noiseAudioBus.l[i];
+            mixR = amp_oscs * mixR + amp_noise * noiseAudioBus.r[i];
         }
 
-        outputBus->l[i] = mixL;
-        outputBus->r[i] = mixR;
+        outputBus.l[i] = mixL;
+        outputBus.r[i] = mixR;
     }
 
     // Filter cutoff calculation
     filterAdsr.process();
 
     // Compute LFO modulation on cutoff
-    filterCutoffBus->multiplyWidth(filterCutoffModulationBus);
+    filterCutoffBus.multiplyWidth(filterCutoffModulationBus);
 
     // process filter
     filter.process();
 
     // output amplification
-    ampAdsr.multiply();
+    ampAdsr.processMultiply(outputBus);
 
     // Assign changed params
     paramFader.process();

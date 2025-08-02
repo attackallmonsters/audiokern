@@ -32,42 +32,42 @@ typedef struct t_lfo_tilde
 
 void lfo_tilde_reset(t_lfo_tilde *x)
 {
-    x->lfo->reset();
+    x-lfo.meset();
 }
 
 void lfo_tilde_setoffset(t_lfo_tilde *x, t_floatarg f)
 {
-    x->lfo->setOffset(f);
+    x-lfo->setOffset(f);
 }
 
 void lfo_tilde_setdepth(t_lfo_tilde *x, t_floatarg f)
 {
-    x->lfo->setDepth(f);
+    x-lfo->setDepth(f);
 }
 
 void lfo_tilde_setshape(t_lfo_tilde *x, t_floatarg f)
 {
-    x->lfo->setShape(f);
+    x-lfo->setShape(f);
 }
 
 void lfo_tilde_setpw(t_lfo_tilde *x, t_floatarg f)
 {
-    x->lfo->setPulseWidth(f);
+    x-lfo->setPulseWidth(f);
 }
 
 void lfo_tilde_setsmooth(t_lfo_tilde *x, t_floatarg f)
 {
-    x->lfo->setSmooth(f);
+    x-lfo->setSmooth(f);
 }
 
 void lfo_tilde_unipolar(t_lfo_tilde *x, t_floatarg f)
 {
-    x->lfo->isUnipolar(f != 0.0);
+    x-lfo->isUnipolar(f != 0.0);
 }
 
 void lfo_tilde_setfreq(t_lfo_tilde *x, t_floatarg f)
 {
-    x->lfo->setFreq(f);
+    x-lfo->setFrequency(f);
 }
 
 void lfo_tilde_settype(t_lfo_tilde *x, t_floatarg f)
@@ -77,25 +77,25 @@ void lfo_tilde_settype(t_lfo_tilde *x, t_floatarg f)
     switch (type)
     {
     case 0:
-        x->lfo->setType(LFOType::Sine);
+        x-lfo->setType(LFOType::Sine);
         break;
     case 1:
-        x->lfo->setType(LFOType::RampUp);
+        x-lfo->setType(LFOType::RampUp);
         break;
     case 2:
-        x->lfo->setType(LFOType::RampDown);
+        x-lfo->setType(LFOType::RampDown);
         break;
     case 3:
-        x->lfo->setType(LFOType::Triangle);
+        x-lfo->setType(LFOType::Triangle);
         break;
     case 4:
-        x->lfo->setType(LFOType::Square);
+        x-lfo->setType(LFOType::Square);
         break;
     case 5:
-        x->lfo->setType(LFOType::Random);
+        x-lfo->setType(LFOType::Random);
         break;
     default:
-        x->lfo->setType(LFOType::Sine);
+        x-lfo->setType(LFOType::Sine);
         break;
     }
 }
@@ -104,7 +104,7 @@ t_int *lfo_tilde_perform(t_int *w)
 {
     t_lfo_tilde *x = (t_lfo_tilde *)(w[1]);
 
-    x->lfo->process();
+    x-lfo->process();
 
     return (w + 5);
 }
@@ -119,13 +119,13 @@ void lfo_tilde_dsp(t_lfo_tilde *x, t_signal **sp)
 
     DSP::initializeAudio(x->samplerate, x->blockSize);
 
-    x->lfo->initialize(dsp_math::unique_string_id("buffered_lfo"));
-    x->lfo->setMode(LFOMode::Buffered);
+    x-lfo->initialize(dsp_math::unique_string_id("buffered_lfo"));
+    x-lfo->setMode(LFOMode::Buffered);
 
-    x->busname = dsp_math::unique_string_id("buffered_lfo_bus");
+    x->getName() = dsp_math::unique_string_id("buffered_lfo_bus");
     
-    DSPBusManager::registerModulationBus(x->busname, out);
-    x->lfo->connectModulationToBus(x->busname);
+    DSPBusManager::registerModulationBus(x->getName(), out);
+    x-lfo->connectModulationToBus(x->getName());
 }
 
 inline void log(const std::string &entry)
@@ -139,9 +139,9 @@ void *lfo_tilde_new(t_floatarg f)
 
     DSP::registerLogger(&log);
 
-    x->lfo = new LFO();
-    x->lfo->setIdleSignal(f);
-    x->lfo->onPhaseWrap = [x]()
+    x-lfo = new LFO();
+    x-lfo->setIdleSignal(f);
+    x-lfo->onPhaseWrap = [x]()
     {
         outlet_bang(x->x_out_bang);
     };
@@ -154,7 +154,7 @@ void *lfo_tilde_new(t_floatarg f)
 
 void lfo_tilde_free(t_lfo_tilde *x)
 {
-    delete x->lfo;
+    delete x-lfo;
 }
 
 extern "C"

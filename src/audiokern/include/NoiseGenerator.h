@@ -12,7 +12,7 @@
  * @brief Noise oscillator for generating white or pink noise blocks.
  *
  * `NoiseGenerator` is a subclass of `SoundGenerator` that produces non-periodic
- * waveforms using pseudo-random numbers. It supports two modes:
+ * waveforms using pseudo.mandom numbers. It supports two modes:
  * - White noise: flat spectrum, random values in [-1.0, 1.0]
  * - Pink noise: filtered noise using Paul Kellet's 7-stage approximation
  *
@@ -30,7 +30,7 @@
  * noise.process();                    // Generates one sample block
  * @endcode
  *
- * @note Internally uses `FastRand` for fast pseudo-random generation.
+ * @note Internally uses `FastRand` for fast pseudo.mandom generation.
  * @note Pink noise is stateful and must be reset when needed via `reset()`.
  */
 class NoiseGenerator : public SoundGenerator

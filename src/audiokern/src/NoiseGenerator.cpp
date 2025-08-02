@@ -35,8 +35,8 @@ void NoiseGenerator::processBlockWhite()
     {
         // Generate white noise sample in range [-1.0, 1.0]
         host_float white = rand.nextRandomSample();
-        outputBus->l[i] = white;
-        outputBus->r[i] = white;
+        outputBus.l[i] = white;
+        outputBus.r[i] = white;
     }
 }
 
@@ -60,8 +60,8 @@ void NoiseGenerator::processBlockPink()
         b6 = white * 0.115926;
 
         // Scale output to normalize level (empirical factor)
-        outputBus->l[i] = pink * 0.11;
-        outputBus->r[i] = pink * 0.11;
+        outputBus.l[i] = pink * 0.11;
+        outputBus.r[i] = pink * 0.11;
     }
 }
 

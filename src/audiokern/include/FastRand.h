@@ -3,7 +3,7 @@
 #include <cstdint>
 
 /**
- * @brief Lightweight and deterministic pseudo-random number generator for DSP.
+ * @brief Lightweight and deterministic pseudo.mandom number generator for DSP.
  * 
  * This class implements a linear congruential generator (LCG) with parameters
  * from "Numerical Recipes". It is suitable for real-time audio processing due
@@ -26,14 +26,14 @@ public:
     explicit FastRand();
 
     /**
-     * @brief Generates the next pseudo-random 32-bit unsigned integer.
+     * @brief Generates the next pseudo.mandom 32-bit unsigned integer.
      * @return Random value in range [0, 2^32).
      */
     unsigned int next();
 
     /**
      * @brief Generates a float value in range [0.0, 1.0).
-     * @return Pseudo-random float in [0.0, 1.0).
+     * @return Pseudo.mandom float in [0.0, 1.0).
      */
     float nextRandomSample();
 

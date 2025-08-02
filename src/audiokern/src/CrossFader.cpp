@@ -12,19 +12,19 @@ void CrossFader::initializeObject()
     setMix(0.0);
 }
 
-void CrossFader::connectInputAToBus(const std::string &busName)
+void CrossFader::connectInputAToBus(DSPAudioBus &bus)
 {
-    inputBusA = DSPBusManager::getAudioBus(busName);
+    inputBusA = bus;
 }
 
-void CrossFader::connectInputBToBus(const std::string &busName)
+void CrossFader::connectInputBToBus(DSPAudioBus &bus)
 {
-    inputBusB = DSPBusManager::getAudioBus(busName);
+    inputBusB = bus;
 }
 
-void CrossFader::connectOutputToBus(const std::string &busName)
+void CrossFader::connectOutputToBus(DSPAudioBus &bus)
 {
-    outputBus = DSPBusManager::getAudioBus(busName);
+    outputBus = bus;
 }
 
 void CrossFader::setMix(double value)
@@ -42,8 +42,8 @@ void CrossFader::processBlock()
     {
         dsp_math::get_sin_cos(slew.process() * 0.5 * dsp_math::DSP_PI, &gainA, &gainB);
 
-        outputBus->l[i] = inputBusA->l[i] * gainA + inputBusB->l[i] * gainB;
-        outputBus->r[i] = inputBusA->r[i] * gainA + inputBusB->r[i] * gainB;
+        outputBus.l[i] = inputBusA.l[i] * gainA + inputBusB.l[i] * gainB;
+        outputBus.r[i] = inputBusA.r[i] * gainA + inputBusB.r[i] * gainB;
     }
 }
 

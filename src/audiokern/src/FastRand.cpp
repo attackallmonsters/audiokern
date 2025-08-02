@@ -26,7 +26,7 @@ void FastRand::reseed(unsigned int seed)
 
 unsigned int FastRand::seed()
 {
-    // Combine high-res clock and stack address into a seed
+    // Combine high.mes clock and stack address into a seed
     auto now = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const void* addr = static_cast<const void*>(&now); // Stack address as entropy
 

@@ -5,7 +5,7 @@
 
 /**
  * @class Modulator
- * @brief DSPObject for modulating audio signals.
+ * @brief DSPObject for modulating audio or modulation signals.
  *
  * The Modulator class represents a signal processor that applies modulation
  * effects to audio sample buffers. It is derived from DSPObject and can be
@@ -26,31 +26,51 @@ public:
      * @param busName The name of the modulation bus to connect to.
      * @throws std::runtime_error if no such bus exists.
      */
-    void connectModulationToBus(const std::string &busName);
+    void connectModulationToBus(DSPModulationBus &bus);
 
     /**
-     * @brief Connects this DSP object to the audio processing buffer of a named bus.
+     * @brief Connects this DSP object to the modulation buffer of a named bus for FM modulation.
      *
-     * Looks up the DSPAudioBus with the given name using DSPBusManager.
-     * After this call, the object will read audio data from the associated bus.
-     *
-     * @param busName The name of the audio bus to connect to (e.g. "input", "osc1_output").
+     * @param busName The name of the modulation bus to connect to (e.g. "input", "lfo1_modulation").
      * @throws std::runtime_error if the bus with the given name does not exist.
      */
-    void connectProcessToBus(const std::string &busName);
+    void connectFMToBus(DSPModulationBus &bus);
 
     /**
-     * @brief Multiplies the internal modulation signal with the given buffers. Executes process!
+     * @brief Disconnects the modulator from an FM modulation bus
+     */
+    void disconnectFMBus();
+
+    /**
+     * @brief Multiplies the internal modulation signal with the given audio bus buffers and stores
+     * the results in the target bus buffers.
      *
      * This method applies a sample-wise multiplication between an internal modulation
      * signal (typically generated or stored within the Modulator) and the provided
-     * left and right audio sample buffers. This is commonly used for amplitude
-     * modulation (e.g. ring modulation) or applying an envelope or LFO shape to a signal.
-     *
-     * @param bufL Reference to the left channel sample buffer to be modulated.
-     * @param bufR Reference to the right channel sample buffer to be modulated.
+     * bus sample buffers. 
+     * 
+     * @param bus Reference to an audio bus for sample multiplication
      */
-    void multiply();
+    void processMultiply(DSPAudioBus &targetBus);
+
+    /**
+     * @brief Multiplies the internal modulation signal with the given modulation bus buffers and stores
+     * the results in the target bus buffers.
+     *
+     * This method applies a sample-wise multiplication between an internal modulation
+     * signal (typically generated or stored within the Modulator) and the provided
+     * bus sample buffers. 
+     * 
+     * @param bus Reference to an modulation bus for value multiplication
+     */
+    void processMultiply(DSPModulationBus &targetBus);
+
+    /**
+     * @brief Sets the modulation gain
+     *
+     * @param g The gain factor on the process bus
+     */
+    void setGain(host_float g);
 
 protected:
     /**
@@ -83,25 +103,44 @@ protected:
      *
      * Default implementation does nothing.
      */
-    virtual void onModulationBusConnected();
+    virtual void onModulationBusConnected(DSPModulationBus &bus);
 
     /**
-     * @brief Called when an processing audio bus has been successfully connected.
+     * @brief Called when a modulation bus has been successfully connected for FM.
      *
      * Derived classes can override this method to perform setup or adjustments
      * after the processing bus connection is established (e.g., update processing buffer references).
      *
      * Default implementation does nothing.
      */
-    virtual void onProcessBusConnected();
+    virtual void onFMBusConnected(DSPModulationBus &bus);
+
+    /**
+     * @brief Called when a FM modulation bus has been disconnected
+     *
+     * Derived classes can override this method to perform setup or adjustments
+     * after the processing bus connection is established (e.g., update processing buffer references).
+     *
+     * Default implementation does nothing.
+     */
+    virtual void onFMBusDisconnected(DSPModulationBus &bus);
 
     /**
      * @brief Modulation output bus 
      */
-    DSPModulationBus *modulationBus = nullptr;
+    DSPModulationBus modulationBus;
 
     /**
-     * @brief Audio bus created for modulation functions (multiply, etc.)
+     * @brief Audio bus created for FM modulation
      */
-    DSPAudioBus *processBus;
+    DSPModulationBus fmBus;
+
+    /**
+     * @brief Flag indicating if frequency modulation (FM) is enabled
+     */bool fmEnabled;
+
+    /**
+     * @brief Gain factor for process bus
+     */
+    host_float gain;
 };

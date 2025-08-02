@@ -31,42 +31,42 @@ typedef struct t_lfo
 
 void lfo_reset(t_lfo *x)
 {
-    x->lfo->reset();
+    x-lfo.meset();
 }
 
 void lfo_setoffset(t_lfo *x, t_floatarg f)
 {
-    x->lfo->setOffset(f);
+    x-lfo->setOffset(f);
 }
 
 void lfo_setdepth(t_lfo *x, t_floatarg f)
 {
-    x->lfo->setDepth(f);
+    x-lfo->setDepth(f);
 }
 
 void lfo_setshape(t_lfo *x, t_floatarg f)
 {
-    x->lfo->setShape(f);
+    x-lfo->setShape(f);
 }
 
 void lfo_setpw(t_lfo *x, t_floatarg f)
 {
-    x->lfo->setPulseWidth(f);
+    x-lfo->setPulseWidth(f);
 }
 
 void lfo_setsmooth(t_lfo *x, t_floatarg f)
 {
-    x->lfo->setSmooth(f);
+    x-lfo->setSmooth(f);
 }
 
 void lfo_unipolar(t_lfo *x, t_floatarg f)
 {
-    x->lfo->isUnipolar(f != 0.0);
+    x-lfo->isUnipolar(f != 0.0);
 }
 
 void lfo_setfreq(t_lfo *x, t_floatarg f)
 {
-    x->lfo->setFreq(f);
+    x-lfo->setFrequency(f);
 }
 
 void lfo_settype(t_lfo *x, t_floatarg f)
@@ -76,25 +76,25 @@ void lfo_settype(t_lfo *x, t_floatarg f)
     switch (type)
     {
     case 0:
-        x->lfo->setType(LFOType::Sine);
+        x-lfo->setType(LFOType::Sine);
         break;
     case 1:
-        x->lfo->setType(LFOType::RampUp);
+        x-lfo->setType(LFOType::RampUp);
         break;
     case 2:
-        x->lfo->setType(LFOType::RampDown);
+        x-lfo->setType(LFOType::RampDown);
         break;
     case 3:
-        x->lfo->setType(LFOType::Triangle);
+        x-lfo->setType(LFOType::Triangle);
         break;
     case 4:
-        x->lfo->setType(LFOType::Square);
+        x-lfo->setType(LFOType::Square);
         break;
     case 5:
-        x->lfo->setType(LFOType::Random);
+        x-lfo->setType(LFOType::Random);
         break;
     default:
-        x->lfo->setType(LFOType::Sine);
+        x-lfo->setType(LFOType::Sine);
         break;
     }
 }
@@ -103,7 +103,7 @@ t_int *lfo_perform(t_int *w)
 {
     t_lfo *x = (t_lfo *)(w[1]);
 
-    x->lfo->process();
+    x-lfo->process();
 
     return (w + 2);
 }
@@ -117,8 +117,8 @@ void lfo_dsp(t_lfo *x, t_signal **sp)
 
     DSP::initializeAudio(x->samplerate, x->blockSize);
 
-    x->lfo->initialize(dsp_math::unique_string_id("value_lfo"));
-    x->lfo->setMode(LFOMode::Value);
+    x-lfo->initialize(dsp_math::unique_string_id("value_lfo"));
+    x-lfo->setMode(LFOMode::Value);
 }
 
 inline void log(const std::string &entry)
@@ -132,15 +132,15 @@ void *lfo_new(t_floatarg f)
 
     DSP::registerLogger(&log);
 
-    x->lfo = new LFO();
-    x->lfo->setIdleSignal(f);
+    x-lfo = new LFO();
+    x-lfo->setIdleSignal(f);
     
-    x->lfo->onPhaseWrap = [x]()
+    x-lfo->onPhaseWrap = [x]()
     {
         outlet_bang(x->x_out_bang);
     };
 
-    x->lfo->processLFOValue = [x](host_float v)
+    x-lfo->processLFOValue = [x](host_float v)
     {
         outlet_float(x->x_out_value, v);
     };
@@ -153,7 +153,7 @@ void *lfo_new(t_floatarg f)
 
 void lfo_free(t_lfo *x)
 {
-    delete x->lfo;
+    delete x-lfo;
 }
 
 extern "C"

@@ -55,9 +55,9 @@ void PolyBLEP::processBlock()
         }
         
         // Apply amplitude and write to output bus
-        host_float amplitude = modulationBus->m[i];
-        processBus->l[i] += output * amplitude;
-        processBus->r[i] += output * amplitude;
+        host_float amplitude = modulationBus.m[i];
+        processBus.l[i] += output * amplitude;
+        processBus.r[i] += output * amplitude;
         
         // Advance phase
         phase += phaseIncrement;

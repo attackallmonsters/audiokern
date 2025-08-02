@@ -77,11 +77,6 @@ void ADSR::setReleaseShape(host_float f)
     releaseShape = shapeToExponent(f);
 }
 
-void ADSR::setGain(host_float g)
-{
-    gain = clampmin(g, 0.0);
-}
-
 void ADSR::setOneShot(bool b)
 {
     oneShot = b;
@@ -203,6 +198,6 @@ void ADSR::processBlock(DSPObject *dsp)
     for (size_t i = 0; i < blocksize; ++i)
     {
         (adsr->*adsr->phaseFunc)();
-        adsr->modulationBus->m[i] = adsr->currentEnv * adsr->gain;
+        adsr->modulationBus.m[i] = adsr->currentEnv * adsr->gain;
     }
 }

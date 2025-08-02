@@ -124,7 +124,7 @@ protected:
      *
      * Used to initialize or reset internal buffers.
      */
-    void onOutputBusConnected() override;
+    void onOutputBusConnected(DSPAudioBus &bus) override;
 
 private:
     /**

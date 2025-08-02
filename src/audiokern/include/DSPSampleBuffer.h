@@ -138,8 +138,8 @@ public:
     void log();
 
 private:
-    host_float *buffer = nullptr;     ///< Pointer to buffer memory
-    size_t bufferSize = 0;            ///< Number of samples
-    bool ownsBuffer = false;          ///< Whether this instance owns the memory
-    std::string bufferName;           ///< Human-readable name for logging/debugging
+    host_float *buffer = nullptr; ///< Pointer to buffer memory
+    size_t bufferSize = 0;        ///< Number of samples
+    bool ownsBuffer = false;      ///< Whether this instance owns the memory
+    std::string bufferName;       ///< Human.meadable name for logging/debugging
 };

@@ -9,36 +9,31 @@ void Mixer::initializeObject(size_t count)
 {
     busCount = count;
 
-    busNames.clear();
-    busNames.resize(busCount);
-
     busses.clear();
     busses.resize(busCount);
 
     for (size_t i = 0; i < busCount; ++i)
     {
-        busNames[i] = getName() + std::to_string(i);
-        DSPBusManager::registerAudioBus(busNames[i]);
-        busses[i] = DSPBusManager::getAudioBus(busNames[i]);
+        busses[i] = &DSPAudioBus::create(DSP::blockSize);
     }
 }
 
-void Mixer::connectOutputToBus(const std::string busName)
+void Mixer::connectOutputToBus(DSPAudioBus &bus)
 {
-    outputBus = DSPBusManager::getAudioBus(busName);
+    outputBus = bus;
 }
 
-const std::string Mixer::getInputBusName(size_t index)
+DSPAudioBus &Mixer::getInputBus(size_t index)
 {
-    return busNames[index];
+    return *busses[index];
 }
 
 void Mixer::processBlock()
 {
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        outputBus->l[i] = 0.0;
-        outputBus->r[i] = 0.0;
+        outputBus.l[i] = 0.0;
+        outputBus.r[i] = 0.0;
     }
 
     for (size_t i = 0; i < busCount; ++i)
@@ -47,8 +42,8 @@ void Mixer::processBlock()
 
         for (size_t l = 0; l < DSP::blockSize; ++l)
         {
-            outputBus->l[l] += inBus->l[l];
-            outputBus->r[l] += inBus->r[l];
+            outputBus.l[l] += inBus->l[l];
+            outputBus.r[l] += inBus->r[l];
         }
     }
 }

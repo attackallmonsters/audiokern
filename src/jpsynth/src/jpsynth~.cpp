@@ -639,8 +639,17 @@ void jpsynth_tilde_lfo1(t_jpsynth *x, t_symbol *, int argc, t_atom *argv)
         lfo.target = LFOTarget::Cutoff;
         break;
     case 2:
-        lfo.target = LFOTarget::Amp;
-        break;    
+        lfo.target = LFOTarget::Tremolo;
+        break;
+    case 3:
+        lfo.target = LFOTarget::Vibrato;
+        break;
+    case 4:
+        lfo.target = LFOTarget::Panning;
+        break;
+    case 5:
+        lfo.target = LFOTarget::OscMix;
+        break;
     default:
         lfo.target = LFOTarget::None;
         break;

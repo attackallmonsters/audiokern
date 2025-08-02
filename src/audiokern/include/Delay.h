@@ -89,7 +89,14 @@ protected:
      *
      * Used to synchronize the delay buffer state with output.
      */
-    void onOutputBusConnected() override;
+    void onOutputBusConnected(DSPAudioBus &bus) override;
+
+    /**
+     * @brief Called when the input bus is connected.
+     *
+     * Used to synchronize the delay buffer state with input.
+     */
+    void onInputBusConnected(DSPAudioBus &bus) override;
 
 private:
     /**
@@ -121,5 +128,5 @@ private:
     CrossFader wetFader;
 
     /// @brief Wet bus for delay output
-    DSPAudioBus *wetBus;
+    DSPAudioBus wetBus;
 };

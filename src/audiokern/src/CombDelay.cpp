@@ -18,9 +18,9 @@ void CombDelay::initializeEffect()
     dampingStateR = 0.0;
 }
 
-void CombDelay::onOutputBusConnected()
+void CombDelay::onOutputBusConnected(DSPAudioBus &bus)
 {
-    paramFader.connectProcessToBus(outputBus->busName);
+    paramFader.connectProcessToBus(bus);
 }
 
 void CombDelay::setMaxTime(host_float timeMS)
@@ -77,15 +77,15 @@ void CombDelay::setDamping(host_float freqHz)
 
 void CombDelay::push()
 {
-    delayBuffer.push(inputBus->l, inputBus->r);
+    delayBuffer.push(inputBus.l, inputBus.r);
 }
 
 void CombDelay::processBlock()
 {
     if (feedback == 0.0)
     {
-        outputBus->l.copy(delayBuffer.outputBufferL);
-        outputBus->r.copy(delayBuffer.outputBufferR);
+        outputBus.l.copy(delayBuffer.outputBufferL);
+        outputBus.r.copy(delayBuffer.outputBufferR);
 
         return;
     }
@@ -105,8 +105,8 @@ void CombDelay::processBlock()
         delayBuffer.feedbackBufferR[i] = dampingStateR * feedback;
 
         // Signal output
-        outputBus->l[i] = delayedL;
-        outputBus->r[i] = delayedR;
+        outputBus.l[i] = delayedL;
+        outputBus.r[i] = delayedR;
     }
 
     paramFader.process();

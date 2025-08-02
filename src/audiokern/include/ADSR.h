@@ -26,7 +26,6 @@ public:
     void setRelease(host_float ms);
     void setAttackShape(host_float shape);
     void setReleaseShape(host_float shape);
-    void setGain(host_float g);
     void setOneShot(bool b);
     void setStartAtCurrent(bool start);
 
@@ -49,7 +48,6 @@ private:
     host_float attackTime, decayTime, sustainLevel, releaseTime;
     host_float attackShape, releaseShape;
     host_float currentEnv, phaseStartEnv;
-    host_float gain;
     bool oneShot;
     bool startAtCurrentEnv;
 

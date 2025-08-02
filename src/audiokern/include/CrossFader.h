@@ -40,21 +40,21 @@ public:
      * 
      * @param busName The name of the audio bus to connect to input A.
      */
-    void connectInputAToBus(const std::string &busName);
+    void connectInputAToBus(DSPAudioBus &bus);
 
     /**
      * @brief Connects the input audio bus B (typically the "wet" or processed signal).
      * 
      * @param busName The name of the audio bus to connect to input B.
      */
-    void connectInputBToBus(const std::string &busName);
+    void connectInputBToBus(DSPAudioBus &bus);
 
     /**
      * @brief Connects the output audio bus for the mix of A and B.
      * 
      * @param busName The name of the output audio bus.
      */
-    void connectOutputToBus(const std::string &busName);
+    void connectOutputToBus(DSPAudioBus &bus);
 
     /**
      * @brief Sets the mix balance between input A and input B.
@@ -96,11 +96,11 @@ private:
     double mix;
 
     /// Input bus A
-    DSPAudioBus *inputBusA;
+    DSPAudioBus inputBusA;
 
     /// Input bus B
-    DSPAudioBus *inputBusB;
+    DSPAudioBus inputBusB;
 
     /// Output bus
-    DSPAudioBus *outputBus;
+    DSPAudioBus outputBus;
 };

@@ -10,15 +10,19 @@ void Delay::initializeEffect()
     delayBuffer.initialize("delayBuffer" + getName());
     paramFader.initialize("paramFader" + getName());
     wetFader.initialize("wetFader");
-    wetBus = DSPBusManager::registerAudioBus("wetBus" + getName());
+    wetBus = DSPAudioBus::create(DSP::blockSize);
+    wetFader.connectInputBToBus(wetBus);
 }
 
-void Delay::onOutputBusConnected()
+void Delay::onOutputBusConnected(DSPAudioBus &bus)
 {
-    paramFader.connectProcessToBus(outputBus->busName);
-    wetFader.connectInputAToBus(inputBus->busName);
-    wetFader.connectInputBToBus(wetBus->busName);
-    wetFader.connectOutputToBus(outputBus->busName);
+    paramFader.connectProcessToBus(bus);
+    wetFader.connectOutputToBus(bus);
+}
+
+void Delay::onInputBusConnected(DSPAudioBus &bus)
+{
+    wetFader.connectInputAToBus(bus);
 }
 
 // Sets the maximum delay time
@@ -67,7 +71,7 @@ void Delay::setFeedback(host_float fbL, host_float fbR)
 
 void Delay::processBlock()
 {
-    delayBuffer.push(inputBus->l, inputBus->r);
+    delayBuffer.push(inputBus.l, inputBus.r);
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
@@ -80,8 +84,8 @@ void Delay::processBlock()
         delayBuffer.feedbackBufferR[i] = delayedR * feedbackR;
 
         // Signal output
-        wetBus->l[i] = delayedL;
-        wetBus->r[i] = delayedR;
+        wetBus.l[i] = delayedL;
+        wetBus.r[i] = delayedR;
     }
 
     wetFader.process();

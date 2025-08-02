@@ -65,14 +65,14 @@ void KorgonFilter::processBlockHP()
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        left = processBus->l[i];
-        right = processBus->r[i];
-        cutoff = modulationBus->m[i];
+        left = processBus.l[i];
+        right = processBus.r[i];
+        cutoff = modulationBus.m[i];
 
         if (cutoff > 15000.0)
         {
-            processBus->l[i] = left;
-            processBus->r[i] = right;
+            processBus.l[i] = left;
+            processBus.r[i] = right;
             continue;
         }
 
@@ -83,14 +83,14 @@ void KorgonFilter::processBlockHP()
         y1L += alpha * (left - y1L);
         y1R += alpha * (right - y1R);
 
-        left = processBus->l[i] - y1L;
-        right = processBus->r[i] - y1R;
+        left = processBus.l[i] - y1L;
+        right = processBus.r[i] - y1R;
 
         left = (left >= 0.0) ? dsp_math::fast_tanh(left) : 1.5 * dsp_math::fast_tanh(0.5 * left);
         right = (right >= 0.0) ? dsp_math::fast_tanh(right) : 1.5 * dsp_math::fast_tanh(0.5 * right);
 
-        processBus->l[i] = left;
-        processBus->r[i] = right;
+        processBus.l[i] = left;
+        processBus.r[i] = right;
     }
 }
 
@@ -114,14 +114,14 @@ void KorgonFilter::processBlockLP()
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        left = processBus->l[i];
-        right = processBus->r[i];
-        cutoff = modulationBus->m[i];
+        left = processBus.l[i];
+        right = processBus.r[i];
+        cutoff = modulationBus.m[i];
 
         if (cutoff > 15000.0)
         {
-            processBus->l[i] = left;
-            processBus->r[i] = right;
+            processBus.l[i] = left;
+            processBus.r[i] = right;
             continue;
         }
 
@@ -154,8 +154,8 @@ void KorgonFilter::processBlockLP()
         left = (left >= 0.0) ? dsp_math::fast_tanh(left) : 1.5 * dsp_math::fast_tanh(0.5 * left);
         right = (right >= 0.0) ? dsp_math::fast_tanh(right) : 1.5 * dsp_math::fast_tanh(0.5 * right);
 
-        processBus->l[i] = left;
-        processBus->r[i] = right;
+        processBus.l[i] = left;
+        processBus.r[i] = right;
     }
 }
 

@@ -85,12 +85,12 @@ protected:
     /**
      * @brief Called when the input bus is connected. Not used in current implementation.
      */
-    void onInputBusConnected();
+    void onInputBusConnected(DSPAudioBus &bus) override;
 
     /**
      * @brief Called when the output bus is connected. Prepares fader connection.
      */
-    void onOutputBusConnected();
+    void onOutputBusConnected(DSPAudioBus &bus) override;
 
 private:
     /**
@@ -136,7 +136,7 @@ private:
     std::vector<DSPAudioBus *> delayBusses;
 
     /// @brief Wet buffer
-    DSPAudioBus *wetBus;
+    DSPAudioBus wetBus;
 
     /// @brief Crossfader for dry/wet mixing
     CrossFader wetFader;

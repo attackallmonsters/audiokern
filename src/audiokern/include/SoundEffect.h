@@ -19,12 +19,12 @@ public:
      * The object will then receive its audio input from this bus during processing.
      *
      * Example usage:
-     *     connectInputToBus("osc1_output");
+     *     connectInputToBus(oscOutputBus);
      *
-     * @param busName The name of the audio input bus to connect to.
+     * @param bus The audio input bus to connect to.
      * @throws std::runtime_error if no such bus exists.
      */
-    void connectInputToBus(const std::string &busName);
+    void connectInputToBus(DSPAudioBus &bus);
 
     /**
      * @brief Connects this DSP object to the output or wet buffer of a named audio bus.
@@ -33,12 +33,25 @@ public:
      * All generated or processed audio will be written to this bus.
      *
      * Example usage:
-     *     connectOutputToBus("wet_output");
+     *     connectOutputToBus(bus);
      *
-     * @param busName The name of the audio output bus to connect to.
+     * @param bus The audio output bus to connect to.
      * @throws std::runtime_error if no such bus exists.
      */
-    void connectOutputToBus(const std::string &busName);
+    void connectOutputToBus(DSPAudioBus &bus);
+
+    /**
+     * @brief Sets an audio without using DSPBusManager.
+     *
+     * This assigns the internal outputBus pointer to the DSPAudioBus.
+     * All generated or processed audio will be written to this bus.
+     *
+     * Example usage:
+     *     setOutputBus(outputBus);
+     *
+     * @param bus THe bus to use as output buss.
+     */
+    void setOutputBus(DSPAudioBus &bus);
 
     /**
      * @brief Sets the name of the modulation bus to be used by this object.
@@ -46,9 +59,9 @@ public:
      * This method must be called before initialization. The bus will be resolved
      * during initializeObject() by querying the DSPBusManager.
      *
-     * @param busName The name of the modulation bus (e.g., "mod_wet").
+     * @param bus The modulation bus to connect to.
      */
-    void connectModulationToBus(const std::string &busName);
+    void connectModulationToBus(DSPModulationBus &bus);
 
 protected:
     /**
@@ -81,7 +94,7 @@ protected:
      *
      * Default implementation does nothing.
      */
-    virtual void onInputBusConnected();
+    virtual void onInputBusConnected(DSPAudioBus &bus);
 
     /**
      * @brief Called when an output audio bus has been successfully connected.
@@ -91,7 +104,7 @@ protected:
      *
      * Default implementation does nothing.
      */
-    virtual void onOutputBusConnected();
+    virtual void onOutputBusConnected(DSPAudioBus &bus);
 
     /**
      * @brief Called when a modulation bus has been successfully connected.
@@ -101,22 +114,22 @@ protected:
      *
      * Default implementation does nothing.
      */
-    virtual void onModulationBusConnected();
+    virtual void onModulationBusConnected(DSPModulationBus &bus);
 
     /**
      * @brief The connected input audio bus.
      */
-    DSPAudioBus *inputBus = nullptr;
+    DSPAudioBus inputBus;
 
     /**
      * @brief The connected wet output bus.
      */
-    DSPAudioBus *outputBus = nullptr;
+    DSPAudioBus outputBus;
 
     /**
      * @brief The optional connected modulation bus.
      */
-    DSPModulationBus *modulationBus = nullptr;
+    DSPModulationBus modulationBus;
 
 private:
     /**

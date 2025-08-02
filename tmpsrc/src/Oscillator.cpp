@@ -200,7 +200,7 @@ void Oscillator::processBlock(DSPObject *dsp)
     host_float phase = osc->currentPhase;
     bool wrappedFlag = false;
     host_float baseFreq = osc->calculatedFrequency;
-    host_float index = osc->modulationIndex;
+    host_float index = osc.modulationIndex;
     FMType fmType = osc->fmType;
     host_float sr = DSP::sampleRate;
     host_float phaseIncrement = osc->phaseIncrement;

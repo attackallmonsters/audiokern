@@ -14,6 +14,7 @@
 #include "CrossFader.h"
 #include "Delay.h"
 #include "AnalogDrift.h"
+#include "Panner.h"
 
 /**
  * @brief Lightweight structure representing a single active synth voice.
@@ -29,9 +30,18 @@ struct SynthVoice
  */
 enum class LFOTarget
 {
-    None,   ///< No target, not active (LFO1, LFO2)
-    Cutoff, ///< Filter cutof (LFO1)
-    Amp,    ///< Amplification (LFO1)
+    None,    ///< No target, not active (LFO1, LFO2)
+    Cutoff,  ///< Filter cutof (LFO1)
+    Tremolo, ///< Amplification (LFO1)
+    Vibrato, ///< Oscillator frequency modulation
+    Panning, ///< Panning modulation
+    OscMix   ///< Oscillator mix
+};
+
+enum class LFOTargetType
+{
+    ModulationBus, ///< Target is a modulation bus
+    Parameter      ///< Target is a parameter setter method
 };
 
 /**
@@ -204,12 +214,16 @@ private:
     CrossFader wetFader;                  ///< Dry/wet fader
 
     AnalogDrift analogDrift; ///< analog feeling
+    Panner panner;           ///< L/R panning
 
-    LFO lfo1ar; ///< First LFO audio rate
-    LFO lfo2ar; ///< Second LFO audio rate
+    LFO lfo1; ///< First LFO audio rate
+    LFO lfo2; ///< Second LFO audio rate
 
     LFOTarget lfo1Target; ///< Target parameter LFO1
     LFOTarget lfo2Target; ///< Target parameter LFO2
+
+    LFOTargetType lfo1TargetType; ///< Target type for LFO1
+    LFOTargetType lfo2TargetType; ///< Target type for LFO2
 
     ButterworthFilter butterworth; ///< High-pass filter at 80 Hz
     NebularReverb reverb;          ///< Reverb effect unit
@@ -223,15 +237,16 @@ private:
     const size_t voiceCount = 6;         ///< Maximum voice count
     const std::string name = "_JPSynth"; ///< Synth name for routing
 
-    DSPAudioBus *outputBus;       ///< Final output bus (host)
-    DSPAudioBus *wetBus;          ///< Internal wet signal bus
-    DSPAudioBus *voicesOutputBus; ///< Pre-effect voice sum
+    DSPAudioBus outputBus;       ///< Final output bus (host)
+    DSPAudioBus wetBus;          ///< Internal wet signal bus
+    DSPAudioBus voicesOutputBus; ///< Pre-effect voice sum
 
-    DSPModulationBus *modFilterCutoffBus; ///< Cutoff bis for filter modulation by LFO 1
-    DSPModulationBus *modAmpBus;          ///< Amplification modulation by LFO1
+    DSPModulationBus modFilterCutoffBus; ///< Cutoff bis for filter modulation by LFO 1
+    DSPModulationBus modAmpBus;          ///< Amplification modulation by LFO1
+    DSPModulationBus modPanningBus;      ///< Panning modulation by LFO1
 
-    DSPModulationBus *lfo1DummyBus; ///< Dummy bus for LFO1
-    DSPModulationBus *lfo2DummyBus; ///< Dummy bus for LFO2
+    DSPModulationBus lfo1DefaultBus; ///< Dummy bus for LFO1
+    DSPModulationBus lfo2DefaultBus; ///< Dummy bus for LFO2
 
     bool filterFollowEnabled; /// Indicates if filter cutoff follows the note
     host_float currentCutoff; ///< To reset filter cutoff when follow is disabled
@@ -242,7 +257,14 @@ private:
 
     const std::string modFilterCutoffBusName = "modCutoffBus"; ///< bus name of filter cutoff modulation bus
     const std::string modAmpBusName = "modAmpBus";             ///< Amplification modulation bus name
+    const std::string modPanningBusName = "modPanningBus";     ///< Amplification modulation bus name
 
-    const std::string lfo1DummyBusName = "lfo1dummy"; ///< dummy bus for LFO1
-    const std::string lfo2DummyBusName = "lfo2dummy"; ///< dummy bus for LFO2
+    const std::string lfo1DefaultBusName = "lfo1dummy"; ///< dummy bus for LFO1
+    const std::string lfo2DefaultBusName = "lfo2dummy"; ///< dummy bus for LFO2
+
+    void (JPSynth::*lfo1Func)(host_float) = nullptr; ///< Pointer to lfo 1 modulation target function
+    void (JPSynth::*lfo2Func)(host_float) = nullptr; ///< Pointer to lfo 1 modulation target function
+
+    void modVibrato(host_float); ///< Frequency modulation
+    void modOscmix(host_float); ///< Oscillator mix modulation
 };

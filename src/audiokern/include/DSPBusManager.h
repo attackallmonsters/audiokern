@@ -1,66 +1,11 @@
 
 #pragma once
 
+#include "DSPObjectCollection.h"
 #include "DSPSampleBuffer.h"
 #include "omfg.h"
+#include "Busses.h"
 #include <stdexcept>
-
-class DSPModulationBus
-{
-public:
-    void initialize(const std::string &name, size_t size)
-    {
-        m.initialize(name, size);
-        busName = name;
-    }
-
-    void multiplyWidth(DSPModulationBus *bus)
-    {
-        // Multiply this buffer with target buffer
-        m.multiplyWith(bus->m);
-    }
-
-    void fill(host_float v)
-    {
-        m.fill(v);
-    }
-
-    void log()
-    {
-        m.log();
-    }
-
-    std::string busName;
-    DSPSampleBuffer m;
-};
-
-class DSPAudioBus
-{
-public:
-    void initialize(const std::string &name, size_t size)
-    {
-        l.initialize("L" + name, size);
-        r.initialize("R" + name, size);
-        busName = name;
-    }
-
-    void multiplyWidth(DSPModulationBus *bus)
-    {
-        // Multiply this buffers with target buffer
-        l.multiplyWith(bus->m);
-        r.multiplyWith(bus->m);
-    }
-
-    void log()
-    {
-        l.log();
-        r.log();
-    }
-
-    std::string busName;
-    DSPSampleBuffer l;
-    DSPSampleBuffer r;
-};
 
 /**
  * @brief Static manager for registering and accessing named audio and modulation buses.
@@ -73,6 +18,11 @@ class DSPBusManager
 {
 public:
     /**
+     * @brief Initializes the DSP bus manager
+     */
+    void initialize();
+
+    /**
      * @brief Registers a new audio channel with the given name.
      *
      * Ensures uniqueness of channel names. If a channel with the same name
@@ -82,7 +32,7 @@ public:
      * @param name The unique name of the audio channel to register.
      * @throws std::runtime_error if the channel limit is reached.
      */
-    static DSPAudioBus *registerAudioBus(const std::string &name);
+    static DSPAudioBus &registerAudioBus(const std::string &name);
 
     /**
      * @brief Registers and connects an audio channel with external output buffers.
@@ -99,23 +49,23 @@ public:
      * @param outL Pointer to the left output buffer.
      * @param outR Pointer to the right output buffer.
      */
-    static DSPAudioBus *registerAudioBus(const std::string &name, host_float *outL, host_float *outR);
+    static DSPAudioBus &registerAudioBus(const std::string &name, host_float *outL, host_float *outR);
 
     /**
      * @brief Registers and connects a modulation channel with an external output buffer.
      *
      * Associates a previously registered modulation channel (by name) with an external
-     * output buffer. This is typically used to route low-rate control signals (e.g. LFOs,
+     * output buffer. This is typically used to route low.mate control signals (e.g. LFOs,
      * envelopes, automation data) to external environments such as Pure Data, VST hosts,
-     * or control-rate buses in SuperCollider.
+     * or control.mate buses in SuperCollider.
      *
      * If the channel name has not been registered via the static
      * registerModulationBus(const std::string&) method, the call has no effect.
      *
      * @param name The name of the modulation channel to bind.
-     * @param out Pointer to the control-rate output buffer.
+     * @param out Pointer to the control.mate output buffer.
      */
-    static DSPModulationBus *registerModulationBus(const std::string &name, host_float *out);
+    static DSPModulationBus &registerModulationBus(const std::string &name, host_float *out);
 
     /**
      * @brief Registers a new modulation channel with the given name.
@@ -126,7 +76,7 @@ public:
      * @param name The unique name of the modulation channel to register.
      * @throws std::runtime_error if the modulation channel limit is exceeded.
      */
-    static DSPModulationBus *registerModulationBus(const std::string &name);
+    static DSPModulationBus &registerModulationBus(const std::string &name);
 
     /**
      * @brief Returns a pointer to the audio bus with the given name.
@@ -135,7 +85,7 @@ public:
      * @param name The name of the audio bus.
      * @return Pointer to DSPAudioBus or nullptr.
      */
-    static DSPAudioBus *getAudioBus(const std::string &name);
+    static DSPAudioBus &getAudioBus(const std::string &name);
 
     /**
      * @brief Returns a pointer to the modulation bus with the given name.
@@ -144,7 +94,7 @@ public:
      * @param name The name of the modulation bus.
      * @return Pointer to DSPModulationBus or nullptr.
      */
-    static DSPModulationBus *getModulationBus(const std::string &name);
+    static DSPModulationBus &getModulationBus(const std::string &name);
 
     /**
      * @brief Clears all registered bus names and resets counters.
@@ -161,16 +111,16 @@ public:
 
     static void log();
 
-private:
-    static constexpr int maxBusses = 128; ///< Maximum number of buses per type
+    /**
+     * @brief The name of a bus that exists as audio and modulation bus.
+     * DSP objects can connect to this bus to have a buffer available.
+     */
+    const std::string nullBusName = "null";
 
+private:
     // Audio bus storage
-    static DSPAudioBus audioBusses[maxBusses]; ///< Statically allocated audio bus array
-    static std::string audioNames[maxBusses];  ///< Registered names for audio buses
-    static int audioCount;                     ///< Current number of registered audio buses
+    static DSPObjectCollection<DSPAudioBus> audioBusses;
 
     // Modulation bus storage
-    static DSPModulationBus modulationBusses[maxBusses]; ///< Statically allocated modulation bus array
-    static std::string modulationNames[maxBusses];       ///< Registered names for modulation buses
-    static int modulationCount;                          ///< Current number of registered modulation buses
+    static DSPObjectCollection<DSPModulationBus> modulationBusses;
 };

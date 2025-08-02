@@ -7,10 +7,8 @@ Panner::Panner()
 
 void Panner::initializeProcessor()
 {
-    slew.initialize("slew" + getName());
-    slew.setSlewTime(1.0);
-
-    setPanning(0.5);
+    setMode(PanningMode::Gain);
+    //setPanning(0.5);
 }
 
 void Panner::setMode(PanningMode mode)
@@ -35,7 +33,7 @@ void Panner::setPanning(double value)
 {
     // Clamp between 0.0 and 1.0
     pan = clamp(value, 0.0, 1.0);
-    slew.setTarget(pan);
+    modulationBus.fill(pan);
 }
 
 void Panner::processBlockGain()
@@ -44,10 +42,10 @@ void Panner::processBlockGain()
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        dsp_math::get_sin_cos(slew.process() * 0.5 * dsp_math::DSP_PI, &gainL, &gainR);
+        dsp_math::get_sin_cos(modulationBus.m[i] * 0.5 * dsp_math::DSP_PI, &gainL, &gainR);
 
-        processBus->l[i] = processBus->l[i] * gainL;
-        processBus->r[i] = processBus->r[i] * gainR;
+        processBus.l[i] = processBus.l[i] * gainL;
+        processBus.r[i] = processBus.r[i] * gainR;
     }
 }
 
@@ -57,13 +55,13 @@ void Panner::processBlockBlend()
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        dsp_math::get_sin_cos(slew.process() * 0.5 * dsp_math::DSP_PI, &gainL, &gainR);
+        dsp_math::get_sin_cos(modulationBus.m[i] * 0.5 * dsp_math::DSP_PI, &gainL, &gainR);
 
-        host_float inL = processBus->l[i];
-        host_float inR = processBus->r[i];
+        host_float inL = processBus.l[i];
+        host_float inR = processBus.r[i];
 
-        outputBus->l[i] = inL * gainL + inR * (1.0f - gainR);
-        outputBus->r[i] = inR * gainR + inL * (1.0f - gainL);
+        processBus.l[i] = inL * gainL + inR * (1.0f - gainR);
+        processBus.r[i] = inR * gainR + inL * (1.0f - gainL);
     }
 }
 
@@ -73,13 +71,13 @@ void Panner::processBlockBlendMono()
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        dsp_math::get_sin_cos(slew.process() * 0.5 * dsp_math::DSP_PI, &gainL, &gainR);
+        dsp_math::get_sin_cos(modulationBus.m[i] * 0.5 * dsp_math::DSP_PI, &gainL, &gainR);
 
-        host_float inL = processBus->l[i];
-        host_float inR = processBus->r[i];
+        host_float inL = processBus.l[i];
+        host_float inR = processBus.r[i];
 
-        outputBus->l[i] = inL * gainL + inR * gainL;
-        outputBus->r[i] = inR * gainR + inL * gainR;
+        processBus.l[i] = inL * gainL + inR * gainL;
+        processBus.r[i] = inR * gainR + inL * gainR;
     }
 }
 

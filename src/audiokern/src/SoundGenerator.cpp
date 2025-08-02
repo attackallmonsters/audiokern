@@ -14,16 +14,16 @@ void SoundGenerator::initializeObject(size_t count)
     initializeGenerator(count);
 }
 
-void SoundGenerator::connectFMToBus(const std::string &busName)
+void SoundGenerator::connectFMToBus(DSPAudioBus &bus)
 {
-    fmBus = DSPBusManager::getAudioBus(busName);
-    onFMBusConnected();
+    fmBus = bus;
+    onFMBusConnected(bus);
 }
 
-void SoundGenerator::connectOutputToBus(const std::string &busName)
+void SoundGenerator::connectOutputToBus(DSPAudioBus &bus)
 {
-    outputBus = DSPBusManager::getAudioBus(busName);
-    onOutputBusConnected();
+    outputBus = bus;
+    onOutputBusConnected(bus);
 }
 
 void SoundGenerator::setRole(GeneratorRole role)
@@ -39,12 +39,12 @@ void SoundGenerator::initializeGenerator(size_t /*count*/)
 {
 }
 
-void SoundGenerator::onFMBusConnected()
+void SoundGenerator::onFMBusConnected(DSPAudioBus & /*bus*/)
 {
 
 }
 
-void SoundGenerator::onOutputBusConnected()
+void SoundGenerator::onOutputBusConnected(DSPAudioBus & /*bus*/)
 {
 
 }

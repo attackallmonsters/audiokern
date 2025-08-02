@@ -13,14 +13,14 @@ void LFO::initializeModulator()
     currentRnd = 0.0;
 
     setMode(LFOMode::Buffered);
-    setFreq(0.0);
+    setFrequency(0.0);
     setOffset(0.0);
     setDepth(1.0);
     setShape(0.0);
     setPulseWidth(0.5);
     setSmooth(0.0);
     setType(LFOType::Sine);
-    setFreq(1.0);
+    setFrequency(1.0);
     isUnipolar(false);
 }
 
@@ -76,7 +76,7 @@ inline host_float LFO::lfoRandom()
     return currentRnd;
 }
 
-void LFO::setFreq(host_float f)
+void LFO::setFrequency(host_float f)
 {
     freq = clampmin(f, 0.0);
 
@@ -167,7 +167,7 @@ void LFO::setMode(LFOMode mode)
 
     lfoMode = mode;
 
-    setFreq(freq);
+    setFrequency(freq);
 
     setType(lfoType);
 
@@ -188,12 +188,7 @@ void LFO::processBlockBuffer()
     if (freq <= 0.0)
     {
         phase = 0.0;
-
-        for (size_t i = 0; i < DSP::blockSize; ++i)
-        {
-            modulationBus->m[i] = idleSignal;
-        }
-
+        modulationBus.fill(idleSignal);
         return;
     }
 
@@ -205,7 +200,7 @@ void LFO::processBlockBuffer()
             val = 0.5 * (val + 1.0);
 
         smoothVal += smoothCoeff * (val - smoothVal);
-        modulationBus->m[i] = smoothVal * depth + offset;
+        modulationBus.m[i] = smoothVal * depth * gain + offset;
 
         if (phase >= 1.0)
         {
@@ -217,12 +212,12 @@ void LFO::processBlockBuffer()
             currentRnd = 2.0 * ((host_float)rand() / RAND_MAX) - 1.0;
         }
 
-        phase += phaseInc;
-    }
+        if (fmEnabled)
+        {
+            phaseInc = (freq + fmBus.m[i]) / DSP::sampleRate;
+        }
 
-    if (processLFOValue)
-    {
-        processLFOValue(modulationBus->m[0]);
+        phase += phaseInc;
     }
 }
 

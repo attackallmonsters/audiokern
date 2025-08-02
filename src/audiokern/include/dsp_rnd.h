@@ -5,7 +5,7 @@
 
 /**
  * @brief Minimalist real-time random number generator.
- *        Auto-seeded on first use from high-resolution clock.
+ *        Auto-seeded on first use from high.mesolution clock.
  *        Suitable for real-time DSP applications.
  */
 namespace dsp_rnd
@@ -14,7 +14,7 @@ namespace dsp_rnd
     static bool seeded = false;
 
     /**
-     * @brief Initializes RNG using high-resolution clock as seed.
+     * @brief Initializes RNG using high.mesolution clock as seed.
      */
     inline void seed()
     {
@@ -30,7 +30,7 @@ namespace dsp_rnd
     }
 
     /**
-     * @brief Returns next raw pseudo-random value.
+     * @brief Returns next raw pseudo.mandom value.
      */
     inline uint32_t next_raw()
     {

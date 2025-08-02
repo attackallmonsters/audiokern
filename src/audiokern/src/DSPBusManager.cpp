@@ -1,103 +1,82 @@
 #include "DSPBusManager.h"
 
-// Audio
-DSPAudioBus DSPBusManager::audioBusses[maxBusses];
-std::string DSPBusManager::audioNames[maxBusses];
-int DSPBusManager::audioCount = 0;
+DSPObjectCollection<DSPAudioBus> DSPBusManager::audioBusses;
+DSPObjectCollection<DSPModulationBus> DSPBusManager::modulationBusses;
 
-// Modulation
-DSPModulationBus DSPBusManager::modulationBusses[maxBusses];
-std::string DSPBusManager::modulationNames[maxBusses];
-int DSPBusManager::modulationCount = 0;
+void DSPBusManager::initialize()
+{
+    registerAudioBus(nullBusName);
+    registerModulationBus(nullBusName);
+}
 
 // ----------- Register Methods -----------
 
-DSPAudioBus *DSPBusManager::registerAudioBus(const std::string &name)
+DSPAudioBus &DSPBusManager::registerAudioBus(const std::string &name)
 {
     // Skip registration if channel name already exists
-    for (int i = 0; i < audioCount; ++i)
+    for (size_t i = 0; i < audioBusses.size(); ++i)
     {
-        if (audioNames[i] == name)
-            PANIC("DSPBusManager: audio buffer " << name << " already exists");
+        if (audioBusses[i].getName() == name)
+            PANIC("DSPBusManager: audio buffer " << audioBusses[i].getName() << " already exists");
     }
 
-    // Register new channel if space allows
-    if (audioCount < maxBusses)
-    {
-        audioNames[audioCount] = name;
-        audioBusses[audioCount].initialize(name, DSP::blockSize);
-        ++audioCount;
-
-        return getAudioBus(name);
-    }
-    else
-    {
-        PANIC("DSPBusManager: maximum number of audio channels exceeded");
-    }
+    DSPAudioBus *newBus = new DSPAudioBus();
+    newBus->initialize(name, DSP::blockSize, true);
+    return audioBusses.add(newBus);
 }
 
-DSPAudioBus *DSPBusManager::registerAudioBus(const std::string &name, host_float *outL, host_float *outR)
+DSPAudioBus &DSPBusManager::registerAudioBus(const std::string &name, host_float *outL, host_float *outR)
 {
-    DSPAudioBus *bus = registerAudioBus(name);
+    DSPAudioBus &bus = registerAudioBus(name);
 
-    bus->l.assign("L_" + name, outL);
-    bus->r.assign("R_" + name, outR);
+    bus.l.assign("L_" + name, outL);
+    bus.r.assign("R_" + name, outR);
 
     return bus;
 }
 
-DSPModulationBus *DSPBusManager::registerModulationBus(const std::string &name)
+DSPModulationBus &DSPBusManager::registerModulationBus(const std::string &name)
 {
     // Skip registration if channel name already exists
-    for (int i = 0; i < modulationCount; ++i)
+    for (size_t i = 0; i < modulationBusses.size(); ++i)
     {
-        if (modulationNames[i] == name)
-            PANIC("DSPBusManager: modulation buffer " << name << " already exists");
+        if (modulationBusses[i].getName() == name)
+            PANIC("DSPBusManager: modulation buffer " << modulationBusses[i].getName() << " already exists");
     }
 
-    // Register new channel if space allows
-    if (modulationCount < maxBusses)
-    {
-        modulationNames[modulationCount] = name;
-        modulationBusses[modulationCount].initialize(name, DSP::blockSize);
-        ++modulationCount;
-
-        return getModulationBus(name);
-    }
-    else
-    {
-        PANIC("DSPBusManager: maximum number of modulation channels exceeded");
-    }
+    DSPModulationBus *newBus = new DSPModulationBus();
+    newBus->initialize(name, DSP::blockSize, true);
+    return modulationBusses.add(newBus);
 }
 
-DSPModulationBus *DSPBusManager::registerModulationBus(const std::string &name, host_float *out)
+DSPModulationBus &DSPBusManager::registerModulationBus(const std::string &name, host_float *out)
 {
-    DSPModulationBus *bus = registerModulationBus(name);
+    DSPModulationBus &bus = registerModulationBus(name);
 
-    bus->m.assign("L_" + name, out);
+    bus.m.assign("L_" + name, out);
 
     return bus;
 }
 
 // ----------- Get Methods -----------
 
-DSPAudioBus *DSPBusManager::getAudioBus(const std::string &name)
+DSPAudioBus &DSPBusManager::getAudioBus(const std::string &name)
 {
-    for (int i = 0; i < audioCount; ++i)
+    for (size_t i = 0; i < audioBusses.size(); ++i)
     {
-        if (audioNames[i] == name)
-            return &audioBusses[i];
+        if (audioBusses[i].getName() == name)
+            return audioBusses[i];
     }
 
     PANIC("invalid audio bus name: " << name);
 }
 
-DSPModulationBus *DSPBusManager::getModulationBus(const std::string &name)
+DSPModulationBus &DSPBusManager::getModulationBus(const std::string &name)
 {
-    for (int i = 0; i < modulationCount; ++i)
+    for (size_t i = 0; i < modulationBusses.size(); ++i)
     {
-        if (modulationNames[i] == name)
-            return &modulationBusses[i];
+        if (modulationBusses[i].getName() == name)
+            return modulationBusses[i];
     }
 
     PANIC("invalid modulation bus name: " << name);
@@ -107,18 +86,13 @@ DSPModulationBus *DSPBusManager::getModulationBus(const std::string &name)
 
 void DSPBusManager::clear()
 {
-    audioCount = 0;
-    modulationCount = 0;
-
-    for (int i = 0; i < maxBusses; ++i)
-    {
-        audioNames[i] = "";
-    }
+    audioBusses.clear();
+    modulationBusses.clear();
 }
 
 void DSPBusManager::validate()
 {
-    for (int i = 0; i < audioCount; ++i)
+    for (size_t i = 0; i < audioBusses.size(); ++i)
     {
         try
         {
@@ -127,12 +101,12 @@ void DSPBusManager::validate()
         }
         catch (const std::runtime_error &e)
         {
-            DSP::log("AudioBus '%s' validation failed: %s", audioNames[i].c_str(), e.what());
+            DSP::log("AudioBus '%s' validation failed: %s", audioBusses[i].getName().c_str(), e.what());
             throw;
         }
     }
 
-    for (int i = 0; i < modulationCount; ++i)
+    for (size_t i = 0; i < modulationBusses.size(); ++i)
     {
         try
         {
@@ -140,7 +114,7 @@ void DSPBusManager::validate()
         }
         catch (const std::runtime_error &e)
         {
-            DSP::log("ModulationBus '%s' validation failed: %s", modulationNames[i].c_str(), e.what());
+            DSP::log("ModulationBus '%s' validation failed: %s", modulationBusses[i].getName().c_str(), e.what());
             throw;
         }
     }
@@ -148,14 +122,11 @@ void DSPBusManager::validate()
 
 void DSPBusManager::log()
 {
-    for (int i = 0; i < audioCount; ++i)
+    for (size_t i = 0; i < audioBusses.size(); ++i)
     {
-        if (audioNames[i].empty())
-            continue;
-
         DSPAudioBus &bus = audioBusses[i];
 
-        DSP::log("Audio bus: %s", bus.busName.c_str());
+        DSP::log("Audio bus: %s", bus.getName().c_str());
 
         DSP::log("  L: name=%s, size=%zu, peak=%.5f",
                  bus.l.getName().c_str(),
@@ -168,14 +139,11 @@ void DSPBusManager::log()
                  bus.r.peak());
     }
 
-    for (int i = 0; i < modulationCount; ++i)
+    for (size_t i = 0; i < modulationBusses.size(); ++i)
     {
-        if (modulationNames[i].empty())
-            continue;
-
         DSPModulationBus &bus = modulationBusses[i];
 
-        DSP::log("Modulation bus: %s", bus.busName.c_str());
+        DSP::log("Modulation bus: %s", bus.getName().c_str());
 
         DSP::log("  L: name=%s, size=%zu, peak=%.5f",
                  bus.m.getName().c_str(),

@@ -1,5 +1,5 @@
 #include "NoiseGenerator.h"
-#include <chrono> // Used to seed the RNG with high-resolution time
+#include <chrono> // Used to seed the RNG with high.mesolution time
 #include "dsp_types.h"
 
 // Constructor: seeds RNG and sets noise type
@@ -33,7 +33,7 @@ void NoiseGenerator::generateSample(
     NoiseGenerator *noise = static_cast<NoiseGenerator *>(osc);
 
     // Generate white noise sample in range [-1.0, 1.0]
-    host_float white = noise->dist(noise->rng);
+    host_float white = noise->dist(noise.mng);
 
     // If white noise is selected, return it directly
     if (noise->noiseType == NoiseType::White)

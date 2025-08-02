@@ -39,7 +39,7 @@ struct ManagedVoice
  * voice->trigger(note, velocity);
  *
  * auto all = allocator.getVoices();
- * for (auto* v : all) v->render();
+ * for (auto* v : all) v.mender();
  * @endcode
  *
  * @tparam TVoice Any voice type implementing your DSP voice logic (e.g., `JPVoice`)

@@ -120,7 +120,7 @@ public:
     void setAnalogDrift(host_float amount);
 
     /** @brief Sets the modulation bus for filter citoff */
-    void setFilterCutoffModulationBus(DSPModulationBus *bus);
+    void setFilterCutoffModulationBus(DSPModulationBus &bus);
 
     // Next sample block generation
     void processBlock();
@@ -129,7 +129,7 @@ protected:
     // Initializes the DSP object
     void initializeGenerator() override;
 
-    void onOutputBusConnected() override;
+    void onOutputBusConnected(DSPAudioBus &bus) override;
 
 private:
     // Next sample block generation
@@ -178,12 +178,12 @@ private:
     host_float oscDrift;
 
     // Audio buffers
-    DSPAudioBus *carrierAudioBus;
-    DSPAudioBus *modulatorAudioBus;
-    DSPAudioBus *noiseAudioBus;
-    DSPModulationBus *filterCutoffBus;
-    DSPModulationBus *filterCutoffModulationBus;
-    DSPModulationBus *outputAmplificationBus;
+    DSPAudioBus carrierAudioBus;
+    DSPAudioBus modulatorAudioBus;
+    DSPAudioBus noiseAudioBus;
+    DSPModulationBus filterCutoffBus;
+    DSPModulationBus filterCutoffModulationBus;
+    DSPModulationBus outputAmplificationBus;
 
     std::string carrierAudioBusName;
     std::string modulatorAudioBusName;
