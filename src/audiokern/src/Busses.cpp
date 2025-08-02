@@ -37,7 +37,7 @@ bool DSPBus::getIsManaged() const
 //            DSPModulationBus
 // *******************************************
 
-DSPObjectCollection<DSPModulationBus> DSPModulationBus::busPool;
+DSPObjectCollection<DSPModulationBus> DSPModulationBus::modulationBusses;
 
 void DSPModulationBus::initializeBus(size_t size)
 {
@@ -56,21 +56,31 @@ void DSPModulationBus::fill(host_float v)
 
 void DSPModulationBus::log()
 {
-    m.log();
+    for (size_t i = 0; i < modulationBusses.size(); ++i)
+    {
+        DSPModulationBus &bus = modulationBusses[i];
+
+        DSP::log("Modulation bus (unmanaged): %s", bus.getName().c_str());
+
+        DSP::log("  L: name=%s, size=%zu, peak=%.5f",
+                 bus.m.getName().c_str(),
+                 bus.m.size(),
+                 bus.m.peak());
+    }
 }
 
-DSPModulationBus &DSPModulationBus::create(size_t size)
+DSPModulationBus &DSPModulationBus::create(const std::string &name, size_t size)
 {
     DSPModulationBus *newBus = new DSPModulationBus();
-    newBus->initialize(dsp_math::unique_string_id("bus_"), size, false);
-    return busPool.add(newBus);
+    newBus->initialize(name, size, false);
+    return modulationBusses.add(newBus);
 }
 
 // *******************************************
 //              DSPAudioBus
 // *******************************************
 
-DSPObjectCollection<DSPAudioBus> DSPAudioBus::busPool;
+DSPObjectCollection<DSPAudioBus> DSPAudioBus::audioBusses;
 
 void DSPAudioBus::initializeBus(size_t size)
 {
@@ -86,13 +96,27 @@ void DSPAudioBus::multiplyWidth(DSPModulationBus &bus)
 
 void DSPAudioBus::log()
 {
-    l.log();
-    r.log();
+    for (size_t i = 0; i < audioBusses.size(); ++i)
+    {
+        DSPAudioBus &bus = audioBusses[i];
+
+        DSP::log("Audio bus (unmanaged): %s", bus.getName().c_str());
+
+        DSP::log("  L: name=%s, size=%zu, peak=%.5f",
+                 bus.l.getName().c_str(),
+                 bus.l.size(),
+                 bus.l.peak());
+
+        DSP::log("  R: name=%s, size=%zu, peak=%.5f",
+                 bus.r.getName().c_str(),
+                 bus.r.size(),
+                 bus.r.peak());
+    }
 }
 
-DSPAudioBus &DSPAudioBus::create(size_t size)
+DSPAudioBus &DSPAudioBus::create(const std::string &name, size_t size)
 {
     DSPAudioBus *newBus = new DSPAudioBus();
-    newBus->initialize(dsp_math::unique_string_id("bus_"), size, false);
-    return busPool.add(newBus);
+    newBus->initialize(name, size, false);
+    return audioBusses.add(newBus);
 }

@@ -26,7 +26,7 @@ void NebularReverb::initializeEffect()
     {
         delayNames[i] = "delay_" + std::to_string(i) + getName();
 
-        delayBusses[i] = &DSPAudioBus::create(DSP::blockSize);
+        delayBusses[i] = &DSPAudioBus::create("delaybus_" + std::to_string(i) + getName(), DSP::blockSize);
 
         delays[i] = new CombDelay();
         delays[i]->setMaxTime(1000.0);

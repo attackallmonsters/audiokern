@@ -1000,6 +1000,8 @@ void jpsynth_tilde_dsp(t_jpsynth *x, t_signal **sp)
 
     synth.initialize(outL, outR);
 
+    DSPBusManager::log();
+
     dsp_add(jpsynth_tilde_perform, 4,
             x,
             sp[0]->s_vec, // outL

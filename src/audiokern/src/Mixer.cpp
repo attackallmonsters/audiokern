@@ -14,7 +14,7 @@ void Mixer::initializeObject(size_t count)
 
     for (size_t i = 0; i < busCount; ++i)
     {
-        busses[i] = &DSPAudioBus::create(DSP::blockSize);
+        busses[i] = &DSPAudioBus::create("mixbus_" + std::to_string(i) + getName(), DSP::blockSize);
     }
 }
 

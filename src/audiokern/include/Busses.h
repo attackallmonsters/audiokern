@@ -101,15 +101,6 @@ public:
      */
     bool isInitialized() const;
 
-    /**
-     * @brief Pure virtual method for logging bus-specific information
-     *
-     * Derived classes must implement this method to provide detailed
-     * logging of their specific buffer contents and state information
-     * for debugging and diagnostics.
-     */
-    virtual void log() = 0;
-
 protected:
     /**
      * @brief Initialize the bus with basic properties on derived classes
@@ -182,7 +173,7 @@ public:
      * Outputs bus name, management status, and buffer contents to the
      * debug console for troubleshooting modulation routing issues.
      */
-    void log();
+    static void log();
 
     /**
      * @brief Creates a new DSP modulation bus instance
@@ -194,7 +185,7 @@ public:
      * @param size Buffer size in samples, typically DSP::blockSize
      * @return Reference to the newly created and initialized modulation bus
      */
-    static DSPModulationBus &create(size_t size);
+    static DSPModulationBus &create(const std::string &name, size_t size);
 
     /// @brief The buffer that holds the modulation data
     DSPSampleBuffer m;
@@ -211,7 +202,7 @@ protected:
 
 private:
     /// @brief Just holds the instances created by create(size_t size)
-    static DSPObjectCollection<DSPModulationBus> busPool;
+    static DSPObjectCollection<DSPModulationBus> modulationBusses;
 };
 
 /**
@@ -260,7 +251,7 @@ public:
      * Outputs bus name, management status, and buffer contents to the
      * debug console for troubleshooting audio routing and signal flow.
      */
-    void log();
+    static void log();
 
     /**
      * @brief Creates a new DSP audio bus instance
@@ -272,7 +263,7 @@ public:
      * @param size Buffer size in samples, typically DSP::blockSize
      * @return Reference to the newly created and initialized audio bus
      */
-    static DSPAudioBus &create(size_t size);
+    static DSPAudioBus &create(const std::string &name, size_t size);
 
     /// @brief The buffer that holds left channel audio samples
     DSPSampleBuffer l;
@@ -292,5 +283,5 @@ protected:
 
 private:
     /// @brief Just holds the instances created by create(size_t size)
-    static DSPObjectCollection<DSPAudioBus> busPool;
+    static DSPObjectCollection<DSPAudioBus> audioBusses;
 };

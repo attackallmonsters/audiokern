@@ -126,7 +126,7 @@ void DSPBusManager::log()
     {
         DSPAudioBus &bus = audioBusses[i];
 
-        DSP::log("Audio bus: %s", bus.getName().c_str());
+        DSP::log("Audio bus (managed): %s", bus.getName().c_str());
 
         DSP::log("  L: name=%s, size=%zu, peak=%.5f",
                  bus.l.getName().c_str(),
@@ -143,11 +143,14 @@ void DSPBusManager::log()
     {
         DSPModulationBus &bus = modulationBusses[i];
 
-        DSP::log("Modulation bus: %s", bus.getName().c_str());
+        DSP::log("Modulation bus (managed): %s", bus.getName().c_str());
 
         DSP::log("  L: name=%s, size=%zu, peak=%.5f",
                  bus.m.getName().c_str(),
                  bus.m.size(),
                  bus.m.peak());
     }
+
+    DSPAudioBus::log();
+    DSPModulationBus::log();
 }

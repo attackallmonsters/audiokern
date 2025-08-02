@@ -10,7 +10,7 @@ void Delay::initializeEffect()
     delayBuffer.initialize("delayBuffer" + getName());
     paramFader.initialize("paramFader" + getName());
     wetFader.initialize("wetFader");
-    wetBus = DSPAudioBus::create(DSP::blockSize);
+    wetBus = DSPAudioBus::create("wetBus" + getName(), DSP::blockSize);
     wetFader.connectInputBToBus(wetBus);
 }
 
