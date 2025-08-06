@@ -176,6 +176,11 @@ public:
     static void log();
 
     /**
+     * @brief Validates bus content
+     */
+    static void validate();
+
+    /**
      * @brief Creates a new DSP modulation bus instance
      *
      * Factory method that creates a new DSPModulationBus, initializes it with the
@@ -235,6 +240,13 @@ class DSPAudioBus : public DSPBus
 {
 public:
     /**
+     * Copies all audio samples from this buffer to the specified destination bus.
+     * The destination bus must have sufficient capacity to hold the data.
+     * @param bus Destination DSPAudioBus to receive the copied audio data
+     */
+    void copyTo(DSPAudioBus &bus);
+    
+    /**
      * @brief Apply modulation to the audio signal
      *
      * Multiplies each audio sample (both L and R channels) with the
@@ -252,6 +264,11 @@ public:
      * debug console for troubleshooting audio routing and signal flow.
      */
     static void log();
+
+    /**
+     * @brief Validates bus content
+     */
+    static void validate();
 
     /**
      * @brief Creates a new DSP audio bus instance

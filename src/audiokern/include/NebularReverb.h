@@ -61,12 +61,6 @@ public:
     void setRoomSize(host_float size);
 
     /**
-     * @brief Sets the output wet signal level.
-     * @param vol Volume factor [0.0, 1.0].
-     */
-    void setWet(host_float vol);
-
-    /**
      * @brief Sets the time ratio to be applied within the reverb processing structure.
      *
      * This ratio is used to scale internal delay times. Applying different ratios can help to avoid
@@ -83,14 +77,14 @@ protected:
     void initializeEffect() override;
 
     /**
-     * @brief Called when the input bus is connected. Not used in current implementation.
+     * @brief Called when the input bus is connected.
      */
     void onInputBusConnected(DSPAudioBus &bus) override;
 
     /**
-     * @brief Called when the output bus is connected. Prepares fader connection.
+     * @brief Called when the wet bus is connected.
      */
-    void onOutputBusConnected(DSPAudioBus &bus) override;
+    void onWetBusConnected(DSPAudioBus &bus) override;
 
 private:
     /**
@@ -120,9 +114,6 @@ private:
     /// @brief Base delay time (spread between lines)
     host_float delayTime;
 
-    /// @brief Output wet level
-    host_float wet;
-
     /// @brief CombDelay time relations L/R
     dsp_math::TimeRatio timeRatio;
 
@@ -133,13 +124,7 @@ private:
     std::vector<std::string> delayNames;
 
     /// @brief Pointers to output buses of delay lines
-    std::vector<DSPAudioBus *> delayBusses;
-
-    /// @brief Wet buffer
-    DSPAudioBus wetBus;
-
-    /// @brief Crossfader for dry/wet mixing
-    CrossFader wetFader;
+    std::vector<DSPAudioBus *> delayBusses;    
 
     /// @brief combined with damping for damping the high end in the resulting signal
     ButterworthFilter lowPass;

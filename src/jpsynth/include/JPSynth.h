@@ -15,6 +15,7 @@
 #include "Delay.h"
 #include "AnalogDrift.h"
 #include "Panner.h"
+#include "Distortion.h"
 
 /**
  * @brief Lightweight structure representing a single active synth voice.
@@ -193,6 +194,21 @@ public:
     /** @brief Sets the delay wet level. */
     void setDelayWet(host_float vol);
 
+    /** @brief Sets the distortion wet level. */
+    void setDistWet(host_float vol);
+
+    /** @brief Sets the distortion drive. */
+    void setDistDrive(host_float drive);
+
+    /** @brief Sets the distortion gain. */
+    void setDistGain(host_float gain);
+
+    /** @brief Sets the distortion tone. */
+    void setDistTone(host_float tone);
+
+    /** @brief Sets the distortion type. */
+    void setDistType(Distortion::DistortionType type);
+
     /** @brief Sets the total wetness of the combined effect chain. */
     void setWet(host_float wet);
 
@@ -228,6 +244,7 @@ private:
     ButterworthFilter butterworth; ///< High-pass filter at 80 Hz
     NebularReverb reverb;          ///< Reverb effect unit
     Delay delay;                   ///< Stereo delay unit
+    Distortion dist;               ///< distortion
 
     TuningSystem carrierTuning;      ///< Tuning for carrier oscillator
     TuningSystem modulatorTuning;    ///< Tuning for modulator oscillator
@@ -237,7 +254,7 @@ private:
     const size_t voiceCount = 6;         ///< Maximum voice count
     const std::string name = "_JPSynth"; ///< Synth name for routing
 
-    DSPAudioBus outputBus;       ///< Final output bus (host)
+    DSPAudioBus hostBus;         ///< Final output bus (host)
     DSPAudioBus wetBus;          ///< Internal wet signal bus
     DSPAudioBus voicesOutputBus; ///< Pre-effect voice sum
 
@@ -266,5 +283,5 @@ private:
     void (JPSynth::*lfo2Func)(host_float) = nullptr; ///< Pointer to lfo 1 modulation target function
 
     void modVibrato(host_float); ///< Frequency modulation
-    void modOscmix(host_float); ///< Oscillator mix modulation
+    void modOscmix(host_float);  ///< Oscillator mix modulation
 };

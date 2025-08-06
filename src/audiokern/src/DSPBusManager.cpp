@@ -118,6 +118,9 @@ void DSPBusManager::validate()
             throw;
         }
     }
+
+    DSPAudioBus::validate();
+    DSPModulationBus::validate();
 }
 
 void DSPBusManager::log()

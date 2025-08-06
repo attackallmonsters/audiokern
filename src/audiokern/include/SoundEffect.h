@@ -2,6 +2,7 @@
 
 #include "DSPObject.h"
 #include "DSPBusManager.h"
+#include "CrossFader.h"
 
 /**
  * @brief Base class for all sound processing DSP effects.
@@ -12,6 +13,8 @@
 class SoundEffect : public DSPObject
 {
 public:
+    SoundEffect();
+
     /**
      * @brief Connects this DSP object to the input buffer of a named audio bus.
      *
@@ -61,9 +64,31 @@ public:
      *
      * @param bus The modulation bus to connect to.
      */
-    void connectModulationToBus(DSPModulationBus &bus);
+    void connectModulationToBusA(DSPModulationBus &bus);
+
+    /**
+     * @brief Sets the name of the modulation bus to be used by this object.
+     *
+     * This method must be called before initialization. The bus will be resolved
+     * during initializeObject() by querying the DSPBusManager.
+     *
+     * @param bus The modulation bus to connect to.
+     */
+    void connectModulationToBusB(DSPModulationBus &bus);
+
+    /**
+     * @brief Sets the output wet signal level.
+     * @param vol Volume factor [0.0, 1.0].
+     */
+    void setWet(host_float vol);
 
 protected:
+    /**
+     * @brief Registers the effect block processor function.
+     * @param f Function pointer to the block processing function.
+     */
+    void registerEffectBlockProcessor(BlockProcessor f);
+
     /**
      * @brief Finalized initialization without voice count.
      */
@@ -114,7 +139,27 @@ protected:
      *
      * Default implementation does nothing.
      */
-    virtual void onModulationBusConnected(DSPModulationBus &bus);
+    virtual void onModulationBusAConnected(DSPModulationBus &bus);
+
+    /**
+     * @brief Called when a modulation bus has been successfully connected.
+     *
+     * If the object supports modulation (e.g., LFOs, filters, FM carriers), this method
+     * can be overridden to react to modulation signal routing.
+     *
+     * Default implementation does nothing.
+     */
+    virtual void onModulationBusBConnected(DSPModulationBus &bus);
+
+    /**
+     * @brief Called when a wet bus has been successfully connected.
+     *
+     * If the object supports modulation (e.g., LFOs, filters, FM carriers), this method
+     * can be overridden to react to modulation signal routing.
+     *
+     * Default implementation does nothing.
+     */
+    virtual void onWetBusConnected(DSPAudioBus &bus);
 
     /**
      * @brief The connected input audio bus.
@@ -127,16 +172,35 @@ protected:
     DSPAudioBus outputBus;
 
     /**
-     * @brief The optional connected modulation bus.
+     * @brief The optional connected modulation bus A.
      */
-    DSPModulationBus modulationBus;
+    DSPModulationBus modulationBusA;
+
+    /**
+     * @brief The optional connected modulation bus B.
+     */
+    DSPModulationBus modulationBusB;
+
+    /**
+     * @brief The default wet signal bus
+     */
+    DSPAudioBus wetBus;
 
 private:
     /**
-     * @brief Indicates whether a modulation bus should be used for this object.
-     *
-     * If set to true, the DSP object will attempt to resolve and connect a modulation
-     * bus during initialization. If false, no modulation bus will be connected.
+     * @brief Static DSP processing callback.
+     * Dispatches to the instance-level `processBlock()`.
      */
-    bool modulationBusEnabled = false;
+    static void processBlock(DSPObject *dsp);
+
+    /**
+     * @brief Function pointer to the current block processor.
+     */
+    BlockProcessor effectProcessBlockFunc;
+
+    /// @brief Output wet level
+    host_float wet;
+
+    /// @brief Crossfader for dry/wet mixing
+    CrossFader wetFader;
 };

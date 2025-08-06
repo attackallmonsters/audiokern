@@ -38,7 +38,7 @@ public:
      * @brief Initializes the DSP object with a given name.
      * @param name The name to assign.
      */
-    void initialize(const std::string &name);
+    void initialize(const std::string &name); // TODO: remove
 
     /**
      * @brief Initializes the DSP object with a name and internal element count.
@@ -80,7 +80,7 @@ protected:
      *
      * Called by `initialize()` in derived classes.
      */
-    virtual void initializeObject();
+    virtual void initializeObject(); // TODO: remove
 
     /**
      * @brief Optional virtual method for object-specific initialization with count.

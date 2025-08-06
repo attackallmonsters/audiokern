@@ -92,9 +92,6 @@ private:
     /// Slew limiter to avoid zipper noise when changing mix
     SlewLimiter slew;
 
-    /// User-defined mix value (0.0 = full A, 1.0 = full B)
-    double mix;
-
     /// Input bus A
     DSPAudioBus inputBusA;
 

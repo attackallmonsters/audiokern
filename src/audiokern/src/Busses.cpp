@@ -69,6 +69,22 @@ void DSPModulationBus::log()
     }
 }
 
+void DSPModulationBus::validate()
+{
+    for (size_t i = 0; i < modulationBusses.size(); ++i)
+    {
+        try
+        {
+            modulationBusses[i].m.isValid();
+        }
+        catch (const std::runtime_error &e)
+        {
+            DSP::log("ModulationBus '%s' validation failed: %s", modulationBusses[i].getName().c_str(), e.what());
+            throw;
+        }
+    }
+}
+
 DSPModulationBus &DSPModulationBus::create(const std::string &name, size_t size)
 {
     DSPModulationBus *newBus = new DSPModulationBus();
@@ -86,6 +102,12 @@ void DSPAudioBus::initializeBus(size_t size)
 {
     l.initialize("L_" + getName(), size);
     r.initialize("R_" + getName(), size);
+}
+
+void DSPAudioBus::copyTo(DSPAudioBus &bus)
+{
+    bus.r.copy(r);
+    bus.l.copy(l);
 }
 
 void DSPAudioBus::multiplyWidth(DSPModulationBus &bus)
@@ -111,6 +133,23 @@ void DSPAudioBus::log()
                  bus.r.getName().c_str(),
                  bus.r.size(),
                  bus.r.peak());
+    }
+}
+
+void DSPAudioBus::validate()
+{
+    for (size_t i = 0; i < audioBusses.size(); ++i)
+    {
+        try
+        {
+            audioBusses[i].l.isValid();
+            audioBusses[i].r.isValid();
+        }
+        catch (const std::runtime_error &e)
+        {
+            DSP::log("AudioBus '%s' validation failed: %s", audioBusses[i].getName().c_str(), e.what());
+            throw;
+        }
     }
 }
 

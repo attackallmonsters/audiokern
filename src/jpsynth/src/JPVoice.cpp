@@ -471,6 +471,10 @@ void JPVoice::processBlock()
     dsp_math::get_sin_cos(oscmix * 0.5 * dsp_math::DSP_PI, &amp_carrier, &amp_modulator);
     dsp_math::get_sin_cos(oscmix * 0.5 * dsp_math::DSP_PI, &amp_oscs, &amp_noise);
 
+    bool useCarrierFeedback = feedbackAmountCarrier > 0;
+    bool useModulatorFeedback = feedbackAmountModulator > 0;
+    bool useNoise = noisemix > 0;
+
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
         carrierLeft = carrierAudioBus.l[i] + lastSampleCarrierLeft * feedbackAmountCarrier;
@@ -481,19 +485,19 @@ void JPVoice::processBlock()
         mixL = amp_carrier * carrierLeft + amp_modulator * modLeft;
         mixR = amp_carrier * carrierRight + amp_modulator * modRight;
 
-        if (feedbackAmountCarrier > 0)
+        if (useCarrierFeedback)
         {
-            lastSampleCarrierLeft = dsp_math::fast_tanh(carrierLeft);
-            lastSampleCarrierRight = dsp_math::fast_tanh(carrierRight);
+            lastSampleCarrierLeft = tanh(carrierLeft); 
+            lastSampleCarrierRight = tanh(carrierRight);
         }
 
-        if (feedbackAmountModulator > 0)
+        if (useModulatorFeedback)
         {
-            lastSampleModulatorLeft = dsp_math::fast_tanh(modLeft);
-            lastSampleModulatorRight = dsp_math::fast_tanh(modRight);
+            lastSampleModulatorLeft = tanh(modLeft);
+            lastSampleModulatorRight = tanh(modRight);
         }
 
-        if (noisemix > 0)
+        if (useNoise)
         {
             mixL = amp_oscs * mixL + amp_noise * noiseAudioBus.l[i];
             mixR = amp_oscs * mixR + amp_noise * noiseAudioBus.r[i];

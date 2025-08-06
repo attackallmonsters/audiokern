@@ -68,12 +68,6 @@ public:
     void setFeedback(host_float fbL, host_float fbR);
 
     /**
-     * @brief Sets the output wet signal level.
-     * @param vol Volume factor [0.0, 1.0].
-     */
-    void setWet(host_float vol);
-
-    /**
      * @brief Ring buffer that holds internal delay lines.
      */
     RingBlockBuffer delayBuffer;
@@ -90,13 +84,6 @@ protected:
      * Used to synchronize the delay buffer state with output.
      */
     void onOutputBusConnected(DSPAudioBus &bus) override;
-
-    /**
-     * @brief Called when the input bus is connected.
-     *
-     * Used to synchronize the delay buffer state with input.
-     */
-    void onInputBusConnected(DSPAudioBus &bus) override;
 
 private:
     /**
@@ -123,10 +110,4 @@ private:
 
     /// @brief Internal parameter fader for smooth transitions
     ParamFader paramFader;
-
-    /// @brief Dry/Wet fader
-    CrossFader wetFader;
-
-    /// @brief Wet bus for delay output
-    DSPAudioBus wetBus;
 };

@@ -955,12 +955,111 @@ void jpsynth_tilde_delwet(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 
     if (argc < 1)
     {
-        post("[jpsynth~] usage: delwet (delwet 0.0 - 1,0)");
+        post("[jpsynth~] usage: delwet (delwet 0.0 - 1.0)");
         return;
     }
 
     host_float v = atom_getfloat(argv);
     synth.setDelayWet(v);
+}
+
+void jpsynth_tilde_distwet(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
+{
+    if (!testDSP())
+    {
+        return;
+    }
+
+    if (argc < 1)
+    {
+        post("[jpsynth~] usage: distwet (delwet 0.0 - 1.0)");
+        return;
+    }
+
+    synth.setDistWet(atom_getfloat(argv));
+}
+
+void jpsynth_tilde_distdrive(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
+{
+    if (!testDSP())
+    {
+        return;
+    }
+
+    if (argc < 1)
+    {
+        post("[jpsynth~] usage: distdrive (deldrive 0.0 - 1.0)");
+        return;
+    }
+
+    synth.setDistDrive(atom_getfloat(argv));
+}
+
+void jpsynth_tilde_distgain(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
+{
+    if (!testDSP())
+    {
+        return;
+    }
+
+    if (argc < 1)
+    {
+        post("[jpsynth~] usage: distgain (delgain 0.0 - 1.0)");
+        return;
+    }
+
+    synth.setDistGain(atom_getfloat(argv));
+}
+
+void jpsynth_tilde_disttone(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
+{
+    if (!testDSP())
+    {
+        return;
+    }
+
+    if (argc < 1)
+    {
+        post("[jpsynth~] usage: disttone (deltone 0.0 - 1.0)");
+        return;
+    }
+
+    synth.setDistTone(atom_getfloat(argv));
+}
+
+void jpsynth_tilde_disttype(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
+{
+    if (!testDSP())
+    {
+        return;
+    }
+
+    if (argc < 1)
+    {
+        post("[jpsynth~] usage: disttype (deltype 0.0 - 1.0)");
+        return;
+    }
+
+    int distType = atom_getint(argv);
+
+    switch (distType)
+    {
+    case 0:
+        synth.setDistType(Distortion::DistortionType::SoftClip);
+        break;
+    case 1:
+        synth.setDistType(Distortion::DistortionType::HardClip);
+        break;
+    case 2:
+        synth.setDistType(Distortion::DistortionType::Foldback);
+        break;
+    case 3:
+        synth.setDistType(Distortion::DistortionType::Tube);
+        break;    
+    default:
+        synth.setDistType(Distortion::DistortionType::SoftClip);
+        break;
+    }
 }
 
 void jpsynth_tilde_wet(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
@@ -984,6 +1083,7 @@ void jpsynth_tilde_wet(t_jpsynth * /*x*/, t_symbol *, int argc, t_atom *argv)
 t_int *jpsynth_tilde_perform(t_int *w)
 {
     synth.process();
+    //DSPBusManager::validate();
     return (w + 5);
 }
 
@@ -1092,6 +1192,12 @@ extern "C" void jpsynth_tilde_setup(void)
     class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_delfb, gensym("delfb"), A_GIMME, 0);
     class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_deldisp, gensym("deldisp"), A_GIMME, 0);
     class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_delwet, gensym("delwet"), A_GIMME, 0);
+
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_distwet, gensym("distwet"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_disttype, gensym("disttype"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_distdrive, gensym("distdrive"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_distgain, gensym("distgain"), A_GIMME, 0);
+    class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_disttone, gensym("disttone"), A_GIMME, 0);
 
     class_addmethod(jpsynth_class, (t_method)jpsynth_tilde_wet, gensym("wet"), A_GIMME, 0);
 }

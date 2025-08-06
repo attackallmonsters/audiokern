@@ -69,7 +69,7 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
         throw("DSP not initialized. Do DSP::initializeAudio first.");
     }
 
-    outputBus = DSPBusManager::registerAudioBus(outputBusName, outL, outR);
+    hostBus = DSPBusManager::registerAudioBus(outputBusName, outL, outR);
     wetBus = DSPBusManager::registerAudioBus(wetBusName);
     voicesOutputBus = DSPBusManager::registerAudioBus(voicesOutputBusName);
 
@@ -98,6 +98,7 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     delay.initialize("delay" + name);
     wetFader.initialize("wetFader" + name);
     panner.initialize("panner" + name);
+    dist.initialize("dist" + name);
 
     // TODO setAnalogDrift(0.0, 1.0);
 
@@ -134,17 +135,22 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
         voice->jpvoice.connectOutputToBus(voiceMixer.getInputBus(i));
     }
 
-    voiceMixer.connectOutputToBus(voicesOutputBus);   // output buffer for voices
-    butterworth.connectProcessToBus(voicesOutputBus); // connects to voices output
-    delay.connectInputToBus(voicesOutputBus);         // connects to voices output (after butterworth)
-    delay.connectOutputToBus(wetBus);                 // delay output to wet bus
-    reverb.connectInputToBus(wetBus);                 // connects reverb in to wet bus
-    reverb.connectOutputToBus(wetBus);                // output to wet bus as well
-    wetFader.connectOutputToBus(outputBus);           // connect to host output
-    wetFader.connectInputAToBus(voicesOutputBus);     // input A from voices
-    wetFader.connectInputBToBus(wetBus);              // input B is wet signal
-    panner.connectProcessToBus(outputBus);            // panning on output
-    panner.connectModulationToBus(modPanningBus);     // modulation target for panning
+    // wet bus: voices .=> butterworth => distortion => delay => reverb
+    voiceMixer.connectOutputToBus(voicesOutputBus); // output buffer for voices
+    panner.connectProcessToBus(hostBus);            // panning on output
+    panner.connectModulationToBus(modPanningBus);   // modulation target for panning
+
+    butterworth.connectProcessToBus(wetBus); // highpass on wet input
+    dist.connectInputToBus(wetBus);          // connects to input from wet bus
+    dist.connectOutputToBus(wetBus);         // distortion output to wet bus
+    delay.connectInputToBus(wetBus);         // delay input from wet bus
+    delay.connectOutputToBus(wetBus);        // delay output to wet bus
+    reverb.connectInputToBus(wetBus);        // reverb input from wet bus
+    reverb.connectOutputToBus(wetBus);       // reverb output to wet bus
+
+    wetFader.connectInputAToBus(voicesOutputBus); // input A from voices
+    wetFader.connectInputBToBus(wetBus);          // input B from wet signal
+    wetFader.connectOutputToBus(hostBus);         // output to host
 
     // Finalize initialization
     DSP::finalizeAudio();
@@ -446,8 +452,12 @@ inline void JPSynth::modVibrato(host_float mod)
     if (!currentVoice)
         return;
 
-    currentVoice->jpvoice.setCarrierFrequency(carrierTuning.frequency(currentVoice->note) + 50 * mod);
-    currentVoice->jpvoice.setModulatorFrequency(modulatorTuning.frequency(currentVoice->note) + 50 * mod);
+    allocator.forEachVoice(
+        [&](auto &v)
+        {
+            v.jpvoice.setCarrierFrequency(carrierTuning.frequency(v.note) + 50 * mod - 0.5 * 2);
+            v.jpvoice.setModulatorFrequency(modulatorTuning.frequency(v.note) + 50 * mod - 0.5 * 2);
+        });
 }
 
 inline void JPSynth::modOscmix(host_float mod)
@@ -462,7 +472,10 @@ void JPSynth::setLFO1(LFOParams params)
 {
     lfo1.setFrequency(params.frequency);
     lfo1.setType(params.type);
-    lfo1.setOffset(clamp(params.offset, 0.0, 1.0));
+
+    if (lfo1Target != LFOTarget::Panning)
+        lfo1.setOffset(clamp(params.offset, 0.0, 1.0));
+
     lfo1.setDepth(clamp(params.depth, 0.0, 1.0));
     lfo1.setShape(params.shape);
     lfo1.setPulseWidth(params.pw);
@@ -478,7 +491,7 @@ void JPSynth::setLFO1(LFOParams params)
         modVibrato(0.0);
         modOscmix(0.0);
 
-        //lfo2.setGain(1.0);
+        // lfo2.setGain(1.0);
 
         lfo1Target = params.target;
 
@@ -502,6 +515,7 @@ void JPSynth::setLFO1(LFOParams params)
             break;
         case LFOTarget::Panning:
             lfo1TargetType = LFOTargetType::ModulationBus;
+            lfo1.setOffset(0);
             lfo1.connectModulationToBus(modPanningBus);
             break;
         case LFOTarget::OscMix:
@@ -576,6 +590,31 @@ void JPSynth::setDelayWet(host_float vol)
     delay.setWet(vol);
 }
 
+void JPSynth::setDistWet(host_float vol)
+{
+    dist.setWet(vol);
+}
+
+void JPSynth::setDistDrive(host_float drive)
+{
+    dist.setDrive(drive);
+}
+
+void JPSynth::setDistGain(host_float gain)
+{
+    dist.setOutputGain(gain);
+}
+
+void JPSynth::setDistType(Distortion::DistortionType type)
+{
+    dist.setDistortionType(type);
+}
+
+void JPSynth::setDistTone(host_float tone)
+{
+    dist.setTone(tone);
+}
+
 void JPSynth::setWet(host_float wet)
 {
     wetFader.setMix(wet);
@@ -606,18 +645,23 @@ void JPSynth::process()
 
     processVoiceBlock();
 
+    voicesOutputBus.copyTo(wetBus);
+
     voiceMixer.process();
 
+    // voices output amplification modulation
     voicesOutputBus.multiplyWidth(modAmpBus);
 
-    butterworth.process();
-
+    // effects
+    butterworth.process();    
+    dist.process();
     delay.process();
-
     reverb.process();
 
+    // dry/wet mix
     wetFader.process();
 
+    // panning modulation from LFO
     panner.process();
 
 #if DEBUG

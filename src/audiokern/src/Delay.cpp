@@ -2,27 +2,18 @@
 
 Delay::Delay()
 {
-    registerBlockProcessor(processBlock);
+    registerEffectBlockProcessor(processBlock);
 }
 
 void Delay::initializeEffect()
 {
     delayBuffer.initialize("delayBuffer" + getName());
     paramFader.initialize("paramFader" + getName());
-    wetFader.initialize("wetFader");
-    wetBus = DSPAudioBus::create("wetBus" + getName(), DSP::blockSize);
-    wetFader.connectInputBToBus(wetBus);
 }
 
 void Delay::onOutputBusConnected(DSPAudioBus &bus)
 {
     paramFader.connectProcessToBus(bus);
-    wetFader.connectOutputToBus(bus);
-}
-
-void Delay::onInputBusConnected(DSPAudioBus &bus)
-{
-    wetFader.connectInputAToBus(bus);
 }
 
 // Sets the maximum delay time
@@ -88,13 +79,7 @@ void Delay::processBlock()
         wetBus.r[i] = delayedR;
     }
 
-    wetFader.process();
     paramFader.process();
-}
-
-void Delay::setWet(host_float vol)
-{
-    wetFader.setMix(vol);
 }
 
 void Delay::processBlock(DSPObject *obj)

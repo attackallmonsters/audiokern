@@ -2,7 +2,7 @@
 
 NebularReverb::NebularReverb()
 {
-    registerBlockProcessor(&NebularReverb::processBlock);
+    registerEffectBlockProcessor(&NebularReverb::processBlock);
 }
 
 NebularReverb::~NebularReverb()
@@ -11,8 +11,6 @@ NebularReverb::~NebularReverb()
 
 void NebularReverb::initializeEffect()
 {
-    wetBus = DSPBusManager::registerAudioBus("wetBus" + getName());
-
     delayNames.clear();
     delayNames.resize(maxDelays);
 
@@ -36,20 +34,13 @@ void NebularReverb::initializeEffect()
     }
 
     lowPass.initialize("lowpass" + getName());
-    wetFader.initialize("fader" + getName());
-
-    // lowpass wet first
-    lowPass.connectProcessToBus(wetBus);
-
-    // Wet to input B
-    wetFader.connectInputBToBus(wetBus);
 
     setDensity(0.5);
     setTimeRatio(dsp_math::TimeRatio::NONE);
     setSpace(0.3);
     setRoomSize(0.8);
     setDamping(5000.0);
-    setWet(0.5);
+    setWet(0.2);
 }
 
 void NebularReverb::onInputBusConnected(DSPAudioBus &bus)
@@ -58,14 +49,12 @@ void NebularReverb::onInputBusConnected(DSPAudioBus &bus)
     {
         delays[i]->connectInputToBus(bus);
     }
-
-    // Dry input to A
-    wetFader.connectInputAToBus(bus);
 }
 
-void NebularReverb::onOutputBusConnected(DSPAudioBus &bus)
+void NebularReverb::onWetBusConnected(DSPAudioBus &bus) 
 {
-    wetFader.connectOutputToBus(bus);
+    // lowpass wet first
+    lowPass.connectProcessToBus(bus);
 }
 
 void NebularReverb::setDensity(host_float dense)
@@ -109,13 +98,6 @@ void NebularReverb::updateDelays()
     }
 }
 
-void NebularReverb::setWet(host_float vol)
-{
-    wet = clamp(vol, 0.0, 1.0) * 2.0;
-
-    wetFader.setMix(wet);
-}
-
 void NebularReverb::setTimeRatio(dsp_math::TimeRatio ratio)
 {
     timeRatio = ratio;
@@ -153,8 +135,6 @@ void NebularReverb::processBlock()
         wetBus.l[i] = sumL / density;
         wetBus.r[i] = sumR / density;
     }
-
-    wetFader.process();
 }
 
 void NebularReverb::processBlock(DSPObject *dsp)

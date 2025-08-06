@@ -29,9 +29,7 @@ void CrossFader::connectOutputToBus(DSPAudioBus &bus)
 
 void CrossFader::setMix(double value)
 {
-    // Clamp between 0.0 and 1.0
-    mix = clamp(value, 0.0, 1.0);
-    slew.setTarget(mix);
+    slew.setTarget(clamp(value, 0.0, 1.0));
 }
 
 void CrossFader::processBlock()
