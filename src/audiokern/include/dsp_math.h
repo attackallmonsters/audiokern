@@ -31,10 +31,21 @@ namespace dsp_math
     /** @brief Step size in radians for LUT indexing (π / LUT_SIZE) */
     constexpr host_float LUT_RESOLUTION = DSP_PI / LUT_SIZE;
 
-    // Internal LUTs (defined inline to avoid linker issues)
-    inline std::array<host_float, LUT_SIZE + 1> sinLUT{};
-    inline std::array<host_float, LUT_SIZE + 1> cosLUT{};
-    inline bool lut_initialized = false;
+    // Internal LUTs using function-local statics for C++11 compatibility
+    inline std::array<host_float, LUT_SIZE + 1>& getSinLUT() {
+        static std::array<host_float, LUT_SIZE + 1> sinLUT{};
+        return sinLUT;
+    }
+
+    inline std::array<host_float, LUT_SIZE + 1>& getCosLUT() {
+        static std::array<host_float, LUT_SIZE + 1> cosLUT{};
+        return cosLUT;
+    }
+
+    inline bool& isLutInitialized() {
+        static bool lut_initialized = false;
+        return lut_initialized;
+    }
 
     /**
      * @brief Maps a normalized float value [0.0, 1.0] to an integer range [min, max].
@@ -111,14 +122,18 @@ namespace dsp_math
      */
     inline void init_trig_lut()
     {
-        if (lut_initialized) return;
+        if (isLutInitialized()) return;
+        
+        auto& sinLUT = getSinLUT();
+        auto& cosLUT = getCosLUT();
+        
         for (int i = 0; i <= LUT_SIZE; ++i)
         {
             host_float omega = i * LUT_RESOLUTION;
             sinLUT[i] = std::sin(omega);
             cosLUT[i] = std::cos(omega);
         }
-        lut_initialized = true;
+        isLutInitialized() = true;
     }
 
     /**
@@ -126,9 +141,18 @@ namespace dsp_math
      */
     inline void get_sin_cos(host_float omega, host_float *cos_out, host_float *sin_out)
     {
+        // Auto-initialize if not done yet
+        if (!isLutInitialized()) {
+            init_trig_lut();
+        }
+        
         omega = clamp(omega, 0.0, DSP_PI);
         int index = static_cast<int>(omega / LUT_RESOLUTION + 0.5);
         if (index > LUT_SIZE) index = LUT_SIZE;
+        
+        auto& sinLUT = getSinLUT();
+        auto& cosLUT = getCosLUT();
+        
         *sin_out = sinLUT[index];
         *cos_out = cosLUT[index];
     }
