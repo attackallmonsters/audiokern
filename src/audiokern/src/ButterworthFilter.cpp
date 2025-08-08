@@ -13,11 +13,14 @@ ButterworthFilter::ButterworthFilter()
 void ButterworthFilter::initializeProcessor()
 {
     reset();
+    slew.initialize("slew" + getName());
+    slew.setSlewTime(10.0f);
 }
 
-void ButterworthFilter::setCutoffFrequency(dsp_float freq)
+void ButterworthFilter::setCutoffFrequency(host_float freq)
 {
-    cutoffFrequency = clamp(freq, 0.0, 20000.0);
+    cutoffFrequency = clamp(freq, 5.0, DSP::sampleRate * 0.49);
+    slew.setTarget(cutoffFrequency);
 }
 
 // Reset internal filter states
@@ -30,13 +33,13 @@ void ButterworthFilter::reset()
 // Set the filter mode (Lowpass or Highpass)
 void ButterworthFilter::setFilterMode(FilterMode mode)
 {
+    reset();
     filterMode = mode;
 }
 
 void ButterworthFilter::processBlock()
 {
-    const host_float fc = clamp(cutoffFrequency, 5.0, DSP::sampleRate * 0.49);
-    const host_float omega = dsp_math::DSP_2PI * fc / DSP::sampleRate;
+    const host_float omega = dsp_math::DSP_2PI * slew.processBlock() / DSP::sampleRate;
 
     host_float sin_omega, cos_omega;
     dsp_math::get_sin_cos(omega, &cos_omega, &sin_omega);

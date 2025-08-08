@@ -1,7 +1,9 @@
 #pragma once
 
 #include "SoundEffect.h"
+#include "ButterworthFilter.h"
 #include "dsp_types.h"
+#include "ParamFader.h"
 
 /**
  * @brief A distortion effect that adds harmonic saturation and clipping to audio signals
@@ -103,6 +105,13 @@ protected:
      */
     void initializeEffect(size_t count) override;
 
+    /**
+     * @brief Called when the input bus has been connected
+     * 
+     * @param bus The input bus
+     */
+    void onInputBusConnected(DSPAudioBus &bus) override;
+
 private:
     /// @brief Static dispatcher for soft clip processing
     static void processSoftClip(DSPObject *dsp);
@@ -128,9 +137,6 @@ private:
     /// @brief Internal foldback block processing
     void processFoldback();
 
-    /// @brief Registers the appropriate block processor based on distortion type
-    void updateBlockProcessor();
-
     /// @brief Drive amount (0.0 to 1.0)
     host_float drive;
 
@@ -144,11 +150,8 @@ private:
     host_float tone;
 
     /// @brief Pre-emphasis filter coefficients for tone shaping
-    host_float toneFilterCoeff;
+    host_float toneFilterCutoff;
 
-    /// @brief Filter state for left channel tone control
-    host_float toneFilterStateL;
-
-    /// @brief Filter state for right channel tone control
-    host_float toneFilterStateR;
+    /// @brief The tone filter
+    ButterworthFilter filter;
 };

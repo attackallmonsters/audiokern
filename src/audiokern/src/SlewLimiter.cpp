@@ -13,14 +13,14 @@ void SlewLimiter::initializeObject()
 }
 
 // Set new target (starts smoothing)
-void SlewLimiter::setTarget(dsp_float newTarget)
+void SlewLimiter::setTarget(host_float newTarget)
 {
     target = newTarget;
     idle = false;
 
     if (slewSamples > 0)
     {
-        step = (target - current) / static_cast<dsp_float>(slewSamples);
+        step = (target - current) / static_cast<host_float>(slewSamples);
         remaining = slewSamples;
     }
     else
@@ -33,7 +33,7 @@ void SlewLimiter::setTarget(dsp_float newTarget)
 }
 
 // Sets the slew time in milliseconds
-void SlewLimiter::setSlewTime(double ms)
+void SlewLimiter::setSlewTime(host_float ms)
 {
     slewTime = ms;
     calcSamples();
@@ -46,8 +46,11 @@ void SlewLimiter::calcSamples()
 }
 
 // Advance one sample
-dsp_float SlewLimiter::process()
+host_float SlewLimiter::process()
 {
+    if (idle)
+        return current;
+
     if (remaining > 0)
     {
         current += step;
@@ -55,6 +58,28 @@ dsp_float SlewLimiter::process()
     }
     else
     {
+        current = target;
+        idle = true;
+    }
+
+    return current;
+}
+
+// Advance one block
+host_float SlewLimiter::processBlock()
+{
+    if (idle)
+        return current;
+
+    if (remaining > DSP::blockSize)
+    {
+        current += step * static_cast<host_float>(DSP::blockSize);
+        remaining -= DSP::blockSize;
+    }
+    else if (remaining > 0)
+    {
+        current += step * static_cast<host_float>(remaining);
+        remaining = 0;
         current = target;
         idle = true;
     }

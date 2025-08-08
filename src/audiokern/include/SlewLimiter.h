@@ -49,14 +49,14 @@ public:
      *
      * @param newTarget Target value to reach.
      */
-    void setTarget(dsp_float newTarget);
+    void setTarget(host_float newTarget);
 
     /**
      * @brief Sets the slew duration in milliseconds.
      *
      * @param ms Smoothing time for ramping to a new target.
      */
-    void setSlewTime(double ms);
+    void setSlewTime(host_float ms);
 
     /**
      * @brief Advances the internal state by one sample.
@@ -65,7 +65,17 @@ public:
      *
      * @return The current interpolated value.
      */
-    dsp_float process();
+    host_float process();
+
+    /**
+     * @brief Process a complete block and return the final value
+     *
+     * Advances the slew limiter by DSP::blockSize samples and returns
+     * the final calculated value after processing the entire block.
+     *
+     * @return Final smoothed value after processing the block
+     */
+    host_float processBlock();
 
     /**
      * @brief Restarts the current transition from scratch.
@@ -102,12 +112,12 @@ private:
      */
     void calcSamples();
 
-    size_t samplerate = 44100;      ///< Current sample rate
-    size_t slewSamples = 0;         ///< Number of samples over which to interpolate
-    size_t remaining = 0;           ///< Remaining samples until target is reached
-    dsp_float current = 0.0;        ///< Current interpolated value
-    dsp_float target = 0.0;         ///< Target value to reach
-    dsp_float step = 0.0;           ///< Per-sample increment
-    bool idle = true;               ///< True if no change is in progress
-    dsp_float slewTime = 0.0;       ///< Slew duration in milliseconds
+    size_t samplerate = 44100; ///< Current sample rate
+    size_t slewSamples = 0;    ///< Number of samples over which to interpolate
+    size_t remaining = 0;      ///< Remaining samples until target is reached
+    host_float current = 0.0;  ///< Current interpolated value
+    host_float target = 0.0;   ///< Target value to reach
+    host_float step = 0.0;     ///< Per-sample increment
+    bool idle = true;          ///< True if no change is in progress
+    host_float slewTime = 0.0; ///< Slew duration in milliseconds
 };

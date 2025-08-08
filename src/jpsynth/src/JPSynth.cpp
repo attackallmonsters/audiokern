@@ -102,27 +102,6 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
 
     // TODO setAnalogDrift(0.0, 1.0);
 
-    lfo1.connectModulationToBus(modFilterCutoffBus);
-
-    lfo1.isUnipolar(true);
-    lfo1.setFrequency(0.0);
-    lfo1.setOffset(0.0);
-    lfo1.setDepth(1.0);
-    lfo1Target = LFOTarget::None;
-
-    lfo2.isUnipolar(true);
-    lfo2.setFrequency(0.0);
-    lfo2.setOffset(0.0);
-    lfo2.setDepth(1.0);
-    lfo2.setGain(1.0);
-    lfo2Target = LFOTarget::None;
-
-    lfo1.connectFMToBus(lfo2DefaultBus);
-    lfo2.setGain(100);
-    lfo2.setFrequency(2.0);
-    lfo2.connectModulationToBus(lfo2DefaultBus);
-    lfo2TargetType = LFOTargetType::ModulationBus;
-
     panner.setMode(PanningMode::Blend);
 
     createVoices();
@@ -152,6 +131,8 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     wetFader.connectInputBToBus(wetBus);          // input B from wet signal
     wetFader.connectOutputToBus(hostBus);         // output to host
 
+    lfo1.connectModulationToBus(modFilterCutoffBus);
+
     // Finalize initialization
     DSP::finalizeAudio();
 
@@ -164,6 +145,25 @@ void JPSynth::initialize(host_float *outL, host_float *outR)
     delay.setTime(500, 500);
     delay.setTimeRatio(dsp_math::TimeRatio::POLY_4_3);
     delay.setWet(1.0);
+
+    lfo1.isUnipolar(true);
+    lfo1.setFrequency(0.0);
+    lfo1.setOffset(0.0);
+    lfo1.setDepth(1.0);
+    lfo1Target = LFOTarget::None;
+
+    lfo2.isUnipolar(true);
+    lfo2.setFrequency(0.0);
+    lfo2.setOffset(0.0);
+    lfo2.setDepth(1.0);
+    lfo2.setGain(1.0);
+    lfo2Target = LFOTarget::None;
+
+    lfo1.connectFMToBus(lfo2DefaultBus);
+    lfo2.setGain(100);
+    lfo2.setFrequency(2.0);
+    lfo2.connectModulationToBus(lfo2DefaultBus);
+    lfo2TargetType = LFOTargetType::ModulationBus;
 
     DSP::log("");
     DSP::log("* %s *", getRandomSynthQuote().c_str());

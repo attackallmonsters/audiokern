@@ -6,6 +6,7 @@
 #include "dsp_types.h"
 #include "dsp_math.h"
 #include "clamp.h"
+#include "SlewLimiter.h"
 #include <cmath>
 
 /**
@@ -34,7 +35,7 @@ public:
      *
      * @param freq Cutoff frequency in Hz (e.g., 2000.0)
      */
-    void setCutoffFrequency(dsp_float freq);
+    void setCutoffFrequency(host_float freq);
 
     /**
      * @brief Resets the internal filter state.
@@ -63,7 +64,7 @@ protected:
 
 private:
     /// Cutoff frequency in Hz (must be positive and < Nyquist)
-    dsp_float cutoffFrequency;
+    host_float cutoffFrequency;
 
     /// Internal biquad filter state for left channel
     host_float z1L = 0.0, z2L = 0.0;
@@ -79,6 +80,9 @@ private:
 
     /// Processes one block of audio samples.
     void processBlock();
+
+    /// @brief Used for changing cutoff to avoid clicking
+    SlewLimiter slew;
 
     /// Past input/output samples for left channel (used in biquad calculation)
     host_float x1L, y1L, x2L, y2L;
